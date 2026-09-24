@@ -1,6 +1,8 @@
-# AppointechFrontend
+# AppoinTech Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.24.
+Interfaz web de AppoinTech — sistema de gestión de citas y servicios técnicos a domicilio para reparación de electrodomésticos.
+
+Generado con [Angular CLI](https://github.com/angular/angular-cli) versión 21.2.24.
 
 ## Development server
 

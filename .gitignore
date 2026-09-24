@@ -5,11 +5,22 @@
 /tmp
 /out-tsc
 /bazel-out
+/coverage
+/e2e/test-output
 
 # Node
 /node_modules
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+/.env
+
+# Angular
+/.angular/cache
+.angular/
+*.tsbuildinfo
 
 # IDEs and editors
 .idea/
@@ -30,10 +41,8 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
 .sass-cache/
 /connect.lock
-/coverage
 /libpeerconnection.log
 testem.log
 /typings
@@ -42,3 +51,9 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Herramientas de desarrollo (Claude Code)
+.claude/
+.impeccable/
+CLAUDE.md
+PRODUCT.md

@@ -1,0 +1,208 @@
+<div class="relative min-h-screen w-full overflow-hidden bg-[#0B1224]">
+  <!-- Fondo animado -->
+  <div class="absolute inset-0 z-0">
+    <app-gradient-waves></app-gradient-waves>
+  </div>
+
+  <!-- Contenido -->
+  <div class="relative z-10 grid min-h-screen lg:grid-cols-[1.15fr_0.85fr]">
+
+    <!-- Panel de identidad (solo escritorio) -->
+    <div class="hidden flex-col justify-between border-r border-white/10 px-14 py-14 lg:flex">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none">
+            <circle cx="12" cy="13" r="6.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+            <line x1="12" y1="13" x2="12" y2="7.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+            <line x1="12" y1="6.6" x2="12" y2="4.1" stroke="#D98E4A" stroke-width="2" stroke-linecap="round" />
+            <circle cx="12" cy="4" r="1.2" fill="#D98E4A" />
+          </svg>
+        </div>
+        <span class="text-lg font-semibold tracking-tight text-white">AppoinTech</span>
+      </div>
+
+      <!-- Motivo de marca: dial de electrodoméstico -->
+      <div class="relative flex flex-1 items-center justify-center">
+        <div class="absolute h-56 w-56 rounded-full bg-[#D98E4A]/10 blur-3xl xl:h-64 xl:w-64"></div>
+        <svg viewBox="0 0 100 100" class="relative h-40 w-40 xl:h-48 xl:w-48" fill="none">
+          <circle cx="50" cy="50" r="32" stroke="rgba(255,255,255,0.7)" stroke-width="2" />
+          <line x1="82" y1="50" x2="74" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" />
+          <line x1="50" y1="82" x2="50" y2="74" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" />
+          <line x1="18" y1="50" x2="26" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="2" stroke-linecap="round" />
+          <line x1="72.6" y1="27.4" x2="69.1" y2="30.9" stroke="rgba(255,255,255,0.16)" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="72.6" y1="72.6" x2="69.1" y2="69.1" stroke="rgba(255,255,255,0.16)" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="27.4" y1="72.6" x2="30.9" y2="69.1" stroke="rgba(255,255,255,0.16)" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="27.4" y1="27.4" x2="30.9" y2="30.9" stroke="rgba(255,255,255,0.16)" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="50" y1="50" x2="50" y2="24" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="50" y1="10" x2="50" y2="23" stroke="#D98E4A" stroke-width="3" stroke-linecap="round" />
+          <circle cx="50" cy="9" r="5" fill="#D98E4A" opacity="0.22" />
+          <circle cx="50" cy="9" r="2.4" fill="#D98E4A" />
+        </svg>
+      </div>
+
+      <p class="max-w-xs text-sm leading-relaxed text-white/60">
+        Un último paso para que podamos coordinar tus citas de reparación correctamente.
+      </p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="flex items-center justify-center px-6 py-12 lg:px-12 lg:py-16">
+      <div class="w-full max-w-md">
+
+        <!-- Marca (móvil/tablet) -->
+        <div class="mb-10 flex items-center gap-3 lg:hidden">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none">
+              <circle cx="12" cy="13" r="6.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+              <line x1="12" y1="13" x2="12" y2="7.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+              <line x1="12" y1="6.6" x2="12" y2="4.1" stroke="#D98E4A" stroke-width="2" stroke-linecap="round" />
+              <circle cx="12" cy="4" r="1.2" fill="#D98E4A" />
+            </svg>
+          </div>
+          <span class="text-lg font-semibold tracking-tight text-white">AppoinTech</span>
+        </div>
+
+        <h1 class="text-3xl font-semibold tracking-tight text-white">Completa tu perfil</h1>
+        <p class="mt-2 text-sm text-white/60">
+          Necesitamos algunos datos adicionales antes de continuar.
+        </p>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-8 space-y-5">
+
+          <!-- Teléfono -->
+          <div class="relative">
+            <input
+              id="telefono"
+              type="tel"
+              formControlName="telefono"
+              placeholder=" "
+              autocomplete="tel"
+              [attr.aria-invalid]="telefono?.invalid && telefono?.touched ? true : null"
+              [attr.aria-describedby]="telefono?.invalid && telefono?.touched ? 'telefono-error' : null"
+              class="peer w-full rounded-xl border border-white/15 bg-white/5 px-4 pt-5 pb-2 text-sm text-white
+                     placeholder-transparent outline-none transition focus:border-[#D98E4A]/60 focus:bg-white/[0.08]"
+            />
+            <label
+              for="telefono"
+              class="pointer-events-none absolute left-4 top-2 text-xs text-white/50 transition-all
+                     peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-white/40
+                     peer-focus:top-2 peer-focus:text-xs peer-focus:text-white/60"
+            >
+              Teléfono
+            </label>
+            @if (telefono?.invalid && telefono?.touched) {
+              <p id="telefono-error" role="alert" class="mt-1.5 text-xs text-rose-300">
+                Ingresa tu teléfono.
+              </p>
+            }
+          </div>
+
+          <!-- Tipo de documento -->
+          <div class="relative">
+            <label for="tipoDocumento" class="mb-1.5 block text-xs text-white/50">Tipo de documento</label>
+            <select
+              id="tipoDocumento"
+              formControlName="tipoDocumento"
+              [attr.aria-invalid]="tipoDocumento?.invalid && tipoDocumento?.touched ? true : null"
+              [attr.aria-describedby]="tipoDocumento?.invalid && tipoDocumento?.touched ? 'tipoDocumento-error' : null"
+              class="w-full appearance-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white
+                     outline-none transition focus:border-[#D98E4A]/60 focus:bg-white/[0.08]
+                     [&>option]:bg-[#0B1224] [&>option]:text-white"
+            >
+              <option value="" disabled>Selecciona un tipo</option>
+              <option value="CC">Cédula de ciudadanía</option>
+              <option value="CE">Cédula de extranjería</option>
+              <option value="PASAPORTE">Pasaporte</option>
+            </select>
+            @if (tipoDocumento?.invalid && tipoDocumento?.touched) {
+              <p id="tipoDocumento-error" role="alert" class="mt-1.5 text-xs text-rose-300">
+                Selecciona tu tipo de documento.
+              </p>
+            }
+          </div>
+
+          <!-- Número de documento -->
+          <div class="relative">
+            <input
+              id="numeroDocumento"
+              type="text"
+              formControlName="numeroDocumento"
+              placeholder=" "
+              autocomplete="off"
+              [attr.aria-invalid]="numeroDocumento?.invalid && numeroDocumento?.touched ? true : null"
+              [attr.aria-describedby]="numeroDocumento?.invalid && numeroDocumento?.touched ? 'numeroDocumento-error' : null"
+              class="peer w-full rounded-xl border border-white/15 bg-white/5 px-4 pt-5 pb-2 text-sm text-white
+                     placeholder-transparent outline-none transition focus:border-[#D98E4A]/60 focus:bg-white/[0.08]"
+            />
+            <label
+              for="numeroDocumento"
+              class="pointer-events-none absolute left-4 top-2 text-xs text-white/50 transition-all
+                     peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-white/40
+                     peer-focus:top-2 peer-focus:text-xs peer-focus:text-white/60"
+            >
+              Número de documento
+            </label>
+            @if (numeroDocumento?.invalid && numeroDocumento?.touched) {
+              <p id="numeroDocumento-error" role="alert" class="mt-1.5 text-xs text-rose-300">
+                Ingresa tu número de documento.
+              </p>
+            }
+          </div>
+
+          <!-- Dirección (solo clientes) -->
+          @if (esCliente) {
+            <div class="relative">
+              <input
+                id="direccion"
+                type="text"
+                formControlName="direccion"
+                placeholder=" "
+                autocomplete="street-address"
+                [attr.aria-invalid]="direccion?.invalid && direccion?.touched ? true : null"
+                [attr.aria-describedby]="direccion?.invalid && direccion?.touched ? 'direccion-error' : null"
+                class="peer w-full rounded-xl border border-white/15 bg-white/5 px-4 pt-5 pb-2 text-sm text-white
+                       placeholder-transparent outline-none transition focus:border-[#D98E4A]/60 focus:bg-white/[0.08]"
+              />
+              <label
+                for="direccion"
+                class="pointer-events-none absolute left-4 top-2 text-xs text-white/50 transition-all
+                       peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-white/40
+                       peer-focus:top-2 peer-focus:text-xs peer-focus:text-white/60"
+              >
+                Dirección
+              </label>
+              @if (direccion?.invalid && direccion?.touched) {
+                <p id="direccion-error" role="alert" class="mt-1.5 text-xs text-rose-300">
+                  Ingresa tu dirección.
+                </p>
+              }
+            </div>
+          }
+
+          @if (errorMensaje) {
+            <div role="alert" class="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
+              {{ errorMensaje }}
+            </div>
+          }
+
+          <button
+            type="submit"
+            [disabled]="cargando"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 text-sm font-medium
+                   text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            @if (cargando) {
+              <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+              </svg>
+              Guardando…
+            } @else {
+              Continuar
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,83 @@
+<div class="flex min-h-screen bg-[#0B1224]">
+  <!-- Overlay (móvil) -->
+  @if (sidebarAbierto) {
+    <div class="fixed inset-0 z-30 bg-black/60 lg:hidden" (click)="cerrarSidebar()"></div>
+  }
+
+  <!-- Sidebar -->
+  <aside
+    class="fixed inset-y-0 left-0 z-40 flex w-80 max-w-[80vw] flex-col overflow-hidden border-r border-white/10 bg-[#0B1224] transition-transform duration-200 lg:static lg:max-w-none lg:!translate-x-0"
+    [class.translate-x-0]="sidebarAbierto"
+    [class.-translate-x-full]="!sidebarAbierto"
+  >
+    <!-- Fondo animado sutil -->
+    <div class="absolute inset-0 z-0">
+      <app-gradient-waves></app-gradient-waves>
+    </div>
+    <div class="absolute inset-0 z-0 bg-[#0B1224]/70"></div>
+
+    <div class="relative z-10 flex items-center gap-3 px-5 py-5">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none">
+          <circle cx="12" cy="13" r="6.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+          <line x1="12" y1="13" x2="12" y2="7.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+          <line x1="12" y1="6.6" x2="12" y2="4.1" stroke="#D98E4A" stroke-width="2" stroke-linecap="round" />
+          <circle cx="12" cy="4" r="1.2" fill="#D98E4A" />
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs uppercase tracking-wide text-white/40">AppoinTech</p>
+        <p class="truncate text-sm font-semibold text-white">Admin</p>
+      </div>
+      <button
+        type="button"
+        (click)="cerrarSidebar()"
+        aria-label="Cerrar menú"
+        class="ml-auto rounded-lg p-1.5 text-white/50 transition hover:bg-white/5 hover:text-white lg:hidden"
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <nav class="relative z-10 flex-1 overflow-y-auto px-3 py-4">
+      <app-sidebar-menu [items]="menuItems"></app-sidebar-menu>
+    </nav>
+
+    <div class="relative z-10 border-t border-white/10 p-3">
+      <button
+        type="button"
+        (click)="cerrarSesion()"
+        class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/60 transition hover:bg-white/5 hover:text-white"
+      >
+        <svg viewBox="0 0 24 24" class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Contenido -->
+  <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex items-center gap-3 border-b border-white/10 px-4 py-4 lg:hidden">
+      <button
+        type="button"
+        (click)="abrirSidebar()"
+        aria-label="Abrir menú"
+        class="rounded-lg p-2 text-white/70 transition hover:bg-white/5 hover:text-white"
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" />
+        </svg>
+      </button>
+      <span class="text-sm font-medium text-white">AppoinTech Admin</span>
+    </div>
+
+    <main class="min-w-0 flex-1">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

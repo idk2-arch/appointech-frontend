@@ -1,0 +1,16 @@
+/* Viñeta sutil para mejorar el contraste del texto sobre las olas */
+:host::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(11, 18, 36, 0.45) 100%);
+}
+
+/* Evita que Chrome pinte el fondo blanco al autocompletar */
+input:-webkit-autofill {
+  -webkit-text-fill-color: #fff;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.05) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}

@@ -1,0 +1,94 @@
+<div class="flex flex-wrap items-center justify-between gap-4">
+  <p class="text-sm text-white/50">
+    @if (!cargando && !errorCarga) {
+      {{ tecnicos.length }} {{ tecnicos.length === 1 ? 'técnico registrado' : 'técnicos registrados' }}
+    }
+  </p>
+</div>
+
+<div class="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+  @if (cargando) {
+    <div class="flex items-center justify-center gap-3 px-6 py-16 text-sm text-white/50">
+      <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+      </svg>
+      Cargando técnicos…
+    </div>
+  } @else if (errorCarga) {
+    <div class="flex flex-col items-center gap-3 px-6 py-16 text-center">
+      <p class="text-sm text-rose-300">{{ errorCarga }}</p>
+      <button
+        type="button"
+        (click)="cargarDatos()"
+        class="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:border-white/25"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else if (tecnicos.length === 0) {
+    <div class="px-6 py-16 text-center text-sm text-white/50">No hay técnicos registrados todavía.</div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
+            <th class="px-6 py-3 font-medium">Nombre</th>
+            <th class="px-6 py-3 font-medium">Apellido</th>
+            <th class="px-6 py-3 font-medium">Correo</th>
+            <th class="px-6 py-3 font-medium">Especialidades</th>
+            <th class="px-6 py-3 font-medium text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tecnico of tecnicos; track tecnico.id) {
+            <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.03]">
+              <td class="px-6 py-4 text-white">{{ tecnico.nombre }}</td>
+              <td class="px-6 py-4 text-white">{{ tecnico.apellido }}</td>
+              <td class="px-6 py-4 text-white/70">{{ tecnico.correo }}</td>
+              <td class="px-6 py-4">
+                @if (tecnico.especialidades.length === 0) {
+                  <span class="text-xs text-white/30">Sin especialidades</span>
+                } @else {
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (especialidad of tecnico.especialidades; track especialidad.id) {
+                      <span
+                        class="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-medium text-white/70"
+                      >
+                        {{ especialidad.nombre }}
+                      </span>
+                    }
+                  </div>
+                }
+              </td>
+              <td class="px-6 py-4 text-right">
+                <button
+                  type="button"
+                  (click)="abrirAsignar(tecnico)"
+                  class="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70 transition hover:border-[#D98E4A]/40 hover:text-[#D98E4A]"
+                >
+                  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <path
+                      d="M12.5 3.5H6.5C5.4 3.5 4.5 4.4 4.5 5.5v6l9.5 9.5c.8.8 2 .8 2.8 0l4-4c.8-.8.8-2 0-2.8L12.5 3.5z"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <circle cx="8.2" cy="8.2" r="1.1" fill="currentColor" stroke="none" />
+                  </svg>
+                  Asignar especialidades
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-asignar-especialidades-modal
+  [tecnico]="tecnicoAsignando"
+  [catalogo]="catalogo"
+  (cerrar)="cerrarAsignar()"
+  (actualizado)="onEspecialidadesActualizadas()"
+></app-asignar-especialidades-modal>

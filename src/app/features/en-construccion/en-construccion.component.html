@@ -1,0 +1,43 @@
+<div class="relative min-h-screen w-full overflow-hidden bg-[#0B1224]">
+  <!-- Fondo animado -->
+  <div class="absolute inset-0 z-0">
+    <app-gradient-waves></app-gradient-waves>
+  </div>
+
+  <!-- Contenido -->
+  <div class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12">
+    <div class="w-full max-w-md text-center">
+
+      <!-- Marca -->
+      <div class="mb-10 flex items-center justify-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none">
+            <circle cx="12" cy="13" r="6.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+            <line x1="12" y1="13" x2="12" y2="7.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
+            <line x1="12" y1="6.6" x2="12" y2="4.1" stroke="#D98E4A" stroke-width="2" stroke-linecap="round" />
+            <circle cx="12" cy="4" r="1.2" fill="#D98E4A" />
+          </svg>
+        </div>
+        <span class="text-lg font-semibold tracking-tight text-white">AppoinTech</span>
+      </div>
+
+      <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/5 text-3xl">
+        🚧
+      </div>
+
+      <h1 class="text-3xl font-semibold tracking-tight text-white">En construcción</h1>
+      <p class="mt-2 text-sm text-white/60">
+        Estamos trabajando en esta sección, vuelve pronto.
+      </p>
+
+      <button
+        type="button"
+        (click)="cerrarSesion()"
+        class="mt-10 w-full rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white
+               transition hover:bg-white/10"
+      >
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+</div>

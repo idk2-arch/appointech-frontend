@@ -1,0 +1,40 @@
+<div
+  #track
+  role="radiogroup"
+  [attr.aria-label]="ariaLabel"
+  [attr.aria-disabled]="disabled ? true : null"
+  class="rubber-segment"
+  [style.--rs-track]="trackColor"
+  [style.--rs-thumb]="thumbColor"
+  [style.--rs-ink]="textColor"
+  [style.--rs-ink-active]="activeTextColor"
+  [style.--rs-radius.px]="radius"
+  [style.--rs-inset]="'3px'"
+  [style.--rs-thumb-radius.px]="thumbRadius"
+  [style.--rs-h.px]="preset.height"
+  [style.--rs-font.px]="preset.font"
+  [style.--rs-pad.px]="preset.pad"
+  [style.--rs-min.px]="preset.min"
+>
+  @for (item of list; track item.value; let i = $index) {
+    <button
+      #itemBtn
+      type="button"
+      role="radio"
+      [attr.aria-checked]="i === activeIndex"
+      [tabIndex]="i === activeIndex ? 0 : -1"
+      [disabled]="disabled"
+      class="rubber-segment__item"
+      (click)="onItemClick(i)"
+      (keydown)="onKeyDown($event)"
+    >
+      {{ item.label }}
+    </button>
+  }
+
+  <div class="rubber-segment__thumb" aria-hidden="true" [style.clip-path]="clipPathValue">
+    @for (item of list; track item.value) {
+      <span class="rubber-segment__item rubber-segment__copy">{{ item.label }}</span>
+    }
+  </div>
+</div>

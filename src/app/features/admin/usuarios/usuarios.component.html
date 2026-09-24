@@ -1,0 +1,199 @@
+<div class="mx-auto max-w-6xl px-6 py-8 sm:px-10">
+  <h1 class="text-lg font-semibold tracking-tight text-white">Gestión de usuarios</h1>
+
+  <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+      <app-rubber-segment
+        [items]="filtrosRol"
+        [(value)]="rolFiltro"
+        ariaLabel="Filtrar usuarios por rol"
+      ></app-rubber-segment>
+
+      <button
+        type="button"
+        (click)="abrirModalCrear()"
+        class="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-white/90"
+      >
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+        </svg>
+        Nuevo administrador
+      </button>
+    </div>
+
+    <p class="mt-3 text-sm text-white/50">
+      @if (!cargando && !errorCarga) {
+        {{ usuariosFiltrados.length }} {{ usuariosFiltrados.length === 1 ? 'usuario registrado' : 'usuarios registrados' }}
+      }
+    </p>
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+      @if (cargando) {
+        <div class="flex items-center justify-center gap-3 px-6 py-16 text-sm text-white/50">
+          <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+            <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+          </svg>
+          Cargando usuarios…
+        </div>
+      } @else if (errorCarga) {
+        <div class="flex flex-col items-center gap-3 px-6 py-16 text-center">
+          <p class="text-sm text-rose-300">{{ errorCarga }}</p>
+          <button
+            type="button"
+            (click)="cargarUsuarios()"
+            class="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:border-white/25"
+          >
+            Reintentar
+          </button>
+        </div>
+      } @else if (usuariosFiltrados.length === 0) {
+        <div class="px-6 py-16 text-center text-sm text-white/50">
+          @if (usuarios.length === 0) {
+            No hay usuarios registrados todavía.
+          } @else {
+            No hay usuarios con este rol.
+          }
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
+                <th class="px-6 py-3 font-medium">Nombre</th>
+                <th class="px-6 py-3 font-medium">Apellido</th>
+                <th class="px-6 py-3 font-medium">Correo</th>
+                <th class="px-6 py-3 font-medium">Rol</th>
+                <th class="px-6 py-3 font-medium">Estado</th>
+                <th class="px-6 py-3 font-medium text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (usuario of usuariosFiltrados; track usuario.id) {
+                <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.03]">
+                  <td class="px-6 py-4 text-white">{{ usuario.nombre }}</td>
+                  <td class="px-6 py-4 text-white">{{ usuario.apellido }}</td>
+                  <td class="px-6 py-4 text-white/70">{{ usuario.correo }}</td>
+                  <td class="px-6 py-4 text-white/70">{{ usuario.rol }}</td>
+                  <td class="px-6 py-4">
+                    @if (usuario.activo) {
+                      <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                        Activo
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50">
+                        <span class="h-1.5 w-1.5 rounded-full bg-white/30"></span>
+                        Inactivo
+                      </span>
+                    }
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        (click)="abrirModalEditar(usuario)"
+                        [attr.aria-label]="'Editar a ' + usuario.nombre"
+                        title="Editar"
+                        class="rounded-lg p-2 text-white/50 transition hover:bg-white/5 hover:text-[#D98E4A]"
+                      >
+                        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6">
+                          <path d="M15.5 4.5l4 4L8 20H4v-4L15.5 4.5z" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </button>
+                      @if (usuario.activo) {
+                        <app-fuse-button
+                          label="Desactivar"
+                          undoLabel="Deshacer"
+                          doneLabel="Desactivado"
+                          icon="block"
+                          size="sm"
+                          fuse="outline"
+                          commitOn="fuseEnd"
+                          [undoWindow]="4000"
+                          fuseColor="#D98E4A"
+                          background="rgba(255,255,255,0.06)"
+                          color="rgba(255,255,255,0.75)"
+                          (fuseEnd)="desactivarUsuario(usuario)"
+                        ></app-fuse-button>
+                      } @else {
+                        <button
+                          type="button"
+                          (click)="solicitarCambioEstado(usuario)"
+                          [attr.aria-label]="'Activar a ' + usuario.nombre"
+                          title="Activar"
+                          class="rounded-lg p-2 text-white/50 transition hover:bg-white/5 hover:text-emerald-300"
+                        >
+                          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M12 3v8" stroke-linecap="round" />
+                            <path d="M7 6.5a7 7 0 1 0 10 0" stroke-linecap="round" />
+                          </svg>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+</div>
+
+<!-- Confirmación de cambio de estado -->
+@if (usuarioParaCambiarEstado) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8" role="dialog" aria-modal="true" aria-labelledby="confirmar-estado-titulo">
+    <div class="fixed inset-0 bg-black/60" (click)="!cargandoEstado && cancelarCambioEstado()"></div>
+
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-[#111a30] p-6 shadow-2xl">
+      <h2 id="confirmar-estado-titulo" class="text-lg font-semibold text-white">
+        {{ usuarioParaCambiarEstado.activo ? 'Desactivar usuario' : 'Activar usuario' }}
+      </h2>
+      <p class="mt-2 text-sm text-white/60">
+        @if (usuarioParaCambiarEstado.activo) {
+          ¿Seguro que deseas desactivar a <span class="text-white">{{ usuarioParaCambiarEstado.nombre }} {{ usuarioParaCambiarEstado.apellido }}</span>? No podrá iniciar sesión hasta que lo actives de nuevo.
+        } @else {
+          ¿Deseas activar a <span class="text-white">{{ usuarioParaCambiarEstado.nombre }} {{ usuarioParaCambiarEstado.apellido }}</span>? Podrá volver a iniciar sesión de inmediato.
+        }
+      </p>
+
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button
+          type="button"
+          (click)="cancelarCambioEstado()"
+          [disabled]="cargandoEstado"
+          class="rounded-xl px-4 py-2.5 text-sm font-medium text-white/60 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="confirmarCambioEstado()"
+          [disabled]="cargandoEstado"
+          class="flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+          [class]="usuarioParaCambiarEstado.activo ? 'bg-rose-500/90 hover:bg-rose-500' : 'bg-emerald-500/90 hover:bg-emerald-500'"
+        >
+          @if (cargandoEstado) {
+            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+            </svg>
+          }
+          {{ usuarioParaCambiarEstado.activo ? 'Sí, desactivar' : 'Sí, activar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-crear-administrador-modal
+  [abierto]="mostrarModalCrear"
+  (cerrar)="cerrarModalCrear()"
+  (creado)="onAdministradorCreado()"
+></app-crear-administrador-modal>
+
+<app-usuario-editar-modal
+  [usuario]="usuarioEditando"
+  (cerrar)="cerrarModalEditar()"
+  (actualizado)="onUsuarioActualizado()"
+></app-usuario-editar-modal>

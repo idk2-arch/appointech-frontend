@@ -1,0 +1,9 @@
+/* Viñeta sutil para mejorar el contraste del texto sobre las olas */
+:host::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(11, 18, 36, 0.45) 100%);
+}

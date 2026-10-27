@@ -1,0 +1,67 @@
+<h2 class="text-lg font-semibold tracking-tight text-white">¿Qué necesitas reparar?</h2>
+<p class="mt-1 text-sm text-white/50">Elige la especialidad del servicio.</p>
+
+<div class="mt-6">
+  @if (cargando) {
+    <div class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-sm text-white/50">
+      <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+      </svg>
+      Cargando especialidades…
+    </div>
+  } @else if (errorCarga) {
+    <div class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+      <p class="text-sm text-rose-300">{{ errorCarga }}</p>
+      <button
+        type="button"
+        (click)="cargarEspecialidades()"
+        class="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:border-white/25"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else if (especialidades.length === 0) {
+    <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center text-sm text-white/50">
+      Por ahora no hay especialidades disponibles. Vuelve más tarde.
+    </div>
+  } @else {
+    <div class="grid gap-3 sm:grid-cols-2" role="list">
+      @for (especialidad of especialidades; track especialidad.id) {
+        <button
+          type="button"
+          role="listitem"
+          (click)="seleccionar.emit(especialidad)"
+          class="group flex items-start gap-4 rounded-2xl border p-4 text-left transition"
+          [ngClass]="
+            especialidad.id === seleccionadaId
+              ? 'border-[#D98E4A]/60 bg-[#D98E4A]/10'
+              : 'border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]'
+          "
+        >
+          <span
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 transition group-hover:text-[#D98E4A]"
+            [ngClass]="especialidad.id === seleccionadaId ? 'text-[#D98E4A]' : 'text-white/70'"
+          >
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path
+                d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm font-semibold text-white">{{ especialidad.nombre }}</span>
+            @if (especialidad.descripcion) {
+              <span class="mt-0.5 block text-xs text-white/50">{{ especialidad.descripcion }}</span>
+            }
+          </span>
+          <svg viewBox="0 0 24 24" class="mt-2.5 h-4 w-4 shrink-0 text-white/30 transition group-hover:translate-x-0.5 group-hover:text-white/60" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      }
+    </div>
+  }
+</div>

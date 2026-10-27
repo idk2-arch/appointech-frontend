@@ -1,0 +1,62 @@
+<div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-8" role="dialog" aria-modal="true" aria-labelledby="modal-formulario-titulo">
+  <div class="fixed inset-0 bg-black/60" (click)="!cargando && cerrar.emit()"></div>
+
+  <div class="relative z-10 w-full max-w-2xl rounded-2xl border border-white/10 bg-[#111a30] p-6 shadow-2xl sm:p-8">
+    <div class="flex items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h2 id="modal-formulario-titulo" class="text-xl font-semibold text-white">{{ titulo }}</h2>
+        @if (subtitulo) {
+          <p class="mt-1 text-base text-white/60">{{ subtitulo }}</p>
+        }
+      </div>
+      <button
+        type="button"
+        (click)="cerrar.emit()"
+        [disabled]="cargando"
+        aria-label="Cerrar"
+        class="rounded-lg p-2 text-white/50 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed"
+      >
+        <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="enviar.emit()" class="mt-6 space-y-6" novalidate>
+      <ng-content></ng-content>
+
+      @if (errorMensaje) {
+        <div role="alert" class="rounded-lg border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-base text-rose-200">
+          {{ errorMensaje }}
+        </div>
+      }
+
+      <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
+        <button
+          type="button"
+          (click)="cerrar.emit()"
+          [disabled]="cargando"
+          class="rounded-xl px-5 py-3.5 text-base font-medium text-white/70 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="cargando"
+          class="flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-4 text-base font-semibold
+                 text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          @if (cargando) {
+            <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+            </svg>
+            {{ textoCargando }}
+          } @else {
+            {{ textoEnviar }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

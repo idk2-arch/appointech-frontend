@@ -1,0 +1,97 @@
+/*
+ * Estilos compartidos del panel de administración (tablas, botones y estados).
+ * Los tamaños de letra vienen de tipografia.css. Se importan desde src/styles.css.
+ */
+
+.pagina-admin {
+  @apply mx-auto max-w-6xl px-6 py-8 sm:px-10;
+}
+
+.titulo-admin {
+  @apply font-semibold tracking-tight text-white;
+  font-size: var(--fs-titulo);
+  line-height: 1.75rem;
+}
+
+.tabla-admin {
+  @apply w-full text-left;
+  font-size: var(--fs-cuerpo);
+  line-height: 1.25rem;
+}
+
+.tabla-admin thead tr {
+  @apply border-b border-white/10 uppercase tracking-wide text-white/40;
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+}
+
+.tabla-admin th {
+  @apply whitespace-nowrap px-6 py-3 font-medium;
+}
+
+.tabla-admin tbody tr {
+  @apply border-b border-white/5 hover:bg-white/[0.03];
+}
+
+.tabla-admin tbody tr:last-child {
+  @apply border-b-0;
+}
+
+.tabla-admin td {
+  @apply px-6 py-4;
+}
+
+.boton-admin {
+  @apply flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 font-medium text-slate-900 transition hover:bg-white/90;
+  font-size: var(--fs-cuerpo);
+  line-height: 1.25rem;
+}
+
+.boton-admin--cobre {
+  @apply bg-[#D98E4A] font-semibold text-[#0B1224] hover:bg-[#D98E4A]/90;
+}
+
+.boton-fila-admin {
+  @apply inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/15 px-3 py-1.5 font-medium text-white/70 transition hover:border-[#D98E4A]/40 hover:text-[#D98E4A];
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+}
+
+.boton-fila-admin--exito {
+  @apply hover:border-emerald-400/40 hover:text-emerald-300;
+}
+
+.estado-admin {
+  @apply inline-flex items-center gap-1.5 whitespace-nowrap font-medium text-white/40;
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+}
+
+.estado-admin::before {
+  content: '';
+  @apply h-1.5 w-1.5 rounded-full bg-white/40;
+}
+
+.estado-admin--activo {
+  @apply text-emerald-400/80;
+}
+
+.estado-admin--activo::before {
+  @apply bg-emerald-400/80;
+}
+
+.chip-admin {
+  @apply whitespace-nowrap rounded-full border border-[#D98E4A]/40 bg-[#D98E4A]/10 px-2.5 py-0.5 font-medium text-[#D98E4A];
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+}
+
+.boton-fila-admin--whatsapp {
+  @apply border-emerald-400/40 text-emerald-300 hover:border-emerald-300 hover:bg-emerald-400/10 hover:text-emerald-200;
+}
+
+.boton-fila-admin:focus-visible,
+.boton-admin:focus-visible,
+.chip-admin:focus-visible {
+  @apply outline-none ring-2 ring-[#D98E4A] ring-offset-2 ring-offset-[#0B1224];
+}

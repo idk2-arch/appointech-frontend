@@ -1,0 +1,50 @@
+<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Elegir día">
+  <button
+    type="button"
+    (click)="moverDias(-1)"
+    [disabled]="deshabilitado"
+    aria-label="Día anterior"
+    class="flex h-10 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white transition
+           hover:border-[#D98E4A]/50 hover:text-[#D98E4A] disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <input
+    type="date"
+    [value]="fecha"
+    [disabled]="deshabilitado"
+    (change)="alElegir($any($event.target).value)"
+    aria-label="Fecha"
+    class="h-10 min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
+           [color-scheme:dark] focus:border-[#D98E4A]/60 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
+  />
+
+  <button
+    type="button"
+    (click)="moverDias(1)"
+    [disabled]="deshabilitado"
+    aria-label="Día siguiente"
+    class="flex h-10 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white transition
+           hover:border-[#D98E4A]/50 hover:text-[#D98E4A] disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  @if (!esHoy) {
+    <button
+      type="button"
+      (click)="irAHoy()"
+      [disabled]="deshabilitado"
+      class="h-10 rounded-xl border border-[#D98E4A]/50 bg-[#D98E4A]/10 px-5 fs-cuerpo font-medium text-[#D98E4A] transition
+             hover:bg-[#D98E4A]/20 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      Hoy
+    </button>
+  }
+</div>
+<p class="mt-3 fs-cuerpo font-semibold text-white first-letter:uppercase">{{ fecha | fechaLocal: 'fecha' }}</p>

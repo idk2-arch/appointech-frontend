@@ -1,0 +1,104 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+  @if (paso !== 'confirmada') {
+    <h1 class="text-2xl font-semibold tracking-tight text-white sm:text-3xl">Solicitar servicio técnico</h1>
+    <p class="mt-2 text-sm text-white/60">
+      Cuéntanos qué necesitas y agenda la visita de un técnico a domicilio.
+    </p>
+
+    <!-- Indicador de pasos -->
+    <ol class="mt-8 flex items-center gap-2" aria-label="Progreso de la solicitud">
+      @for (p of pasos; track p.id; let i = $index; let ultimo = $last) {
+        <li class="flex min-w-0 flex-1 items-center gap-2" [attr.aria-current]="i === indicePaso ? 'step' : null">
+          <span
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition"
+            [ngClass]="
+              i < indicePaso
+                ? 'border-[#D98E4A] bg-[#D98E4A] text-[#0B1224]'
+                : i === indicePaso
+                  ? 'border-[#D98E4A] bg-[#D98E4A]/10 text-[#D98E4A]'
+                  : 'border-white/15 bg-white/5 text-white/40'
+            "
+          >
+            @if (i < indicePaso) {
+              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.6">
+                <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            } @else {
+              {{ i + 1 }}
+            }
+          </span>
+          <span
+            class="truncate text-xs font-medium"
+            [ngClass]="i === indicePaso ? 'text-white' : 'hidden text-white/40 sm:inline'"
+          >
+            {{ p.etiqueta }}
+          </span>
+          @if (!ultimo) {
+            <span class="h-px min-w-3 flex-1" [ngClass]="i < indicePaso ? 'bg-[#D98E4A]/60' : 'bg-white/10'"></span>
+          }
+        </li>
+      }
+    </ol>
+  }
+
+  <div class="mt-8">
+    @switch (paso) {
+      @case ('especialidad') {
+        <app-elegir-especialidad
+          [seleccionadaId]="especialidad?.id ?? null"
+          (seleccionar)="onEspecialidadSeleccionada($event)"
+        ></app-elegir-especialidad>
+      }
+
+      @case ('detalle') {
+        @if (especialidad) {
+          <app-detalle-solicitud
+            [especialidad]="especialidad"
+            [borrador]="borradorDetalle"
+            (borradorCambio)="borradorDetalle = $event"
+            (creada)="onSolicitudCreada($event)"
+            (volver)="volverAEspecialidad()"
+          ></app-detalle-solicitud>
+        }
+      }
+
+      @case ('franja') {
+        @if (solicitud && especialidad && latitud !== null && longitud !== null) {
+          <app-elegir-franja
+            [especialidad]="especialidad"
+            [solicitud]="solicitud"
+            [latitud]="latitud"
+            [longitud]="longitud"
+            [fecha]="fecha"
+            [aviso]="avisoFranjas"
+            (fechaCambio)="fecha = $event"
+            (seleccionar)="onFranjaSeleccionada($event)"
+          ></app-elegir-franja>
+        }
+      }
+
+      @case ('confirmar') {
+        @if (solicitud && especialidad && franja) {
+          <app-confirmar-cita
+            [especialidad]="especialidad"
+            [solicitud]="solicitud"
+            [franja]="franja"
+            (confirmada)="onCitaConfirmada($event)"
+            (franjaNoDisponible)="onFranjaNoDisponible($event)"
+            (volver)="volverAFranjas()"
+          ></app-confirmar-cita>
+        }
+      }
+
+      @case ('confirmada') {
+        @if (cita) {
+          <app-cita-confirmada
+            [cita]="cita"
+            [especialidadNombre]="especialidad?.nombre ?? null"
+            (volverInicio)="solicitarOtroServicio()"
+          ></app-cita-confirmada>
+        }
+      }
+    }
+  </div>
+</div>

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
+import { RespuestaEnvuelta } from '../models/respuesta-envuelta';
 
 export interface EspecialidadAdminResponse {
   id: number;
@@ -25,17 +26,23 @@ export class EspecialidadService {
   constructor(private http: HttpClient) {}
 
   obtenerCatalogoAdmin(): Observable<EspecialidadAdminResponse[]> {
-    return this.http.get<EspecialidadAdminResponse[]>(`${API_BASE_URL}/admin/especialidades`);
+    return this.http
+      .get<RespuestaEnvuelta<EspecialidadAdminResponse[]>>(`${API_BASE_URL}/admin/especialidades`)
+      .pipe(map((respuesta) => respuesta.datos));
   }
 
   crearEspecialidad(request: CrearEspecialidadRequest): Observable<EspecialidadAdminResponse> {
-    return this.http.post<EspecialidadAdminResponse>(`${API_BASE_URL}/admin/especialidades`, request);
+    return this.http
+      .post<RespuestaEnvuelta<EspecialidadAdminResponse>>(`${API_BASE_URL}/admin/especialidades`, request)
+      .pipe(map((respuesta) => respuesta.datos));
   }
 
   cambiarEstadoEspecialidad(
     id: number,
     request: CambiarEstadoEspecialidadRequest
   ): Observable<EspecialidadAdminResponse> {
-    return this.http.patch<EspecialidadAdminResponse>(`${API_BASE_URL}/admin/especialidades/${id}/estado`, request);
+    return this.http
+      .patch<RespuestaEnvuelta<EspecialidadAdminResponse>>(`${API_BASE_URL}/admin/especialidades/${id}/estado`, request)
+      .pipe(map((respuesta) => respuesta.datos));
   }
 }

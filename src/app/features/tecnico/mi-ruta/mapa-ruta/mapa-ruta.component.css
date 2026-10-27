@@ -1,0 +1,62 @@
+@import 'leaflet/dist/leaflet.css';
+
+/* Contenedor propio: ancho del padre, altura fija y tipografía de la app. */
+.mapa-ruta {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: 320px;
+  overflow: hidden;
+  isolation: isolate; /* los z-index internos de Leaflet no se escapan del mapa */
+}
+
+@media (min-width: 640px) {
+  .mapa-ruta {
+    height: 400px;
+  }
+}
+
+.mapa-ruta.leaflet-container {
+  font: inherit;
+  background: #1a2540;
+}
+
+.mapa-ruta .leaflet-control-attribution {
+  font-size: 12px;
+}
+
+.mapa-ruta .mapa-ruta__pin {
+  background: transparent;
+  border: none;
+}
+
+.mapa-ruta .mapa-ruta__parada,
+.mapa-ruta .mapa-ruta__base {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 3px solid #0b1224;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mapa-ruta .mapa-ruta__parada {
+  background: #d98e4a;
+  color: #0b1224;
+}
+
+/* Parada a la que no se alcanza a llegar. */
+.mapa-ruta .mapa-ruta__parada--alerta {
+  background: #fb7185;
+  color: #0b1224;
+}
+
+.mapa-ruta .mapa-ruta__base {
+  background: #3b4a6b;
+}

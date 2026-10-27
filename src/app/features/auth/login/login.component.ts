@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { NEGOCIO_DRIFT_WALL_ITEMS } from '../../../shared/drift-wall/negocio-drift-wall-items';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ export class LoginComponent {
   mostrarContrasena = false;
   cargando = false;
   errorMensaje: string | null = null;
+  readonly driftWallItems = NEGOCIO_DRIFT_WALL_ITEMS;
 
   constructor(
     private fb: FormBuilder,

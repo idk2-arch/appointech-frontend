@@ -76,7 +76,7 @@ export class CompletarPerfilComponent {
       },
       error: (err) => {
         this.cargando = false;
-        this.errorMensaje = err?.error?.mensaje ?? 'No fue posible guardar tus datos. Intenta de nuevo.';
+        this.errorMensaje = err?.error?.detail ?? 'No fue posible guardar tus datos. Intenta de nuevo.';
         this.cdr.markForCheck();
       },
     });

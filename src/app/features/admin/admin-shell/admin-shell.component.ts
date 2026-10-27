@@ -16,9 +16,11 @@ export class AdminShellComponent {
     { value: 'dashboard', label: 'Dashboard', icon: 'chart', disabled: true },
     { value: 'usuarios', label: 'Usuarios', icon: 'users', routerLink: '/admin/usuarios' },
     { value: 'especialidades', label: 'Especialidades de técnicos', icon: 'tool', routerLink: '/admin/especialidades' },
+    { value: 'solicitudes-manuales', label: 'Solicitudes por coordinar', icon: 'alert', routerLink: '/admin/solicitudes-manuales' },
     { value: 'gestion', label: 'Gestión operativa', icon: 'alert', disabled: true },
-    { value: 'configuracion', label: 'Configuración', icon: 'settings', disabled: true },
+    { value: 'cobertura', label: 'Cobertura', icon: 'settings', routerLink: '/admin/cobertura' },
     { value: 'historial', label: 'Historial financiero', icon: 'receipt', disabled: true },
+    { value: 'logs', label: 'Logs', icon: 'logs', routerLink: '/admin/logs' },
   ];
 
   constructor(

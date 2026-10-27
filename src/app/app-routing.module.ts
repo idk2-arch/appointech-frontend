@@ -21,6 +21,16 @@ const routes: Routes = [
       import('./features/admin/admin.module').then((m) => m.AdminModule),
   },
   {
+    path: 'cliente',
+    loadChildren: () =>
+      import('./features/cliente/cliente.module').then((m) => m.ClienteModule),
+  },
+  {
+    path: 'tecnico',
+    loadChildren: () =>
+      import('./features/tecnico/tecnico.module').then((m) => m.TecnicoModule),
+  },
+  {
     path: 'completar-perfil',
     loadChildren: () =>
       import('./features/completar-perfil/completar-perfil.module').then(

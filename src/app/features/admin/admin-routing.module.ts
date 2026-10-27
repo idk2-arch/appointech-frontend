@@ -5,6 +5,9 @@ import { adminGuard } from '../../core/guards/admin.guard';
 import { AdminShellComponent } from './admin-shell/admin-shell.component';
 import { UsuariosComponent } from './usuarios/usuarios.component';
 import { EspecialidadesComponent } from './especialidades/especialidades.component';
+import { CoberturaComponent } from './cobertura/cobertura.component';
+import { SolicitudesManualesComponent } from './solicitudes-manuales/solicitudes-manuales.component';
+import { LogsComponent } from './logs/logs.component';
 
 const routes: Routes = [
   {
@@ -15,6 +18,9 @@ const routes: Routes = [
       { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'especialidades', component: EspecialidadesComponent },
+      { path: 'solicitudes-manuales', component: SolicitudesManualesComponent },
+      { path: 'cobertura', component: CoberturaComponent },
+      { path: 'logs', component: LogsComponent },
     ],
   },
 ];

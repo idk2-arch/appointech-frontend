@@ -1,3 +1,8 @@
+/* El scroll lo maneja el <nav> contenedor del shell; el menú solo ocupa su alto natural. */
+:host {
+  display: block;
+}
+
 .sidebar-menu__list {
   position: relative;
   display: flex;

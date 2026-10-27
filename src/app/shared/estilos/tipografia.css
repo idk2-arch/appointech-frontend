@@ -1,0 +1,24 @@
+/*
+ * Tamaños de letra compartidos (referencia: tabla de Especialidades del panel de administración).
+ * Se usan desde admin.css y desde las pantallas del técnico; no repetir los valores en otro lado.
+ */
+:root {
+  --fs-titulo: 1.125rem;
+  --fs-cuerpo: 0.875rem;
+  --fs-secundario: 0.75rem;
+}
+
+.fs-titulo {
+  font-size: var(--fs-titulo);
+  line-height: 1.75rem;
+}
+
+.fs-cuerpo {
+  font-size: var(--fs-cuerpo);
+  line-height: 1.25rem;
+}
+
+.fs-secundario {
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+}

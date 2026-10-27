@@ -13,7 +13,7 @@ import {
   ViewChildren,
 } from '@angular/core';
 
-export type SidebarMenuIcon = 'chart' | 'users' | 'tool' | 'alert' | 'settings' | 'receipt';
+export type SidebarMenuIcon = 'chart' | 'users' | 'tool' | 'alert' | 'settings' | 'receipt' | 'logs' | 'calendar' | 'block' | 'route' | 'bell' | 'user';
 
 export interface SidebarMenuItem {
   value: string;

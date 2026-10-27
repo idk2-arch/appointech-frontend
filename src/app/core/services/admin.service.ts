@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
+import { RespuestaEnvuelta } from '../models/respuesta-envuelta';
+import { desenvolverRespuesta } from '../utils/respuesta';
 
-export type TipoDocumento = 'CC' | 'CE' | 'PASAPORTE';
+import type { TipoDocumento } from './auth.service';
+
+export type { TipoDocumento };
 
 export interface UsuarioAdmin {
   id: number;
@@ -42,19 +46,27 @@ export interface CambiarEstadoUsuarioRequest {
 export class AdminService {
   constructor(private http: HttpClient) {}
 
+  /** GET /admin/usuarios devuelve el arreglo directo (sin ApiResponse). */
   obtenerUsuarios(): Observable<UsuarioAdmin[]> {
     return this.http.get<UsuarioAdmin[]>(`${API_BASE_URL}/admin/usuarios`);
   }
 
+  // Formato de las escrituras no confirmado: se aceptan ambos (envuelto o directo).
   crearAdministrador(request: CrearAdministradorRequest): Observable<UsuarioAdmin> {
-    return this.http.post<UsuarioAdmin>(`${API_BASE_URL}/admin/usuarios`, request);
+    return this.http
+      .post<UsuarioAdmin | RespuestaEnvuelta<UsuarioAdmin>>(`${API_BASE_URL}/admin/usuarios`, request)
+      .pipe(map(desenvolverRespuesta));
   }
 
   actualizarUsuario(id: number, request: ActualizarUsuarioRequest): Observable<UsuarioAdmin> {
-    return this.http.patch<UsuarioAdmin>(`${API_BASE_URL}/admin/usuarios/${id}`, request);
+    return this.http
+      .patch<UsuarioAdmin | RespuestaEnvuelta<UsuarioAdmin>>(`${API_BASE_URL}/admin/usuarios/${id}`, request)
+      .pipe(map(desenvolverRespuesta));
   }
 
   cambiarEstadoUsuario(id: number, request: CambiarEstadoUsuarioRequest): Observable<UsuarioAdmin> {
-    return this.http.patch<UsuarioAdmin>(`${API_BASE_URL}/admin/usuarios/${id}/estado`, request);
+    return this.http
+      .patch<UsuarioAdmin | RespuestaEnvuelta<UsuarioAdmin>>(`${API_BASE_URL}/admin/usuarios/${id}/estado`, request)
+      .pipe(map(desenvolverRespuesta));
   }
 }

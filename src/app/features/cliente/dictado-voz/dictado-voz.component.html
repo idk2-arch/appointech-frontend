@@ -1,0 +1,52 @@
+@if (soportado) {
+  <div class="mt-3">
+    <button
+      type="button"
+      (click)="alternar()"
+      [disabled]="deshabilitado && !escuchando"
+      [attr.aria-pressed]="escuchando"
+      class="flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium text-white transition
+             disabled:cursor-not-allowed disabled:opacity-60"
+      [ngClass]="
+        escuchando
+          ? 'border-rose-300/60 bg-rose-500/20'
+          : 'border-white/15 bg-white/5 hover:border-[#D98E4A]/50 hover:text-[#D98E4A]'
+      "
+    >
+      @if (escuchando) {
+        <span class="relative flex h-4 w-4 items-center justify-center" aria-hidden="true">
+          <span class="absolute inset-0 animate-ping rounded-full bg-rose-400/60"></span>
+          <span class="relative h-2.5 w-2.5 rounded-sm bg-rose-300"></span>
+        </span>
+        Detener
+      } @else {
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <rect x="9" y="3" width="6" height="11" rx="3" />
+          <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" stroke-linecap="round" />
+        </svg>
+        Decirlo con mi voz
+      }
+    </button>
+
+    <div aria-live="polite">
+      @if (escuchando) {
+        <p class="mt-2 flex items-center gap-2 text-xs text-rose-200">
+          <span class="flex items-end gap-0.5" aria-hidden="true">
+            <span class="h-1.5 w-0.5 animate-pulse rounded-full bg-rose-300"></span>
+            <span class="h-3 w-0.5 animate-pulse rounded-full bg-rose-300 [animation-delay:150ms]"></span>
+            <span class="h-2 w-0.5 animate-pulse rounded-full bg-rose-300 [animation-delay:300ms]"></span>
+          </span>
+          Te estoy escuchando… habla con calma.
+        </p>
+        @if (textoParcial) {
+          <p class="mt-2 rounded-lg bg-white/5 px-3 py-2 text-sm text-white/70 italic">{{ textoParcial }}</p>
+        }
+      }
+      @if (mensaje) {
+        <p role="alert" class="mt-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
+          {{ mensaje }}
+        </p>
+      }
+    </div>
+  </div>
+}

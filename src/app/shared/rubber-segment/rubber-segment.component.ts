@@ -39,10 +39,11 @@ const SIZES: Record<RubberSegmentSize, RubberSegmentSizePreset> = {
  * Port of "RubberSegment" (React Bits) as a click/keyboard segmented control.
  * The physical drag-to-drag-the-thumb gesture (rubber-band overscroll, velocity
  * flick, spring momentum handoff) is intentionally not ported — the brief
- * prioritizes a well-animated click over a 1:1 gesture port. The double-layer
- * "real buttons + clipped color-inverted copy" technique that makes the moving
- * thumb correctly recolor its label is preserved, animated via a CSS
- * transition on clip-path rather than Framer Motion's useMotionValue.
+ * prioritizes a well-animated click over a 1:1 gesture port. The moving pill
+ * is a low-opacity fill + border behind the real buttons (same language as
+ * SidebarMenuComponent's active-row pill), animated via transform/width, so
+ * unlike the original there's no opaque thumb and no color-inverted copy
+ * layer needed to keep the active label legible over it.
  */
 @Component({
   selector: 'app-rubber-segment',
@@ -54,10 +55,10 @@ export class RubberSegmentComponent implements AfterViewInit, OnChanges, OnDestr
   @Input({ required: true }) items: (string | RubberSegmentItem)[] = [];
   @Input() value?: string;
   @Input() defaultValue?: string;
-  @Input() trackColor = 'rgba(255, 255, 255, 0.06)';
+  @Input() trackColor = 'rgba(255, 255, 255, 0.05)';
   @Input() thumbColor = '#d98e4a';
-  @Input() textColor = 'rgba(255, 255, 255, 0.7)';
-  @Input() activeTextColor = '#0b1224';
+  @Input() textColor = 'rgba(255, 255, 255, 0.6)';
+  @Input() activeTextColor = '#d98e4a';
   @Input() size: RubberSegmentSize = 'md';
   @Input() radius = 10;
   @Input() disabled = false;
@@ -71,6 +72,7 @@ export class RubberSegmentComponent implements AfterViewInit, OnChanges, OnDestr
 
   private innerValue?: string;
   private readonly inset = 3;
+  private trackInnerWidth = 0;
   clipLeft = 0;
   clipRight = 0;
 
@@ -102,8 +104,8 @@ export class RubberSegmentComponent implements AfterViewInit, OnChanges, OnDestr
     return Math.max(0, this.radius - this.inset);
   }
 
-  get clipPathValue(): string {
-    return `inset(0 ${this.clipRight}px 0 ${this.clipLeft}px round ${this.thumbRadius}px)`;
+  get pillWidth(): number {
+    return Math.max(0, this.trackInnerWidth - this.clipLeft - this.clipRight);
   }
 
   ngAfterViewInit(): void {
@@ -171,10 +173,10 @@ export class RubberSegmentComponent implements AfterViewInit, OnChanges, OnDestr
 
     const trackRect = track.getBoundingClientRect();
     const itemRect = el.getBoundingClientRect();
-    const innerWidth = trackRect.width - this.inset * 2;
+    this.trackInnerWidth = trackRect.width - this.inset * 2;
 
     this.clipLeft = Math.max(0, itemRect.left - trackRect.left - this.inset);
-    this.clipRight = Math.max(0, innerWidth - (itemRect.right - trackRect.left - this.inset));
+    this.clipRight = Math.max(0, this.trackInnerWidth - (itemRect.right - trackRect.left - this.inset));
     this.cdr.markForCheck();
   }
 }

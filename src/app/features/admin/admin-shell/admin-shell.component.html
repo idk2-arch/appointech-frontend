@@ -6,7 +6,7 @@
 
   <!-- Sidebar -->
   <aside
-    class="fixed inset-y-0 left-0 z-40 flex w-80 max-w-[80vw] flex-col overflow-hidden border-r border-white/10 bg-[#0B1224] transition-transform duration-200 lg:static lg:max-w-none lg:!translate-x-0"
+    class="fixed top-0 left-0 z-40 flex h-dvh w-80 max-w-[80vw] flex-col overflow-hidden border-r border-white/10 bg-[#0B1224] transition-transform duration-200 lg:sticky lg:self-start lg:max-w-none lg:!translate-x-0"
     [class.translate-x-0]="sidebarAbierto"
     [class.-translate-x-full]="!sidebarAbierto"
   >
@@ -41,7 +41,7 @@
       </button>
     </div>
 
-    <nav class="relative z-10 flex-1 overflow-y-auto px-3 py-4">
+    <nav class="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
       <app-sidebar-menu [items]="menuItems"></app-sidebar-menu>
     </nav>
 
@@ -62,7 +62,7 @@
 
   <!-- Contenido -->
   <div class="flex min-w-0 flex-1 flex-col">
-    <div class="flex items-center gap-3 border-b border-white/10 px-4 py-4 lg:hidden">
+    <div class="sticky top-0 z-20 flex items-center gap-3 border-b border-white/10 bg-[#0B1224] px-4 py-4 lg:hidden">
       <button
         type="button"
         (click)="abrirSidebar()"

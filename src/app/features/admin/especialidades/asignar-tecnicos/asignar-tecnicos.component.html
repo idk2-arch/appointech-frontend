@@ -6,6 +6,22 @@
   </p>
 </div>
 
+@if (mensajeExito) {
+  <div role="status" class="mt-4 flex items-start gap-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
+    <p class="min-w-0 flex-1">{{ mensajeExito }}</p>
+    <button
+      type="button"
+      (click)="mensajeExito = null"
+      aria-label="Cerrar mensaje"
+      class="rounded p-0.5 text-emerald-200/60 transition hover:text-emerald-100"
+    >
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+}
+
 <div class="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
   @if (cargando) {
     <div class="flex items-center justify-center gap-3 px-6 py-16 text-sm text-white/50">
@@ -30,23 +46,31 @@
     <div class="px-6 py-16 text-center text-sm text-white/50">No hay técnicos registrados todavía.</div>
   } @else {
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="tabla-admin">
         <thead>
-          <tr class="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
-            <th class="px-6 py-3 font-medium">Nombre</th>
-            <th class="px-6 py-3 font-medium">Apellido</th>
-            <th class="px-6 py-3 font-medium">Correo</th>
-            <th class="px-6 py-3 font-medium">Especialidades</th>
-            <th class="px-6 py-3 font-medium text-right">Acciones</th>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Correo</th>
+            <th>Ubicación</th>
+            <th>Especialidades</th>
+            <th class="text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (tecnico of tecnicos; track tecnico.id) {
-            <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.03]">
-              <td class="px-6 py-4 text-white">{{ tecnico.nombre }}</td>
-              <td class="px-6 py-4 text-white">{{ tecnico.apellido }}</td>
-              <td class="px-6 py-4 text-white/70">{{ tecnico.correo }}</td>
-              <td class="px-6 py-4">
+            <tr>
+              <td class="text-white">{{ tecnico.nombre }}</td>
+              <td class="text-white">{{ tecnico.apellido }}</td>
+              <td class="text-white/70">{{ tecnico.correo }}</td>
+              <td>
+                @if (tecnico.latitudBase !== null && tecnico.longitudBase !== null) {
+                  <span class="text-sm text-emerald-300">Ubicación registrada</span>
+                } @else {
+                  <span class="text-sm text-amber-300">Sin ubicación</span>
+                }
+              </td>
+              <td>
                 @if (tecnico.especialidades.length === 0) {
                   <span class="text-xs text-white/30">Sin especialidades</span>
                 } @else {
@@ -61,11 +85,23 @@
                   </div>
                 }
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  (click)="abrirEdicion(tecnico)"
+                  class="boton-fila-admin"
+                >
+                  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" stroke-linejoin="round" />
+                    <circle cx="12" cy="10" r="2.3" />
+                  </svg>
+                  Editar técnico
+                </button>
                 <button
                   type="button"
                   (click)="abrirAsignar(tecnico)"
-                  class="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70 transition hover:border-[#D98E4A]/40 hover:text-[#D98E4A]"
+                  class="boton-fila-admin"
                 >
                   <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.6">
                     <path
@@ -77,6 +113,7 @@
                   </svg>
                   Asignar especialidades
                 </button>
+                </div>
               </td>
             </tr>
           }
@@ -92,3 +129,10 @@
   (cerrar)="cerrarAsignar()"
   (actualizado)="onEspecialidadesActualizadas()"
 ></app-asignar-especialidades-modal>
+
+<app-tecnico-modal
+  [abierto]="tecnicoEditando !== null"
+  [tecnico]="tecnicoEditando"
+  (cerrar)="cerrarEdicion()"
+  (guardado)="onTecnicoGuardado($event.tecnico)"
+></app-tecnico-modal>

@@ -1,0 +1,70 @@
+<h2 class="text-xl font-semibold tracking-tight text-white">Revisa y confirma tu cita</h2>
+<p class="mt-1 text-base text-white/60">Verifica los datos antes de confirmar.</p>
+
+<dl class="mt-6 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] text-base">
+  <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <dt class="text-white/50">Fecha</dt>
+    <dd class="font-medium text-white first-letter:uppercase">{{ franja.inicio | fechaLocal: 'fecha' }}</dd>
+  </div>
+  <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <dt class="text-white/50">Hora</dt>
+    <dd class="font-medium text-[#D98E4A]">
+      {{ franja.inicio | fechaLocal: 'hora' }} – {{ franja.fin | fechaLocal: 'hora' }}
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <dt class="text-white/50">Especialidad</dt>
+    <dd class="font-medium text-white">{{ especialidad.nombre }}</dd>
+  </div>
+  <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <dt class="text-white/50">Problema</dt>
+    <dd class="text-white sm:max-w-[60%] sm:text-right">{{ solicitud.descripcionProblema }}</dd>
+  </div>
+  <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <dt class="text-white/50">Dirección</dt>
+    <dd class="text-white sm:max-w-[60%] sm:text-right">{{ solicitud.direccionServicio }}</dd>
+  </div>
+  <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <dt class="text-white/50">Técnico</dt>
+    <dd class="text-white sm:text-right">
+      @if (franja | nombreTecnico; as tecnico) {
+        <span class="block font-medium">{{ tecnico }}</span>
+      }
+      <span class="block text-white/70">A aprox. {{ franja.distanciaKm | number: '1.0-1' }} km por carretera</span>
+    </dd>
+  </div>
+</dl>
+
+@if (errorMensaje) {
+  <div role="alert" class="mt-4 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
+    {{ errorMensaje }}
+  </div>
+}
+
+<div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+  <button
+    type="button"
+    (click)="volver.emit()"
+    [disabled]="cargando"
+    class="rounded-xl px-5 py-3.5 text-base font-medium text-white/70 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    Elegir otro horario
+  </button>
+  <button
+    type="button"
+    (click)="confirmar()"
+    [disabled]="cargando"
+    class="flex items-center justify-center gap-2 rounded-xl bg-[#D98E4A] px-6 py-4 text-base font-semibold
+           text-[#0B1224] transition hover:bg-[#e29c5c] disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    @if (cargando) {
+      <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+      </svg>
+      Confirmando…
+    } @else {
+      Confirmar cita
+    }
+  </button>
+</div>

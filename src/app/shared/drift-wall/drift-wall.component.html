@@ -1,0 +1,33 @@
+<div
+  #container
+  class="drift-wall"
+  [class.drift-wall--reduced]="reduced"
+  aria-hidden="true"
+  [style.--dw-tile-w.px]="tileWidth"
+  [style.--dw-tile-h.px]="tileHeight"
+  [style.--dw-gap.px]="gap"
+  [style.--dw-radius.px]="radius"
+  [style.--dw-perspective.px]="perspective"
+  [style.--dw-dim]="dim"
+  [style.--dw-overlay]="overlayColor"
+  [style.--dw-edge]="edgePercent + '%'"
+>
+  <div #plane class="drift-wall__plane">
+    @for (col of columnData; track $index) {
+      <div class="drift-wall__col">
+        <div #trackEl class="drift-wall__track">
+          @for (tile of col.tiles; track tile.id) {
+            <div class="drift-wall__tile">
+              <span class="drift-wall__inner">
+                @if (tile.item.image) {
+                  <img [src]="tile.item.image" [alt]="tile.item.title ?? ''" loading="lazy" decoding="async" draggable="false" />
+                }
+                <span class="drift-wall__overlay"></span>
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

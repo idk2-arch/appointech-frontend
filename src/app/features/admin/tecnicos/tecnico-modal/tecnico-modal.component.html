@@ -1,0 +1,22 @@
+@if (abierto) {
+  <app-modal-formulario
+    [titulo]="esEdicion ? 'Editar técnico' : 'Crear técnico'"
+    [subtitulo]="esEdicion ? 'Cambia los datos que necesites y guarda.' : 'Completa los datos. El técnico podrá entrar con su correo y contraseña.'"
+    [textoEnviar]="esEdicion ? 'Guardar cambios' : 'Crear técnico'"
+    [textoCargando]="esEdicion ? 'Guardando…' : 'Creando…'"
+    [cargando]="cargando"
+    [errorMensaje]="errorMensaje"
+    (cerrar)="onCancelar()"
+    (enviar)="onSubmit()"
+  >
+    <app-campos-persona [form]="form"></app-campos-persona>
+
+    <app-selector-especialidades
+      [control]="controlEspecialidades"
+      [catalogo]="catalogo"
+      [cargando]="cargandoCatalogo"
+      [error]="errorCatalogo"
+      (reintentar)="cargarCatalogo()"
+    ></app-selector-especialidades>
+  </app-modal-formulario>
+}

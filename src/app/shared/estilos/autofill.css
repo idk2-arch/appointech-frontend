@@ -1,0 +1,48 @@
+/*
+ * Autocompletado del navegador (autofill) en los campos con etiqueta flotante
+ * (<input class="peer"> seguido de <label>).
+ *
+ * 1. Chrome rellena el campo sin que :placeholder-shown deje de cumplirse, así que la
+ *    etiqueta no subía y el texto quedaba encima. Aquí la etiqueta toma su posición
+ *    "con valor" en cuanto el campo está autocompletado, sin depender de eventos de Angular.
+ * 2. Se reemplaza el fondo amarillo o azul del navegador por el fondo del campo
+ *    (bg-white/5 sobre #0B1224) y el texto blanco del tema.
+ *
+ * Los selectores van en reglas separadas: si un navegador no entiende uno, descartaría
+ * toda la lista.
+ */
+
+input.peer:-webkit-autofill ~ label {
+  top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(255 255 255 / 0.6);
+}
+
+input.peer:autofill ~ label {
+  top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(255 255 255 / 0.6);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  -webkit-box-shadow: 0 0 0 1000px #171e2f inset;
+  box-shadow: 0 0 0 1000px #171e2f inset;
+  transition: background-color 9999s ease-out 0s;
+}
+
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  box-shadow: 0 0 0 1000px #171e2f inset;
+  transition: background-color 9999s ease-out 0s;
+}

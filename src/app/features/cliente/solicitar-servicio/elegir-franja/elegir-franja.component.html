@@ -1,0 +1,261 @@
+<!-- Resumen de la solicitud ya creada -->
+<div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+  <div class="flex items-center gap-2 text-xs text-white/50">
+    <span class="inline-flex items-center gap-1.5 font-medium text-amber-300/90">
+      <span class="h-1.5 w-1.5 rounded-full bg-amber-300/90"></span>
+      Solicitud #{{ solicitud.id }} pendiente
+    </span>
+    <span aria-hidden="true">·</span>
+    <span class="truncate">{{ especialidad.nombre }}</span>
+  </div>
+  <p class="mt-2 line-clamp-2 text-sm text-white">{{ solicitud.descripcionProblema }}</p>
+  <p class="mt-1 truncate text-xs text-white/50">{{ solicitud.direccionServicio }}</p>
+</div>
+
+<h2 class="mt-8 text-lg font-semibold tracking-tight text-white">Elige fecha y horario</h2>
+<p class="mt-1 text-sm text-white/50">
+  Te asignamos el técnico disponible más cercano para cada horario.
+  @if (tecnicos && tecnicos.length > 0) {
+    <span class="text-white/40">
+      {{ tecnicos.length }} {{ tecnicos.length === 1 ? 'técnico atiende' : 'técnicos atienden' }} {{ especialidad.nombre }}.
+    </span>
+  }
+</p>
+
+@if (aviso) {
+  <div role="alert" class="mt-5 flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+    <svg viewBox="0 0 24 24" class="mt-0.5 h-4 w-4 shrink-0 text-amber-300" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M12 4L3 20h18L12 4z" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M12 10v4" stroke-linecap="round" />
+      <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+    <div class="min-w-0 flex-1">
+      <p>{{ aviso }}</p>
+      <p class="mt-0.5 text-xs text-amber-100/70">Actualizamos los horarios: elige otro.</p>
+    </div>
+    <button
+      type="button"
+      (click)="cerrarAviso()"
+      aria-label="Cerrar aviso"
+      class="rounded-lg p-1 text-amber-200/60 transition hover:bg-white/5 hover:text-amber-100"
+    >
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+}
+
+<!-- Selector de fecha -->
+<div class="mt-5 -mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+  <div class="flex w-max gap-2" role="radiogroup" aria-label="Fecha del servicio">
+    @for (dia of diasRapidos; track dia; let primero = $first) {
+      <button
+        type="button"
+        role="radio"
+        [attr.aria-checked]="dia === fecha"
+        (click)="elegirFecha(dia)"
+        class="flex w-16 flex-col items-center rounded-xl border px-2 py-2.5 transition"
+        [ngClass]="
+          dia === fecha
+            ? 'border-[#D98E4A]/60 bg-[#D98E4A]/10 text-[#D98E4A]'
+            : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25'
+        "
+      >
+        <span class="text-[11px] uppercase tracking-wide opacity-70">
+          {{ primero ? 'Hoy' : (dia | fechaLocal: 'diaSemana') }}
+        </span>
+        <span class="mt-0.5 text-lg font-semibold leading-none">{{ dia | fechaLocal: 'dia' }}</span>
+        <span class="mt-0.5 text-[11px] opacity-60">{{ dia | fechaLocal: 'mes' }}</span>
+      </button>
+    }
+
+    <label
+      class="relative flex w-24 cursor-pointer flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center transition focus-within:border-[#D98E4A]/60"
+      [ngClass]="
+        fechaFueraDeRapidos
+          ? 'border-[#D98E4A]/60 bg-[#D98E4A]/10 text-[#D98E4A]'
+          : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25'
+      "
+    >
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <rect x="3.5" y="5" width="17" height="15" rx="2" />
+        <path d="M3.5 10h17M8 3v4M16 3v4" stroke-linecap="round" />
+      </svg>
+      <span class="mt-1 text-[11px] font-medium">
+        {{ fechaFueraDeRapidos ? (fecha | fechaLocal: 'fechaCorta') : 'Otra fecha' }}
+      </span>
+      <input
+        type="date"
+        [min]="hoy"
+        [value]="fecha"
+        (change)="elegirFecha($any($event.target).value)"
+        aria-label="Elegir otra fecha"
+        class="absolute inset-0 h-full w-full cursor-pointer opacity-0 [&::-webkit-calendar-picker-indicator]:absolute
+               [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full
+               [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+      />
+    </label>
+  </div>
+</div>
+
+<!-- Franjas -->
+<div class="mt-6">
+  <p class="mb-3 text-sm font-medium text-white first-letter:uppercase">{{ fecha | fechaLocal: 'fecha' }}</p>
+
+  @if (cargando) {
+    <div class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-sm text-white/50">
+      <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+      </svg>
+      Buscando horarios disponibles…
+    </div>
+  } @else if (errorCarga) {
+    <div class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+      <p class="text-sm text-rose-300">{{ errorCarga }}</p>
+      <button
+        type="button"
+        (click)="cargarFranjas()"
+        class="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:border-white/25"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else if (franjas.length === 0) {
+    @if (motivoSinFranjas === 'FUERA_DE_COBERTURA') {
+      <div class="rounded-2xl border border-amber-300/30 bg-amber-300/[0.07] p-4 sm:p-5">
+        @if (solicitudManualEnviada) {
+          <div role="status" class="flex items-start gap-3">
+            <svg viewBox="0 0 24 24" class="mt-0.5 h-6 w-6 shrink-0 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div class="min-w-0">
+              <p class="fs-titulo font-semibold text-emerald-200">Enviamos tu solicitud</p>
+              <p class="mt-1 fs-cuerpo text-white/80">
+                Un administrador te contactará para coordinar la visita. No necesitas hacer nada más.
+              </p>
+            </div>
+          </div>
+        } @else {
+          <!-- Encabezado -->
+          <div class="flex items-start gap-3">
+            <svg viewBox="0 0 24 24" class="mt-0.5 h-5 w-5 shrink-0 text-amber-300" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" stroke-linejoin="round" />
+              <circle cx="12" cy="10" r="2.3" />
+            </svg>
+            <div class="min-w-0">
+              <p class="fs-titulo font-semibold text-amber-100">Tu dirección está fuera de nuestra zona de cobertura automática</p>
+              <p class="mt-1 fs-cuerpo text-white/70">Puedes hablar con el administrador o dejar tu solicitud para que la coordine.</p>
+            </div>
+          </div>
+
+          <!-- Opciones -->
+          <div class="mt-4 grid gap-4" [class]="enlaceWhatsapp ? 'md:grid-cols-2' : ''">
+            @if (enlaceWhatsapp) {
+              <section class="flex min-w-0 flex-col rounded-xl border border-white/10 bg-white/[0.04] p-4" aria-labelledby="opcion-hablar">
+                <h3 id="opcion-hablar" class="fs-cuerpo font-semibold text-white">Hablar ahora</h3>
+                <p class="mt-1 fs-cuerpo text-white/70">Escríbele al administrador por WhatsApp.</p>
+                <a
+                  [href]="enlaceWhatsapp"
+                  target="_blank"
+                  rel="noopener"
+                  class="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 fs-cuerpo font-semibold text-white
+                         transition hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300
+                         focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1224] md:mt-auto"
+                >
+                  <app-icono-whatsapp></app-icono-whatsapp>
+                  Escribir por WhatsApp
+                </a>
+              </section>
+            }
+
+            <section class="flex min-w-0 flex-col rounded-xl border border-white/10 bg-white/[0.04] p-4" aria-labelledby="opcion-solicitud">
+              <h3 id="opcion-solicitud" class="fs-cuerpo font-semibold text-white">Dejar solicitud</h3>
+              <p class="mt-1 fs-cuerpo text-white/70">El administrador te contactará para coordinar la visita.</p>
+
+              <label for="telefono-contacto" class="mt-4 block fs-cuerpo font-medium text-white">
+                Teléfono de contacto
+                <span class="font-normal text-white/60">(opcional si ya lo registraste)</span>
+              </label>
+              <input
+                id="telefono-contacto"
+                type="tel"
+                autocomplete="tel"
+                [(ngModel)]="telefonoContacto"
+                class="mt-2 h-12 w-full rounded-xl border border-white/20 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
+                       focus:border-[#D98E4A] focus:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-[#D98E4A]/40"
+              />
+
+              @if (errorManual) {
+                <p role="alert" class="mt-3 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 fs-cuerpo text-rose-200">
+                  {{ errorManual }}
+                </p>
+              }
+
+              <button
+                type="button"
+                (click)="solicitarAgendamientoManual()"
+                [disabled]="enviandoManual"
+                class="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#D98E4A] px-4 fs-cuerpo font-semibold text-[#0B1224]
+                       transition hover:bg-[#e29c5c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D98E4A]
+                       focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1224] disabled:cursor-not-allowed disabled:opacity-60 md:mt-auto"
+              >
+                {{ enviandoManual ? 'Enviando…' : 'Solicitar agendamiento manual' }}
+              </button>
+            </section>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-14 text-center">
+        <p class="max-w-md text-base font-medium text-white">{{ mensajeSinFranjas }}</p>
+        @if (motivoSinFranjas !== 'SIN_TECNICOS_ESPECIALIDAD') {
+          <button
+            type="button"
+            (click)="verDiaSiguiente()"
+            class="mt-1 flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-base font-medium text-white transition hover:border-white/25"
+          >
+            Ver el día siguiente
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        }
+      </div>
+    }
+  } @else {
+    <div class="grid gap-3 sm:grid-cols-2" role="list">
+      @for (franja of franjas; track franja.inicio + '-' + franja.tecnicoId) {
+        <button
+          type="button"
+          role="listitem"
+          (click)="seleccionar.emit(franja)"
+          class="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition
+                 hover:border-[#D98E4A]/50 hover:bg-[#D98E4A]/[0.06]"
+        >
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white/70 transition group-hover:text-[#D98E4A]">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7">
+              <circle cx="12" cy="12" r="8.5" />
+              <path d="M12 7.5V12l3 2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-lg font-semibold text-white">
+              {{ franja.inicio | fechaLocal: 'hora' }} – {{ franja.fin | fechaLocal: 'hora' }}
+            </span>
+            @if (franja | nombreTecnico; as tecnico) {
+              <span class="mt-0.5 block text-base font-medium text-[#D98E4A]">Te atiende {{ tecnico }}</span>
+            }
+            <span class="mt-0.5 block text-sm text-white/60">
+              Técnico a aprox. {{ franja.distanciaKm | number: '1.0-1' }} km por carretera
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0 text-white/30 transition group-hover:translate-x-0.5 group-hover:text-[#D98E4A]" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      }
+    </div>
+  }
+</div>

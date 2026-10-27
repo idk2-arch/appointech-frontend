@@ -1,8 +1,8 @@
 .rubber-segment {
-  --rs-track: rgba(255, 255, 255, 0.06);
+  --rs-track: rgba(255, 255, 255, 0.05);
   --rs-thumb: #d98e4a;
-  --rs-ink: rgba(255, 255, 255, 0.7);
-  --rs-ink-active: #0b1224;
+  --rs-ink: rgba(255, 255, 255, 0.6);
+  --rs-ink-active: #d98e4a;
   --rs-radius: 10px;
   --rs-inset: 3px;
   --rs-thumb-radius: 7px;
@@ -35,6 +35,8 @@
 }
 
 .rubber-segment__item {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -62,6 +64,9 @@
 
 .rubber-segment__item[aria-checked='true'] {
   cursor: default;
+  color: var(--rs-ink-active);
+  opacity: 1;
+  font-weight: 500;
 }
 
 .rubber-segment__item:active {
@@ -81,20 +86,18 @@
 
 .rubber-segment__thumb {
   position: absolute;
-  inset: var(--rs-inset);
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  background: var(--rs-thumb);
-  color: var(--rs-ink-active);
+  top: var(--rs-inset);
+  bottom: var(--rs-inset);
+  left: var(--rs-inset);
+  box-sizing: border-box;
+  z-index: 0;
+  border-radius: var(--rs-thumb-radius);
+  background: color-mix(in srgb, var(--rs-thumb) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rs-thumb) 25%, transparent);
   pointer-events: none;
-  transition: clip-path 300ms var(--rs-ease-out);
-}
-
-.rubber-segment__copy {
-  color: inherit;
-  opacity: 1;
-  cursor: default;
+  transition:
+    transform 300ms var(--rs-ease-out),
+    width 300ms var(--rs-ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {

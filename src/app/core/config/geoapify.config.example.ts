@@ -1,0 +1,1 @@
+export const GEOAPIFY_API_KEY = 'PEGA_AQUI_TU_CLAVE';

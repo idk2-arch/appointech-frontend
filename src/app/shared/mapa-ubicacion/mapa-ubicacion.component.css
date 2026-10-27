@@ -1,0 +1,39 @@
+@import 'leaflet/dist/leaflet.css';
+
+/* Contenedor propio: ancho del padre, altura fija y tipografía de la app. */
+.mapa-ubicacion {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: 300px;
+  overflow: hidden;
+  isolation: isolate; /* los z-index internos de Leaflet (hasta 1000) no se escapan del mapa */
+}
+
+@media (min-width: 640px) {
+  .mapa-ubicacion {
+    height: 350px;
+  }
+}
+
+.mapa-ubicacion.leaflet-container {
+  font: inherit;
+  background: #1a2540;
+}
+
+.mapa-ubicacion .leaflet-control-attribution {
+  font-size: 12px;
+}
+
+/* Contenedor del divIcon: sin el fondo/borde blanco por defecto de Leaflet. */
+.mapa-ubicacion .mapa-ubicacion__pin {
+  background: transparent;
+  border: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+  cursor: grab;
+}
+
+.mapa-ubicacion .mapa-ubicacion__pin:active {
+  cursor: grabbing;
+}

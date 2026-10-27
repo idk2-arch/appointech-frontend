@@ -1,0 +1,226 @@
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+  <h1 class="fs-titulo font-semibold tracking-tight text-white">No disponibilidad</h1>
+  <p class="mt-1 fs-cuerpo text-white/70">
+    Bloquea los horarios en los que no puedes atender. Los clientes no verán esas horas.
+  </p>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <!-- Nuevo bloque -->
+    <section aria-labelledby="titulo-nuevo-bloque" class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <h2 id="titulo-nuevo-bloque" class="fs-cuerpo font-semibold text-white">Bloquear un horario</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-5 space-y-5" novalidate>
+        <div>
+          <label for="bloque-fecha" class="mb-1.5 block fs-cuerpo font-medium text-white">Día</label>
+          <input
+            id="bloque-fecha"
+            type="date"
+            formControlName="fecha"
+            [min]="hoy"
+            [attr.aria-invalid]="fecha?.invalid && fecha?.touched ? true : null"
+            class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
+                   [color-scheme:dark] focus:border-[#D98E4A]/60"
+          />
+          @if (fecha?.touched && fecha?.hasError('required')) {
+            <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige el día.</p>
+          }
+          @if (fecha?.hasError('fechaPasada')) {
+            <p role="alert" class="mt-1.5 fs-secundario text-rose-300">El día no puede ser anterior a hoy.</p>
+          }
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="bloque-inicio" class="mb-1.5 block fs-cuerpo font-medium text-white">Desde</label>
+            <input
+              id="bloque-inicio"
+              type="time"
+              formControlName="horaInicio"
+              [attr.aria-invalid]="horaInicio?.invalid && horaInicio?.touched ? true : null"
+              class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
+                     [color-scheme:dark] focus:border-[#D98E4A]/60"
+            />
+            @if (horaInicio?.touched && horaInicio?.hasError('required')) {
+              <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la hora.</p>
+            }
+          </div>
+          <div>
+            <label for="bloque-fin" class="mb-1.5 block fs-cuerpo font-medium text-white">Hasta</label>
+            <input
+              id="bloque-fin"
+              type="time"
+              formControlName="horaFin"
+              [attr.aria-invalid]="horaFin?.invalid && horaFin?.touched ? true : null"
+              class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
+                     [color-scheme:dark] focus:border-[#D98E4A]/60"
+            />
+            @if (horaFin?.touched && horaFin?.hasError('required')) {
+              <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la hora.</p>
+            }
+          </div>
+        </div>
+        @if (form.hasError('finAntesDeInicio') && horaInicio?.value && horaFin?.value) {
+          <p role="alert" class="-mt-2 fs-secundario text-rose-300">La hora final debe ser después de la inicial.</p>
+        }
+        @if (form.hasError('inicioPasado') && !fecha?.hasError('fechaPasada') && horaInicio?.value) {
+          <p role="alert" class="-mt-2 fs-secundario text-rose-300">La hora de inicio ya pasó. Elige una hora futura.</p>
+        }
+
+        <div>
+          <label for="bloque-motivo" class="mb-1.5 block fs-cuerpo font-medium text-white">
+            Motivo <span class="font-normal text-white/60">(opcional)</span>
+          </label>
+          <input
+            id="bloque-motivo"
+            type="text"
+            formControlName="motivo"
+            placeholder="Ejemplo: cita médica"
+            class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white placeholder-white/40
+                   outline-none transition focus:border-[#D98E4A]/60"
+          />
+        </div>
+
+        @if (errorGuardar) {
+          <div role="alert" class="rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 fs-cuerpo text-rose-200">
+            {{ errorGuardar }}
+          </div>
+        }
+        @if (exito) {
+          <div role="status" class="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 fs-cuerpo text-emerald-200">
+            {{ exito }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="guardando"
+          class="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#D98E4A] px-5 fs-cuerpo font-semibold text-[#0B1224]
+                 transition hover:bg-[#e29c5c] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          @if (guardando) {
+            <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+            </svg>
+            Guardando…
+          } @else {
+            Bloquear horario
+          }
+        </button>
+      </form>
+    </section>
+
+    <!-- Próximos bloques -->
+    <section aria-labelledby="titulo-bloques">
+      <h2 id="titulo-bloques" class="fs-cuerpo font-semibold text-white">Próximos bloques</h2>
+
+      <div class="mt-4">
+        @if (cargando) {
+          <div class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-14 fs-cuerpo text-white/70">
+            <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+            </svg>
+            Cargando tus bloques…
+          </div>
+        } @else if (errorCarga) {
+          <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-14 text-center">
+            <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+            <button
+              type="button"
+              (click)="cargarBloques()"
+              class="h-10 rounded-xl border border-white/15 bg-white/5 px-6 fs-cuerpo font-medium text-white transition hover:border-white/25"
+            >
+              Reintentar
+            </button>
+          </div>
+        } @else if (bloques.length === 0) {
+          <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-14 text-center fs-cuerpo text-white/70">
+            No tienes horarios bloqueados.
+          </div>
+        } @else {
+          <ul class="space-y-3">
+            @for (bloque of bloques; track bloque.id) {
+              <li class="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div class="min-w-0 flex-1">
+                  <p class="fs-cuerpo font-semibold text-white first-letter:uppercase">
+                    {{ bloque.inicio | fechaLocal: 'fechaCorta' }}
+                  </p>
+                  <p class="mt-0.5 fs-cuerpo font-semibold text-[#D98E4A]">
+                    {{ bloque.inicio | fechaLocal: 'hora' }} – {{ bloque.fin | fechaLocal: 'hora' }}
+                  </p>
+                  @if (bloque.motivo) {
+                    <p class="mt-1 fs-cuerpo text-white/70">{{ bloque.motivo }}</p>
+                  }
+                </div>
+                <button
+                  type="button"
+                  (click)="pedirEliminar(bloque)"
+                  class="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-white/15 px-4 fs-cuerpo font-medium text-white/80
+                         transition hover:border-rose-300/50 hover:text-rose-300"
+                >
+                  <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Eliminar
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Confirmación para eliminar -->
+@if (bloqueParaEliminar) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8" role="dialog" aria-modal="true" aria-labelledby="eliminar-bloque-titulo">
+    <div class="fixed inset-0 bg-black/60" (click)="cancelarEliminar()"></div>
+
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-[#111a30] p-6 fs-cuerpo text-white shadow-2xl">
+      <h2 id="eliminar-bloque-titulo" class="fs-cuerpo font-semibold">Eliminar bloque</h2>
+      <p class="mt-2 text-white/70">
+        ¿Seguro que quieres eliminar el bloque del
+        <span class="text-white">{{ bloqueParaEliminar.inicio | fechaLocal: 'fechaCorta' }}</span>
+        de
+        <span class="text-white">{{ bloqueParaEliminar.inicio | fechaLocal: 'hora' }} a {{ bloqueParaEliminar.fin | fechaLocal: 'hora' }}</span>?
+        Ese horario volverá a estar disponible para los clientes.
+      </p>
+
+      @if (errorEliminar) {
+        <div role="alert" class="mt-4 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 fs-cuerpo text-rose-200">
+          {{ errorEliminar }}
+        </div>
+      }
+
+      <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          (click)="cancelarEliminar()"
+          [disabled]="eliminando"
+          class="h-10 rounded-xl px-5 fs-cuerpo font-medium text-white/70 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          No, conservar
+        </button>
+        <button
+          type="button"
+          (click)="confirmarEliminar()"
+          [disabled]="eliminando"
+          class="flex h-10 items-center justify-center gap-2 rounded-xl bg-rose-500/90 px-5 fs-cuerpo font-semibold text-white transition
+                 hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          @if (eliminando) {
+            <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+              <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+            </svg>
+            Eliminando…
+          } @else {
+            Sí, eliminar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

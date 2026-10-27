@@ -1,0 +1,114 @@
+<div class="overflow-x-auto">
+  <table class="tabla-admin">
+    <thead>
+      <tr>
+        @for (columna of columnas; track columna.clave) {
+          <th scope="col">{{ columna.titulo }}</th>
+        }
+        <th scope="col">Estado</th>
+        <th scope="col" class="text-right">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (fila of filas; track fila.tipo + '-' + fila.id) {
+        <tr class="align-top">
+          @for (columna of columnas; track columna.clave) {
+            <td [class]="($first ? 'text-white' : 'text-white/70') + (columna.ancho === 'ancho' ? ' min-w-[14rem]' : ' whitespace-nowrap')">
+              @switch (columna.tipo) {
+                @case ('etiquetas') {
+                  @if (etiquetas(fila, columna).length === 0) {
+                    <span class="text-white/30">—</span>
+                  } @else {
+                    <div class="flex flex-wrap gap-1.5">
+                      @for (etiqueta of etiquetas(fila, columna); track etiqueta.id) {
+                        <button
+                          type="button"
+                          (click)="alternarDescripcion(fila, etiqueta)"
+                          [attr.aria-expanded]="descripcionAbierta(fila, etiqueta)"
+                          [title]="etiqueta.descripcion || etiqueta.nombre"
+                          class="chip-admin transition hover:bg-[#D98E4A]/20"
+                        >
+                          {{ etiqueta.nombre }}
+                        </button>
+                      }
+                    </div>
+                    @for (etiqueta of etiquetas(fila, columna); track etiqueta.id) {
+                      @if (descripcionAbierta(fila, etiqueta)) {
+                        <p class="mt-1.5 text-xs text-white/70">
+                          <span class="font-medium text-white">{{ etiqueta.nombre }}:</span>
+                          {{ etiqueta.descripcion || 'Sin descripción.' }}
+                        </p>
+                      }
+                    }
+                  }
+                }
+                @case ('ubicacion') {
+                  @if (esVerdadero(fila, columna)) {
+                    <span class="text-emerald-300">Ubicación registrada</span>
+                  } @else {
+                    <span class="text-amber-300">Sin ubicación</span>
+                  }
+                }
+                @case ('fecha') {
+                  @if (fecha(fila, columna); as valor) {
+                    {{ valor | fechaLocal: 'fechaCorta' }}
+                  } @else {
+                    <span class="text-white/30">—</span>
+                  }
+                }
+                @default {
+                  {{ texto(fila, columna) }}
+                }
+              }
+            </td>
+          }
+          <td>
+            <span class="estado-admin" [class.estado-admin--activo]="fila.activo">
+              {{ fila.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <div class="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                (click)="editar.emit(fila)"
+                [attr.aria-label]="'Editar a ' + fila.nombre"
+                class="boton-fila-admin"
+              >
+                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <path d="M15.5 4.5l4 4L8 20H4v-4L15.5 4.5z" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Editar
+              </button>
+              @if (fila.activo) {
+                <app-fuse-button
+                  label="Desactivar"
+                  undoLabel="Deshacer"
+                  doneLabel="Desactivado"
+                  icon="block"
+                  size="sm"
+                  fuse="outline"
+                  commitOn="fuseEnd"
+                  [undoWindow]="4000"
+                  fuseColor="#D98E4A"
+                  background="rgba(255,255,255,0.06)"
+                  color="rgba(255,255,255,0.75)"
+                  (fuseEnd)="desactivar.emit(fila)"
+                ></app-fuse-button>
+              } @else {
+                <button
+                  type="button"
+                  (click)="activar.emit(fila)"
+                  [attr.aria-label]="'Activar a ' + fila.nombre"
+                  class="boton-fila-admin boton-fila-admin--exito"
+                >
+                  Activar
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

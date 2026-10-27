@@ -1,0 +1,12 @@
+@if (abierto && cliente) {
+  <app-modal-formulario
+    titulo="Editar cliente"
+    subtitulo="Cambia los datos que necesites y guarda."
+    [cargando]="cargando"
+    [errorMensaje]="errorMensaje"
+    (cerrar)="cerrar.emit()"
+    (enviar)="onSubmit()"
+  >
+    <app-campos-persona [form]="form"></app-campos-persona>
+  </app-modal-formulario>
+}

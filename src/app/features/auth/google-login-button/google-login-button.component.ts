@@ -100,7 +100,7 @@ export class GoogleLoginButtonComponent implements AfterViewInit, OnDestroy {
         this.authService.redirigirSegunRolYPerfil(this.router, response.perfilCompleto);
       },
       error: (err) => {
-        this.errorMensaje = err?.error?.mensaje ?? 'No fue posible iniciar sesión con Google. Intenta de nuevo.';
+        this.errorMensaje = err?.error?.detail ?? 'No fue posible iniciar sesión con Google. Intenta de nuevo.';
         this.cdr.markForCheck();
       },
     });

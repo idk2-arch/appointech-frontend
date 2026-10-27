@@ -1,0 +1,83 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi agenda</h1>
+  <p class="mt-1 fs-cuerpo text-white/70">Tus citas activas del día.</p>
+
+  <div class="mt-6">
+    <app-selector-dia [fecha]="fecha" [deshabilitado]="cargando" (fechaCambio)="cambiarFecha($event)"></app-selector-dia>
+  </div>
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando tus citas…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button
+          type="button"
+          (click)="cargarCitas()"
+          class="h-10 rounded-xl border border-white/15 bg-white/5 px-6 fs-cuerpo font-medium text-white transition hover:border-white/25"
+        >
+          Reintentar
+        </button>
+      </div>
+    } @else if (citas.length === 0) {
+      <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        No tienes citas este día.
+      </div>
+    } @else {
+      <p class="mb-3 fs-cuerpo text-white/70" aria-live="polite">
+        {{ citas.length }} {{ citas.length === 1 ? 'cita' : 'citas' }}
+      </p>
+      <ul class="space-y-4">
+        @for (cita of citas; track cita.id) {
+          <li class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p class="fs-titulo font-semibold text-[#D98E4A]">
+                {{ cita.fechaHoraInicio | fechaLocal: 'hora' }} – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}
+              </p>
+              <span class="rounded-full border px-3 py-1 fs-secundario font-medium" [ngClass]="claseEstado(cita.estado)">
+                {{ etiquetaEstado(cita.estado) }}
+              </span>
+            </div>
+
+            <p class="mt-4 fs-cuerpo text-white">{{ cita.descripcionProblema }}</p>
+
+            <dl class="mt-4 space-y-3 fs-cuerpo">
+              <div>
+                <dt class="fs-secundario text-white/60">Dirección</dt>
+                <dd class="text-white">{{ cita.direccionServicio }}</dd>
+              </div>
+              <div>
+                <dt class="fs-secundario text-white/60">Cliente</dt>
+                <dd class="text-white">{{ cita.cliente.nombre }} {{ cita.cliente.apellido }}</dd>
+              </div>
+            </dl>
+
+            @if (cita.cliente.telefono) {
+              <a
+                [href]="enlaceTelefono(cita.cliente.telefono)"
+                class="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-[#D98E4A]/50 bg-[#D98E4A]/10 px-5 fs-cuerpo font-medium text-[#D98E4A]
+                       transition hover:bg-[#D98E4A]/20"
+              >
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path
+                    d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Llamar al {{ cita.cliente.telefono }}
+              </a>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

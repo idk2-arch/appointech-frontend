@@ -57,3 +57,5 @@ Thumbs.db
 .impeccable/
 CLAUDE.md
 PRODUCT.md
+# Clave de API de Geoapify (usar geoapify.config.example.ts como plantilla)
+src/app/core/config/geoapify.config.ts

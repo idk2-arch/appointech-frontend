@@ -1,0 +1,180 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi ruta</h1>
+      <p class="mt-1 fs-cuerpo text-white/70">Tus paradas del día, en orden de hora.</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="cargarRuta()"
+      [disabled]="cargando"
+      class="flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 fs-cuerpo font-medium text-white transition
+             hover:border-[#D98E4A]/50 hover:text-[#D98E4A] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <svg viewBox="0 0 24 24" class="h-5 w-5" [class.animate-spin]="cargando" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+        <path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  <div class="mt-6">
+    <app-selector-dia [fecha]="fecha" [deshabilitado]="cargando" (fechaCambio)="cambiarFecha($event)"></app-selector-dia>
+  </div>
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Calculando tu ruta…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-14 text-center">
+        <p role="alert" class="fs-cuerpo" [ngClass]="tipoError === 'base' ? 'text-amber-200' : 'text-rose-300'">
+          {{ errorCarga }}
+        </p>
+        @if (tipoError !== 'base') {
+          <button
+            type="button"
+            (click)="cargarRuta()"
+            class="h-10 rounded-xl border border-white/15 bg-white/5 px-6 fs-cuerpo font-medium text-white transition hover:border-white/25"
+          >
+            Reintentar
+          </button>
+        }
+      </div>
+    } @else if (ruta && ruta.paradas.length === 0) {
+      <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        No tienes citas este día.
+      </div>
+    } @else if (ruta) {
+      <!-- Resumen -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <p class="fs-secundario text-white/60">Distancia total</p>
+          <p class="mt-1 fs-titulo font-semibold text-white">{{ ruta.totalKm | kilometros }}</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <p class="fs-secundario text-white/60">Tiempo de viaje</p>
+          <p class="mt-1 fs-titulo font-semibold text-white">{{ ruta.totalMinutosDeViaje | minutosViaje }}</p>
+        </div>
+      </div>
+      <p class="mt-2 fs-secundario text-white/60">
+        Calculada a las {{ ruta.calculadaEn | fechaLocal: 'hora' }}. Distancias y tiempos por carretera.
+      </p>
+
+      <!-- Alerta general -->
+      @if (paradasTarde.length > 0) {
+        <div role="alert" class="mt-4 flex items-start gap-3 rounded-2xl border-2 border-rose-300/60 bg-rose-400/10 p-4">
+          <svg viewBox="0 0 24 24" class="mt-0.5 h-6 w-6 shrink-0 text-rose-300" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 4L3 20h18L12 4z" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 10v4" stroke-linecap="round" />
+            <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+          </svg>
+          <p class="fs-cuerpo font-medium text-rose-100">
+            {{ paradasTarde.length === 1 ? 'No alcanzas a llegar a tiempo a 1 cita.' : 'No alcanzas a llegar a tiempo a ' + paradasTarde.length + ' citas.' }}
+            Avísale al cliente o revisa tu agenda.
+          </p>
+        </div>
+      }
+
+      <!-- Mapa -->
+      <div class="mt-6">
+        <app-mapa-ruta [origen]="ruta.origen" [paradas]="ruta.paradas"></app-mapa-ruta>
+      </div>
+
+      <!-- Paradas -->
+      <ol class="mt-6 space-y-4">
+        @for (parada of ruta.paradas; track parada.citaId; let primera = $first) {
+          <li
+            class="rounded-2xl border p-5"
+            [ngClass]="parada.alcanzaATiempo ? 'border-white/10 bg-white/[0.03]' : 'border-2 border-rose-300/60 bg-rose-400/[0.07]'"
+          >
+            <div class="flex items-start gap-4">
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full fs-cuerpo font-bold text-[#0B1224]"
+                [ngClass]="parada.alcanzaATiempo ? 'bg-[#D98E4A]' : 'bg-rose-300'"
+                aria-hidden="true"
+              >
+                {{ parada.orden }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="fs-secundario text-white/60">Parada {{ parada.orden }}</p>
+                <p class="fs-titulo font-semibold text-[#D98E4A]">
+                  {{ parada.inicio | fechaLocal: 'hora' }} – {{ parada.fin | fechaLocal: 'hora' }}
+                </p>
+              </div>
+            </div>
+
+            @if (!parada.alcanzaATiempo) {
+              <p role="alert" class="mt-4 flex items-center gap-2 rounded-xl bg-rose-400/15 px-4 py-3 fs-cuerpo font-semibold text-rose-100">
+                <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 4L3 20h18L12 4z" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12 10v4" stroke-linecap="round" />
+                </svg>
+                <span>
+                  No alcanzas a llegar a tiempo a esta cita.
+                  @if (parada.retrasoEstimadoMinutos && parada.retrasoEstimadoMinutos > 0) {
+                    <span class="block font-medium">Llegarías unos {{ parada.retrasoEstimadoMinutos | number: '1.0-0' }} min tarde</span>
+                  }
+                </span>
+              </p>
+            } @else if (parada.retrasoEstimadoMinutos && parada.retrasoEstimadoMinutos > 0) {
+              <p role="status" class="mt-4 flex items-center gap-2 rounded-xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 fs-cuerpo font-medium text-amber-100">
+                <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8.5" />
+                  <path d="M12 7.5V12l3 2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Llegas con poco margen (unos {{ parada.retrasoEstimadoMinutos | number: '1.0-0' }} min tarde)
+              </p>
+            }
+
+            <p class="mt-4 fs-cuerpo font-medium text-white">
+              @if (primera) {
+                Sal de tu base a las {{ parada.horaEstimadaLlegada | fechaLocal: 'hora' }}
+              } @else {
+                Llegas aprox. a las {{ parada.horaEstimadaLlegada | fechaLocal: 'hora' }}
+              }
+            </p>
+            <p class="mt-1 fs-cuerpo text-white/70">
+              {{ parada.distanciaKm | kilometros }} · {{ parada.minutosDesdeAnterior | minutosViaje }}
+              {{ primera ? 'desde tu base' : 'desde la parada anterior' }}
+            </p>
+
+            <dl class="mt-4 space-y-3 fs-cuerpo">
+              <div>
+                <dt class="fs-secundario text-white/60">Dirección</dt>
+                <dd class="text-white">{{ parada.direccionServicio }}</dd>
+              </div>
+              <div>
+                <dt class="fs-secundario text-white/60">Cliente</dt>
+                <dd class="text-white">{{ parada.cliente.nombre }} {{ parada.cliente.apellido }}</dd>
+              </div>
+            </dl>
+
+            @if (parada.cliente.telefono) {
+              <a
+                [href]="enlaceTelefono(parada.cliente.telefono)"
+                class="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-[#D98E4A]/50 bg-[#D98E4A]/10 px-5 fs-cuerpo font-medium text-[#D98E4A]
+                       transition hover:bg-[#D98E4A]/20"
+              >
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path
+                    d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Llamar al {{ parada.cliente.telefono }}
+              </a>
+            }
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</div>

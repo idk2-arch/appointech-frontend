@@ -8,7 +8,7 @@
   <button
     type="button"
     (click)="abrirModalCrear()"
-    class="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-white/90"
+    class="boton-admin"
   >
     <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 5v14M5 12h14" stroke-linecap="round" />
@@ -41,42 +41,42 @@
     <div class="px-6 py-16 text-center text-sm text-white/50">No hay especialidades registradas todavía.</div>
   } @else {
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="tabla-admin">
         <thead>
-          <tr class="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
-            <th class="px-6 py-3 font-medium">Nombre</th>
-            <th class="px-6 py-3 font-medium">Descripción</th>
-            <th class="px-6 py-3 font-medium">Estado</th>
-            <th class="px-6 py-3 font-medium">Técnicos asignados</th>
-            <th class="px-6 py-3 font-medium text-right">Acciones</th>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Técnicos asignados</th>
+            <th class="text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (especialidad of especialidades; track especialidad.id) {
-            <tr class="border-b border-white/5 last:border-0 hover:bg-white/[0.03]">
-              <td class="px-6 py-4 text-white">{{ especialidad.nombre }}</td>
-              <td class="px-6 py-4 text-white/70">
+            <tr>
+              <td class="text-white">{{ especialidad.nombre }}</td>
+              <td class="text-white/70">
                 @if (especialidad.descripcion) {
                   {{ especialidad.descripcion }}
                 } @else {
                   <span class="text-white/30">—</span>
                 }
               </td>
-              <td class="px-6 py-4">
+              <td>
                 @if (especialidad.activo) {
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400/80">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400/80"></span>
                     Activo
                   </span>
                 } @else {
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-medium text-white/50">
-                    <span class="h-1.5 w-1.5 rounded-full bg-white/30"></span>
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium text-white/40">
+                    <span class="h-1.5 w-1.5 rounded-full bg-white/40"></span>
                     Inactivo
                   </span>
                 }
               </td>
-              <td class="px-6 py-4 text-white/70">{{ especialidad.tecnicosAsignados }}</td>
-              <td class="px-6 py-4 text-right">
+              <td class="text-white/70">{{ especialidad.tecnicosAsignados }}</td>
+              <td class="text-right">
                 <button
                   type="button"
                   (click)="solicitarCambioEstado(especialidad)"

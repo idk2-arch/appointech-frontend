@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
+import { RespuestaEnvuelta } from '../models/respuesta-envuelta';
 
 export interface LoginRequest {
   correo: string;
@@ -14,12 +15,16 @@ export interface AuthResponse {
   perfilCompleto: boolean;
 }
 
+export type TipoDocumento = 'CC' | 'CE' | 'PASAPORTE';
+
 export interface RegistroClienteRequest {
   nombre: string;
+  apellido: string;
   correo: string;
   contrasena: string;
-  telefono: string;
-  numeroDocumento: string;
+  telefono?: string;
+  tipoDocumento: TipoDocumento;
+  numeroDocumento?: string;
   direccion: string;
 }
 
@@ -30,8 +35,6 @@ export interface RegistroResponse {
 export interface GoogleLoginRequest {
   idToken: string;
 }
-
-export type TipoDocumento = 'CC' | 'CE' | 'PASAPORTE';
 
 export interface CompletarPerfilRequest {
   telefono: string;
@@ -62,30 +65,37 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${API_BASE_URL}/auth/login`, request)
-      .pipe(tap((response) => this.guardarToken(response.token)));
+    return this.http.post<RespuestaEnvuelta<AuthResponse>>(`${API_BASE_URL}/auth/login`, request).pipe(
+      map((respuesta) => respuesta.datos),
+      tap((datos) => this.guardarToken(datos.token))
+    );
   }
 
   registrarCliente(request: RegistroClienteRequest): Observable<RegistroResponse> {
-    return this.http.post<RegistroResponse>(`${API_BASE_URL}/auth/registro/cliente`, request).pipe(
-      tap((response) => {
-        if (response?.token) {
-          this.guardarToken(response.token);
-        }
-      })
-    );
+    return this.http
+      .post<RespuestaEnvuelta<RegistroResponse>>(`${API_BASE_URL}/auth/registro/cliente`, request)
+      .pipe(
+        map((respuesta) => respuesta.datos),
+        tap((datos) => {
+          if (datos?.token) {
+            this.guardarToken(datos.token);
+          }
+        })
+      );
   }
 
   loginConGoogle(idToken: string): Observable<AuthResponse> {
     const request: GoogleLoginRequest = { idToken };
-    return this.http
-      .post<AuthResponse>(`${API_BASE_URL}/auth/google`, request)
-      .pipe(tap((response) => this.guardarToken(response.token)));
+    return this.http.post<RespuestaEnvuelta<AuthResponse>>(`${API_BASE_URL}/auth/google`, request).pipe(
+      map((respuesta) => respuesta.datos),
+      tap((datos) => this.guardarToken(datos.token))
+    );
   }
 
   completarPerfil(request: CompletarPerfilRequest): Observable<CompletarPerfilResponse> {
-    return this.http.patch<CompletarPerfilResponse>(`${API_BASE_URL}/auth/completar-perfil`, request);
+    return this.http
+      .patch<RespuestaEnvuelta<CompletarPerfilResponse>>(`${API_BASE_URL}/auth/completar-perfil`, request)
+      .pipe(map((respuesta) => respuesta.datos));
   }
 
   guardarToken(token: string): void {
@@ -120,7 +130,12 @@ export class AuthService {
   }
 
   redirigirSegunRol(router: Router): void {
-    const ruta = this.obtenerRol() === 'ADMINISTRADOR' ? '/admin/usuarios' : '/';
+    const rutasPorRol: Record<string, string> = {
+      ADMINISTRADOR: '/admin/usuarios',
+      CLIENTE: '/cliente',
+      TECNICO: '/tecnico',
+    };
+    const ruta = rutasPorRol[this.obtenerRol() ?? ''] ?? '/';
     router.navigate([ruta]);
   }
 

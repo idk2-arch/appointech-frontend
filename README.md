@@ -59,3 +59,21 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Docker
+
+La imagen es multi-stage: `node:20-alpine` compila la app y `nginx:1.27-alpine` sirve solo el resultado (`dist/appointech-frontend/browser`), con `try_files` para que funcionen las rutas de Angular al recargar.
+
+Construir la imagen:
+
+```bash
+docker build -t appointech-frontend .
+```
+
+Se levanta junto al backend con el `docker compose` de la carpeta del backend (servicio `frontend`, contexto en esta carpeta, puerto interno 80):
+
+```bash
+docker compose up --build
+```
+
+La aplicación queda en http://localhost:4200. El navegador llama al backend por el balanceador publicado en http://localhost:8080 (`API_BASE_URL` en `src/app/core/config/api.config.ts`).

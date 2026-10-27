@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 
 import { EspecialidadAdminResponse, EspecialidadService } from '../../../../core/services/especialidad.service';
+import { obtenerMensajeError } from '../../../../core/utils/manejo-errores';
 
 @Component({
   selector: 'app-catalogo-especialidades',
@@ -31,18 +33,23 @@ export class CatalogoEspecialidadesComponent implements OnInit {
     }
     this.errorCarga = null;
 
-    this.especialidadService.obtenerCatalogoAdmin().subscribe({
-      next: (especialidades) => {
-        this.especialidades = especialidades;
-        this.cargando = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.cargando = false;
-        this.errorCarga = 'No fue posible cargar el catálogo de especialidades.';
-        this.cdr.markForCheck();
-      },
-    });
+    this.especialidadService
+      .obtenerCatalogoAdmin()
+      .pipe(
+        finalize(() => {
+          this.cargando = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (especialidades) => {
+          this.especialidades = Array.isArray(especialidades) ? especialidades : [];
+        },
+        error: (err) => {
+          this.especialidades = [];
+          this.errorCarga = obtenerMensajeError(err, 'No fue posible cargar el catálogo de especialidades.');
+        },
+      });
   }
 
   abrirModalCrear(): void {

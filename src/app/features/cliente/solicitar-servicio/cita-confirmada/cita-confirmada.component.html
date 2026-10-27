@@ -1,0 +1,66 @@
+<div class="mx-auto max-w-lg text-center">
+  <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[#D98E4A]/40 bg-[#D98E4A]/10 text-[#D98E4A]">
+    <svg viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <h1 class="mt-6 text-3xl font-semibold tracking-tight text-white">Tu cita está confirmada</h1>
+  <p class="mt-2 text-lg text-white/70">Guarda estos datos. El técnico irá a tu domicilio en el horario elegido.</p>
+
+  <dl class="mt-8 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03] text-left text-lg">
+    <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+      <dt class="text-white/60">Fecha</dt>
+      <dd class="font-medium text-white first-letter:uppercase sm:text-right">{{ cita.fechaHoraInicio | fechaLocal: 'fecha' }}</dd>
+    </div>
+    <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+      <dt class="text-white/60">Hora</dt>
+      <dd class="font-semibold text-[#D98E4A]">
+        {{ cita.fechaHoraInicio | fechaLocal: 'hora' }} – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}
+      </dd>
+    </div>
+    @if (especialidad) {
+      <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+        <dt class="text-white/60">Especialidad</dt>
+        <dd class="font-medium text-white">{{ especialidad }}</dd>
+      </div>
+    }
+    @if (cita | nombreTecnico; as tecnico) {
+      <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+        <dt class="text-white/60">Técnico</dt>
+        <dd class="font-medium text-white">{{ tecnico }}</dd>
+      </div>
+    }
+    @if (cita.tecnicoTelefono) {
+      <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+        <dt class="text-white/60">Teléfono del técnico</dt>
+        <dd>
+          <a [href]="enlaceTelefono(cita.tecnicoTelefono)" class="font-medium text-[#D98E4A] underline underline-offset-4">
+            {{ cita.tecnicoTelefono }}
+          </a>
+        </dd>
+      </div>
+    }
+    <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+      <dt class="text-white/60">Dirección</dt>
+      <dd class="font-medium text-white sm:max-w-[60%] sm:text-right">{{ cita.direccionServicio }}</dd>
+    </div>
+    <div class="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+      <dt class="text-white/60">Estado</dt>
+      <dd>
+        <span class="inline-flex items-center gap-2 font-medium text-emerald-300">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+          {{ etiquetaEstado(cita.estado) }}
+        </span>
+      </dd>
+    </div>
+  </dl>
+
+  <button
+    type="button"
+    (click)="volverInicio.emit()"
+    class="mt-8 w-full rounded-xl bg-white py-4 text-lg font-semibold text-slate-900 transition hover:bg-white/90"
+  >
+    Volver al inicio
+  </button>
+</div>

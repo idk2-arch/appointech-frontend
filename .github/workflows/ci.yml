@@ -30,6 +30,14 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Generar la configuración de Geoapify
+        # El archivo real está en .gitignore. Con el secreto GEOAPIFY_API_KEY (opcional) se usa esa llave;
+        # sin él, un valor de relleno, suficiente para compilar y probar. GitHub oculta el secreto en los logs.
+        env:
+          GEOAPIFY_API_KEY: ${{ secrets.GEOAPIFY_API_KEY }}
+        run: |
+          printf "export const GEOAPIFY_API_KEY = '%s';\n" "${GEOAPIFY_API_KEY:-ci-placeholder}" > src/app/core/config/geoapify.config.ts
+
       - name: Build
         run: npm run build
 

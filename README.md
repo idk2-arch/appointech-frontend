@@ -4,6 +4,19 @@ Interfaz web de AppoinTech — sistema de gestión de citas y servicios técnico
 
 Generado con [Angular CLI](https://github.com/angular/angular-cli) versión 21.2.24.
 
+## Configuración de Geoapify
+
+La búsqueda de direcciones usa Geoapify. La llave **no** está en el repositorio: `src/app/core/config/geoapify.config.ts` está en `.gitignore`.
+
+**Localmente**
+
+1. Copia la plantilla: `cp src/app/core/config/geoapify.config.example.ts src/app/core/config/geoapify.config.ts`.
+2. Reemplaza `REEMPLAZAR_CON_TU_LLAVE` por tu llave de Geoapify. No subas ese archivo.
+
+**En CI (GitHub Actions)**
+
+El workflow genera `geoapify.config.ts` antes de compilar. Para usar tu llave real, crea el secreto `GEOAPIFY_API_KEY` en *Settings → Secrets and variables → Actions*. Es opcional: sin él se usa el valor de relleno `ci-placeholder` y el build y las pruebas pasan igual.
+
 ## Development server
 
 To start a local development server, run:

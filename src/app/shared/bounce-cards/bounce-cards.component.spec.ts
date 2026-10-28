@@ -39,9 +39,9 @@ describe('BounceCardsComponent', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('con cardClick', () => {

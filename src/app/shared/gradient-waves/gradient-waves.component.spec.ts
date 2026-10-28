@@ -96,9 +96,9 @@ describe('GradientWavesComponent', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('arranque', () => {

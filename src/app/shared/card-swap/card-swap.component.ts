@@ -41,6 +41,9 @@ interface Arrastre {
  * o lanzándola); un clic en una carta de atrás la trae al frente. La física vive en CardSwapEngine;
  * este componente solo lo conecta con el DOM y con los eventos.
  *
+ * Teclado: la carta del frente es un botón enfocable (las demás, solo por clic); con el foco en la pila,
+ * las flechas cambian de carta y Enter o espacio la activan. El foco acompaña a la carta que queda al frente.
+ *
  * Todo el movimiento corre fuera de la zona de Angular y se limpia en ngOnDestroy.
  */
 @Component({
@@ -149,6 +152,12 @@ export class CardSwapComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     } else if (evento.key === 'ArrowLeft' || evento.key === 'ArrowUp') {
       evento.preventDefault();
       this.prev();
+    } else if (evento.key === 'Enter' || evento.key === ' ') {
+      // Solo la carta misma (no algo dentro de ella) responde a Enter y espacio.
+      const carta = (evento.target as Element | null)?.closest?.('[data-swap-index]');
+      if (carta !== evento.target) return;
+      evento.preventDefault();
+      this.zona.runOutsideAngular(() => this.activarCarta(Number(carta?.getAttribute('data-swap-index'))));
     }
   }
 
@@ -283,6 +292,7 @@ export class CardSwapComponent implements OnInit, AfterViewInit, OnChanges, OnDe
       ranura.style.visibility = estilo.visible ? '' : 'hidden';
       ranura.style.cursor = estilo.cursor;
       ranura.toggleAttribute('data-front', estilo.frente);
+      ranura.setAttribute('tabindex', estilo.frente ? '0' : '-1');
       const sombra = this.sombras.get(i)?.nativeElement;
       if (sombra) sombra.style.opacity = estilo.sombra;
     }
@@ -337,6 +347,10 @@ export class CardSwapComponent implements OnInit, AfterViewInit, OnChanges, OnDe
 
   private avisarCambio(): void {
     const frente = this.motor?.indiceFrente ?? 0;
+    // Si el foco estaba en la pila, acompaña a la carta que queda al frente.
+    if (this.raiz.nativeElement.contains(document.activeElement)) {
+      this.ranuras.get(frente)?.nativeElement.focus({ preventScroll: true });
+    }
     this.zona.run(() => this.frontChange.emit(frente));
   }
 
@@ -431,7 +445,11 @@ export class CardSwapComponent implements OnInit, AfterViewInit, OnChanges, OnDe
       return;
     }
     const index = this.indiceDe(evento);
-    if (index === null) return;
+    if (index !== null) this.activarCarta(index);
+  }
+
+  /** Pulsar o activar con el teclado una carta: avisa y, si estaba atrás, la trae al frente. */
+  private activarCarta(index: number): void {
     this.zona.run(() => this.cardClick.emit(index));
     const posicion = this.motor?.posicionDe(index) ?? 0;
     if (posicion > 0) this.irA(posicion);

@@ -55,7 +55,8 @@ describe('CardSwapComponent', () => {
       expect(imagenes.map((i) => i.alt)).toEqual(['Primera', 'Segunda', 'Tercera']);
       expect(imagenes.map((i) => i.getAttribute('src'))).toEqual(['blob:uno', 'blob:dos', 'blob:tres']);
       expect(raiz().getAttribute('role')).toBe('region');
-      expect(raiz().getAttribute('tabindex')).toBe('0');
+      // El contenedor no es enfocable: lo es la carta del frente.
+      expect(raiz().hasAttribute('tabindex')).toBe(false);
     });
 
     it('la primera carta empieza al frente', () => {
@@ -202,6 +203,88 @@ describe('CardSwapComponent', () => {
     });
   });
 
+  describe('accesibilidad con teclado', () => {
+    it('cada carta es un botón con nombre; solo la del frente entra en el orden del teclado', () => {
+      crear(ITEMS, { autoplay: false });
+
+      expect(ranuras().map((r) => r.getAttribute('role'))).toEqual(['button', 'button', 'button']);
+      expect(ranuras().map((r) => r.getAttribute('aria-label'))).toEqual(['Primera', 'Segunda', 'Tercera']);
+      expect(ranuras().map((r) => r.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+    });
+
+    it('sin alt usa el título y, si tampoco hay, un nombre con el número', () => {
+      crear([{ imageUrl: 'blob:a', title: 'Foto A' }, { imageUrl: 'blob:b' }], { autoplay: false });
+      expect(ranuras().map((r) => r.getAttribute('aria-label'))).toEqual(['Foto A', 'Foto 2']);
+    });
+
+    it('el tabindex acompaña a la carta que queda al frente', () => {
+      crear(ITEMS, { autoplay: false });
+
+      fixture.componentInstance.next();
+      vi.advanceTimersByTime(100);
+
+      expect(ranuras().map((r) => r.getAttribute('tabindex'))).toEqual(['-1', '0', '-1']);
+    });
+
+    it('si el foco estaba en la pila, pasa a la carta que queda al frente', () => {
+      crear(ITEMS, { autoplay: false });
+      ranuras()[0].focus();
+
+      raiz().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+
+      expect(document.activeElement).toBe(ranuras()[1]);
+    });
+
+    it('si el foco está fuera de la pila, no se lo roba', () => {
+      const otro = document.createElement('button');
+      document.body.appendChild(otro);
+      crear(ITEMS, { autoplay: false });
+      otro.focus();
+
+      fixture.componentInstance.next();
+
+      expect(document.activeElement).toBe(otro);
+      otro.remove();
+    });
+
+    it('Enter sobre la carta del frente avisa cardClick', () => {
+      crear(ITEMS, { autoplay: false });
+      const evento = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+
+      ranuras()[0].dispatchEvent(evento);
+
+      expect(clics).toEqual([0]);
+      expect(evento.defaultPrevented).toBe(true);
+    });
+
+    it('la barra espaciadora también activa la carta', () => {
+      crear(ITEMS, { autoplay: false });
+      ranuras()[0].dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+      expect(clics).toEqual([0]);
+    });
+
+    it('Enter sobre una carta de atrás la trae al frente', () => {
+      crear(ITEMS, { autoplay: false });
+      ranuras()[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      vi.advanceTimersByTime(1000);
+
+      expect(clics).toEqual([2]);
+      expect(cambios).toEqual([1, 2]);
+    });
+
+    it('Enter sobre algo dentro de la carta (no la carta misma) no hace nada', () => {
+      crear(ITEMS, { autoplay: false });
+      ranuras()[0].querySelector('img')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(clics).toEqual([]);
+    });
+
+    it('Enter sobre el contenedor (sin carta) no hace nada', () => {
+      crear(ITEMS, { autoplay: false });
+      raiz().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(clics).toEqual([]);
+    });
+  });
+
   describe('con una sola foto', () => {
     it('muestra la carta fija: sin autoplay, sin teclado y sin arrastre', () => {
       const temporizador = vi.spyOn(window, 'setTimeout');
@@ -222,6 +305,15 @@ describe('CardSwapComponent', () => {
     it('sigue avisando cuando se pulsa la carta', () => {
       crear([ITEMS[0]]);
       ranuras()[0].click();
+      expect(clics).toEqual([0]);
+    });
+
+    it('la carta es un botón enfocable y Enter la activa', () => {
+      crear([ITEMS[0]]);
+      expect(ranuras()[0].getAttribute('role')).toBe('button');
+      expect(ranuras()[0].getAttribute('tabindex')).toBe('0');
+
+      ranuras()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
       expect(clics).toEqual([0]);
     });
   });

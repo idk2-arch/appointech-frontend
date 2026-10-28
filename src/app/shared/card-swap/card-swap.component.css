@@ -66,7 +66,7 @@
   -webkit-backface-visibility: hidden;
 }
 
-.card-swap:focus-visible .card-swap-slot[data-front] {
+.card-swap-slot:focus-visible {
   outline: 2px solid var(--color-acento);
   outline-offset: 3px;
 }

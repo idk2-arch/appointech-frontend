@@ -2,7 +2,6 @@
   #raiz
   class="card-swap"
   [style]="estilos"
-  tabindex="0"
   role="region"
   aria-roledescription="carrusel"
   [attr.aria-label]="ariaLabel"
@@ -11,7 +10,15 @@
   <div class="card-swap-sizer" aria-hidden="true"><span></span></div>
   <div #escenario class="card-swap-stage">
     @for (item of items; track $index) {
-      <div #ranura class="card-swap-slot" [attr.data-swap-index]="$index">
+      <!-- Cada carta es un botón (abre la foto o la trae al frente). Solo la del frente entra en el orden del teclado. -->
+      <div
+        #ranura
+        class="card-swap-slot"
+        role="button"
+        [attr.tabindex]="$first ? 0 : -1"
+        [attr.aria-label]="item.alt || item.title || 'Foto ' + ($index + 1)"
+        [attr.data-swap-index]="$index"
+      >
         <div class="card-swap-card">
           <div class="card-swap-item">
             @if (item.title) {

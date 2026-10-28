@@ -1,6 +1,8 @@
 import {
   Component,
   ElementRef,
+  inject,
+  InjectionToken,
   Input,
   ViewChild,
   AfterViewInit,
@@ -8,6 +10,19 @@ import {
   NgZone,
 } from '@angular/core';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
+
+/** Las piezas de ogl que usa el fondo. Se inyectan para poder sustituirlas donde no hay WebGL (pruebas). */
+export interface BibliotecaOgl {
+  Renderer: typeof Renderer;
+  Program: typeof Program;
+  Mesh: typeof Mesh;
+  Triangle: typeof Triangle;
+}
+
+export const OGL = new InjectionToken<BibliotecaOgl>('OGL', {
+  providedIn: 'root',
+  factory: () => ({ Renderer, Program, Mesh, Triangle }),
+});
 
 function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -189,6 +204,8 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
   private onPointerLeave = () => {};
   private onVisibility = () => {};
 
+  private readonly ogl = inject(OGL);
+
   constructor(private zone: NgZone) {}
 
   ngAfterViewInit(): void {
@@ -196,7 +213,7 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
 
     let renderer: Renderer;
     try {
-      renderer = new Renderer({
+      renderer = new this.ogl.Renderer({
         webgl: 2,
         alpha: true,
         premultipliedAlpha: true,
@@ -217,8 +234,8 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
     canvas.style.display = 'block';
     container.appendChild(canvas);
 
-    const geometry = new Triangle(gl);
-    const program: any = new Program(gl, {
+    const geometry = new this.ogl.Triangle(gl);
+    const program: any = new this.ogl.Program(gl, {
       vertex,
       fragment,
       uniforms: {
@@ -249,7 +266,7 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
     });
     this.program = program;
 
-    const mesh = new Mesh(gl, { geometry, program });
+    const mesh = new this.ogl.Mesh(gl, { geometry, program });
 
     const setSize = () => {
       const rect = container.getBoundingClientRect();

@@ -11,7 +11,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { SolicitudServicio } from '../../../../core/models/cita';
+import { SolicitudServicio, UrgenciaCita } from '../../../../core/models/cita';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
 import { EspecialidadResponse } from '../../../../core/services/tecnico.service';
 import {
@@ -20,7 +20,9 @@ import {
   validadoresLongitud,
 } from '../../../../core/utils/coordenadas';
 import { obtenerMensajeError } from '../../../../core/utils/manejo-errores';
+import { MAX_TEXTO_ELECTRODOMESTICO } from '../../../../core/utils/validadores-cita';
 import { PuntoMapa } from '../../../../shared/mapa-ubicacion/mapa-ubicacion.component';
+import { OpcionSelect } from '../../../../shared/select/select.component';
 import { UbicacionElegida } from '../../../../shared/selector-direccion/selector-direccion.component';
 
 export interface BorradorDetalle {
@@ -28,12 +30,19 @@ export interface BorradorDetalle {
   direccionServicio: string;
   latitud: number | null;
   longitud: number | null;
+  marcaElectrodomestico?: string;
+  modeloElectrodomestico?: string;
+  urgencia?: UrgenciaCita;
+  /** Fotos elegidas (data URL) que se suben cuando la cita ya existe. */
+  fotos?: string[];
 }
 
 export interface SolicitudCreada {
   solicitud: SolicitudServicio;
   latitud: number;
   longitud: number;
+  /** Fotos del electrodoméstico por subir a la cita recién creada. */
+  fotos: string[];
 }
 
 @Component({
@@ -48,7 +57,14 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
   @Output() creada = new EventEmitter<SolicitudCreada>();
   @Output() volver = new EventEmitter<void>();
 
+  readonly maxTexto = MAX_TEXTO_ELECTRODOMESTICO;
+  readonly opcionesUrgencia: OpcionSelect[] = [
+    { value: 'NORMAL', label: 'Normal' },
+    { value: 'URGENTE', label: 'Urgente' },
+  ];
+
   form: FormGroup;
+  fotos: string[] = [];
   cargando = false;
   errorMensaje: string | null = null;
 
@@ -72,22 +88,39 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
       direccionServicio: ['', [Validators.required]],
       latitud: [null as number | null, [Validators.required, ...validadoresLatitud]],
       longitud: [null as number | null, [Validators.required, ...validadoresLongitud]],
+      marcaElectrodomestico: ['', [Validators.maxLength(MAX_TEXTO_ELECTRODOMESTICO)]],
+      modeloElectrodomestico: ['', [Validators.maxLength(MAX_TEXTO_ELECTRODOMESTICO)]],
+      urgencia: ['NORMAL' as UrgenciaCita],
     });
   }
 
   ngOnInit(): void {
     if (this.borrador) {
       this.form.patchValue(this.borrador);
+      this.fotos = this.borrador.fotos ?? [];
       const { latitud, longitud } = this.borrador;
       if (latitud !== null && longitud !== null) {
         this.puntoMapa = { latitud, longitud };
       }
     }
-    this.cambiosForm = this.form.valueChanges.subscribe((valor) => this.borradorCambio.emit(valor));
+    this.cambiosForm = this.form.valueChanges.subscribe(() => this.emitirBorrador());
   }
 
   ngOnDestroy(): void {
     this.cambiosForm?.unsubscribe();
+  }
+
+  alCambiarFotos(fotos: string[]): void {
+    this.fotos = fotos;
+    this.emitirBorrador();
+  }
+
+  get marca() {
+    return this.form.get('marcaElectrodomestico');
+  }
+
+  get modelo() {
+    return this.form.get('modeloElectrodomestico');
   }
 
   get descripcionProblema() {
@@ -142,6 +175,10 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  private emitirBorrador(): void {
+    this.borradorCambio.emit({ ...this.form.value, fotos: this.fotos });
+  }
+
   // ---- Envío ----
 
   onSubmit(): void {
@@ -156,6 +193,8 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
 
     const latitud = Number(this.form.get('latitud')?.value);
     const longitud = Number(this.form.get('longitud')?.value);
+    const marca = String(this.marca?.value ?? '').trim();
+    const modelo = String(this.modelo?.value ?? '').trim();
 
     this.solicitudService
       .crearSolicitud({
@@ -164,11 +203,14 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
         direccionServicio: String(this.direccionServicio?.value).trim(),
         latitud,
         longitud,
+        ...(marca && { marcaElectrodomestico: marca }),
+        ...(modelo && { modeloElectrodomestico: modelo }),
+        urgencia: this.form.get('urgencia')?.value as UrgenciaCita,
       })
       .subscribe({
         next: (solicitud) => {
           this.cargando = false;
-          this.creada.emit({ solicitud, latitud, longitud });
+          this.creada.emit({ solicitud, latitud, longitud, fotos: this.fotos });
           this.cdr.markForCheck();
         },
         error: (err) => {

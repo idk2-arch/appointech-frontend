@@ -1,0 +1,17 @@
+<div #ajuste class="bounce-cards-ajuste">
+  <div #conjunto class="bounce-cards" [style]="estilos">
+    @for (imagen of images; track $index) {
+      <div
+        #carta
+        class="bounce-cards__card"
+        [class.bounce-cards__card--clickable]="clicable"
+        [style.z-index]="$index + 1"
+        [attr.role]="clicable ? 'button' : null"
+        [attr.tabindex]="clicable ? 0 : null"
+        [attr.aria-label]="clicable ? imagen.alt || 'Carta ' + ($index + 1) : null"
+      >
+        <img [src]="imagen.src" [alt]="imagen.alt ?? ''" draggable="false" />
+      </div>
+    }
+  </div>
+</div>

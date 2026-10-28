@@ -54,10 +54,38 @@
               <p class="fs-titulo font-semibold text-[#D98E4A]">
                 {{ cita.fechaHoraInicio | fechaLocal: 'hora' }} – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}
               </p>
-              <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
+              <div class="flex flex-wrap items-center gap-2">
+                @if (cita.urgencia === 'URGENTE') {
+                  <span class="inline-block whitespace-nowrap rounded-full border border-rose-300/40 bg-rose-300/10 px-3 py-1 fs-secundario font-medium text-rose-200">
+                    Urgente
+                  </span>
+                }
+                <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
+              </div>
             </div>
 
             <p class="mt-4 fs-cuerpo text-white">{{ cita.descripcionProblema }}</p>
+            @if (equipoDe(cita.marcaElectrodomestico, cita.modeloElectrodomestico); as equipo) {
+              <p class="mt-2 fs-cuerpo text-white/80">Electrodoméstico: {{ equipo }}</p>
+            }
+
+            @if (cita.preDiagnostico; as preDiagnostico) {
+              <div class="mt-4"><app-prediagnostico [datos]="preDiagnostico"></app-prediagnostico></div>
+            }
+
+            @if (cita.fotosElectrodomestico?.length) {
+              <button
+                type="button"
+                (click)="alternarFotos(cita)"
+                [attr.aria-expanded]="fotosAbiertas(cita)"
+                class="boton-fila-admin mt-4 px-4 py-2"
+              >
+                {{ fotosAbiertas(cita) ? 'Ocultar fotos' : 'Ver fotos (' + cita.fotosElectrodomestico!.length + ')' }}
+              </button>
+              @if (fotosAbiertas(cita)) {
+                <div class="mt-4"><app-fotos-electrodomestico [fotos]="cita.fotosElectrodomestico"></app-fotos-electrodomestico></div>
+              }
+            }
 
             <dl class="mt-4 space-y-3 fs-cuerpo">
               <div>
@@ -68,7 +96,7 @@
                 <dt class="fs-secundario text-white/60">Cliente</dt>
                 <dd class="flex items-center gap-2 text-white">
                   <app-avatar [fotoUrl]="cita.cliente.fotoUrl" [nombre]="cita.cliente.nombre + ' ' + cita.cliente.apellido" tamano="sm"></app-avatar>
-                  {{ cita.cliente.nombre }} {{ cita.cliente.apellido }}
+                  <span class="min-w-0 break-words">{{ cita.cliente.nombre }} {{ cita.cliente.apellido }}</span>
                 </dd>
               </div>
             </dl>

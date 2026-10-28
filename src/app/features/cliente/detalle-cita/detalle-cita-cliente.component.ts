@@ -3,8 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize, Subscription } from 'rxjs';
 
-import { CitaResumen, DetalleCita } from '../../../core/models/cita';
+import { FOTOS_ELECTRODOMESTICO_MAXIMO } from '../../../core/config/foto.config';
+import { CitaResumen, DetalleCita, FotoElectrodomestico } from '../../../core/models/cita';
 import { CitaClienteService } from '../../../core/services/cita-cliente.service';
+import { FotoElectrodomesticoService } from '../../../core/services/foto-electrodomestico.service';
 import { clientePuedeModificar } from '../../../core/utils/acciones-cita';
 import { obtenerMensajeError } from '../../../core/utils/manejo-errores';
 
@@ -25,12 +27,18 @@ export class DetalleCitaClienteComponent implements OnInit, OnDestroy {
   errorDialogo: string | null = null;
   mensajeExito: string | null = null;
 
+  /** Fotos elegidas y aún sin subir (incluye las que fallaron, para reintentar). */
+  fotosNuevas: string[] = [];
+  enviandoFotos = false;
+  errorFotos: string | null = null;
+
   private id = 0;
   private consulta?: Subscription;
 
   constructor(
     private ruta: ActivatedRoute,
     private citaService: CitaClienteService,
+    private fotoService: FotoElectrodomesticoService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -45,6 +53,11 @@ export class DetalleCitaClienteComponent implements OnInit, OnDestroy {
 
   get puedeModificar(): boolean {
     return !!this.cita && clientePuedeModificar(this.cita.estado);
+  }
+
+  /** Cuántas fotos más caben en la cita. */
+  get cupoFotos(): number {
+    return Math.max(0, FOTOS_ELECTRODOMESTICO_MAXIMO - (this.cita?.fotosElectrodomestico?.length ?? 0));
   }
 
   cargar(): void {
@@ -87,6 +100,44 @@ export class DetalleCitaClienteComponent implements OnInit, OnDestroy {
       this.citaService.reprogramar(this.id, inicio),
       'Tu cita fue reprogramada.',
       'No fue posible reprogramar la cita.'
+    );
+  }
+
+  subirFotos(): void {
+    if (this.fotosNuevas.length === 0) return;
+
+    this.enviandoFotosDurante(this.fotoService.subirVarias(this.id, this.fotosNuevas)).subscribe((resultado) => {
+      // Las que fallaron se quedan elegidas para poder reintentar.
+      this.fotosNuevas = resultado.fallidas;
+      if (resultado.fallidas.length > 0) {
+        this.errorFotos = `${resultado.mensajeError ?? 'No fue posible subir la foto.'} Puedes reintentar.`;
+      }
+      if (resultado.subidas.length > 0) {
+        this.mensajeExito = resultado.subidas.length === 1 ? 'La foto fue agregada.' : 'Las fotos fueron agregadas.';
+        this.recargarSilencioso();
+      }
+    });
+  }
+
+  quitarFoto(foto: FotoElectrodomestico): void {
+    this.enviandoFotosDurante(this.fotoService.eliminar(this.id, foto.id)).subscribe({
+      next: () => {
+        this.mensajeExito = 'La foto fue eliminada.';
+        this.recargarSilencioso();
+      },
+      error: (err) => (this.errorFotos = obtenerMensajeError(err, 'No fue posible quitar la foto.')),
+    });
+  }
+
+  /** Marca que se están enviando fotos (y limpia el error anterior) mientras dura la acción. */
+  private enviandoFotosDurante<T>(accion: Observable<T>): Observable<T> {
+    this.enviandoFotos = true;
+    this.errorFotos = null;
+    return accion.pipe(
+      finalize(() => {
+        this.enviandoFotos = false;
+        this.cdr.markForCheck();
+      })
     );
   }
 

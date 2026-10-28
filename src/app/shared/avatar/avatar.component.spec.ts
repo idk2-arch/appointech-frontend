@@ -64,12 +64,48 @@ describe('AvatarComponent', () => {
     expect(imagen()?.getAttribute('src')).toBe('http://localhost:8080/api/fotos/nueva');
   });
 
-  it.each([
-    ['sm', 'h-8'],
-    ['md', 'h-10'],
-    ['lg', 'h-20'],
-  ])('el tamaño %s usa la clase %s', (tamano, clase) => {
-    entradas({ fotoUrl: null, nombre: 'Ana', tamano });
-    expect(iniciales()?.classList).toContain(clase);
+  describe('no se deforma dentro de un flex', () => {
+    const host = (): HTMLElement => raiz();
+
+    it.each([
+      ['sm', '2rem'],
+      ['md', '2.5rem'],
+      ['lg', '5rem'],
+    ])('el tamaño %s fija ancho, ancho mínimo y alto en %s', (tamano, lado) => {
+      entradas({ fotoUrl: '/api/fotos/abc', nombre: 'Ana', tamano });
+
+      expect(host().style.width).toBe(lado);
+      expect(host().style.minWidth).toBe(lado);
+      expect(host().style.height).toBe(lado);
+    });
+
+    it('no se encoge, es redondo y conserva la proporción 1:1', () => {
+      entradas({ fotoUrl: '/api/fotos/abc', nombre: 'Ana' });
+
+      expect(host().style.flexShrink).toBe('0');
+      expect(host().style.flexGrow).toBe('0');
+      expect(host().style.aspectRatio).toMatch(/^1\s*\/\s*1$/);
+      expect(host().style.borderRadius).toBe('50%');
+      expect(host().style.display).toBe('inline-block');
+    });
+
+    it('la imagen llena el contenedor y se recorta con object-fit: cover', () => {
+      entradas({ fotoUrl: '/api/fotos/abc', nombre: 'Ana' });
+
+      expect(Array.from(imagen()!.classList)).toEqual(expect.arrayContaining(['block', 'h-full', 'w-full', 'object-cover', 'rounded-full']));
+    });
+
+    it('el círculo de iniciales también llena el contenedor', () => {
+      entradas({ fotoUrl: null, nombre: 'Ana' });
+
+      expect(Array.from(iniciales()!.classList)).toEqual(expect.arrayContaining(['h-full', 'w-full', 'rounded-full']));
+    });
+
+    it('con un nombre larguísimo el tamaño sigue siendo el mismo', () => {
+      entradas({ fotoUrl: null, nombre: 'María de los Ángeles Fernández-Villaseñor y Gutiérrez de la Concha', tamano: 'sm' });
+
+      expect(host().style.width).toBe('2rem');
+      expect(iniciales()?.textContent?.trim()).toBe('MD');
+    });
   });
 });

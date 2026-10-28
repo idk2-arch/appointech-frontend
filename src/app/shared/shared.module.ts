@@ -17,8 +17,15 @@ import { MapaUbicacionComponent } from './mapa-ubicacion/mapa-ubicacion.componen
 import { CamposPersonaComponent } from './campos-persona/campos-persona.component';
 import { ModalFormularioComponent } from './modal-formulario/modal-formulario.component';
 import { SelectorDireccionComponent } from './selector-direccion/selector-direccion.component';
+import { FotoAmpliadaComponent } from './foto-ampliada/foto-ampliada.component';
+import { BounceCardsComponent } from './bounce-cards/bounce-cards.component';
+import { CardSwapComponent } from './card-swap/card-swap.component';
+import { FotosElectrodomesticoComponent } from './fotos-electrodomestico/fotos-electrodomestico.component';
+import { PrediagnosticoComponent } from './prediagnostico/prediagnostico.component';
+import { SelectorFotosComponent } from './selector-fotos/selector-fotos.component';
 import { AvatarComponent } from './avatar/avatar.component';
 import { CargaFotoComponent } from './carga-foto/carga-foto.component';
+import { PerfilDatosComponent } from './perfil-datos/perfil-datos.component';
 import { MiPerfilComponent } from './mi-perfil/mi-perfil.component';
 import { PerfilSesionComponent } from './perfil-sesion/perfil-sesion.component';
 import { SelectComponent } from './select/select.component';
@@ -53,6 +60,13 @@ import { SelectorEspecialidadesComponent } from './selector-especialidades/selec
     CargaFotoComponent,
     MiPerfilComponent,
     PerfilSesionComponent,
+    CardSwapComponent,
+    FotosElectrodomesticoComponent,
+    PrediagnosticoComponent,
+    SelectorFotosComponent,
+    BounceCardsComponent,
+    FotoAmpliadaComponent,
+    PerfilDatosComponent,
   ],
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   exports: [
@@ -80,6 +94,13 @@ import { SelectorEspecialidadesComponent } from './selector-especialidades/selec
     CargaFotoComponent,
     MiPerfilComponent,
     PerfilSesionComponent,
+    CardSwapComponent,
+    FotosElectrodomesticoComponent,
+    PrediagnosticoComponent,
+    SelectorFotosComponent,
+    BounceCardsComponent,
+    FotoAmpliadaComponent,
+    PerfilDatosComponent,
   ],
 })
 export class SharedModule {}

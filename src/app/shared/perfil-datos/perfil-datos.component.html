@@ -1,0 +1,140 @@
+<section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="perfil-datos-titulo">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 id="perfil-datos-titulo" class="fs-cuerpo font-semibold text-white">Mis datos</h2>
+    @if (!editando) {
+      <button type="button" data-editar (click)="editar()" class="boton-fila-admin px-4 py-2">Editar</button>
+    }
+  </div>
+
+  @if (editando) {
+    <form [formGroup]="form" (ngSubmit)="enviar()" class="mt-4 grid gap-4 sm:grid-cols-2" novalidate>
+      <div>
+        <label for="perfil-nombre" class="block fs-cuerpo font-medium text-white">Nombre</label>
+        <input
+          id="perfil-nombre"
+          type="text"
+          formControlName="nombre"
+          autocomplete="given-name"
+          [attr.aria-invalid]="invalido('nombre') ? true : null"
+          aria-describedby="perfil-nombre-error"
+          class="campo mt-2"
+        />
+        @if (invalido('nombre')) {
+          <p id="perfil-nombre-error" role="alert" class="mt-1.5 fs-secundario text-rose-300">Escribe tu nombre.</p>
+        }
+      </div>
+
+      <div>
+        <label for="perfil-apellido" class="block fs-cuerpo font-medium text-white">Apellido</label>
+        <input
+          id="perfil-apellido"
+          type="text"
+          formControlName="apellido"
+          autocomplete="family-name"
+          [attr.aria-invalid]="invalido('apellido') ? true : null"
+          aria-describedby="perfil-apellido-error"
+          class="campo mt-2"
+        />
+        @if (invalido('apellido')) {
+          <p id="perfil-apellido-error" role="alert" class="mt-1.5 fs-secundario text-rose-300">Escribe tu apellido.</p>
+        }
+      </div>
+
+      <div>
+        <label for="perfil-telefono" class="block fs-cuerpo font-medium text-white">Teléfono (opcional)</label>
+        <input id="perfil-telefono" type="tel" formControlName="telefono" autocomplete="tel" class="campo mt-2" />
+      </div>
+
+      @if (conDireccion) {
+        <div>
+          <label for="perfil-direccion" class="block fs-cuerpo font-medium text-white">
+            {{ esTecnico ? 'Dirección base' : 'Dirección' }}
+          </label>
+          <input
+            id="perfil-direccion"
+            type="text"
+            formControlName="direccion"
+            autocomplete="street-address"
+            [attr.aria-invalid]="invalido('direccion') ? true : null"
+            aria-describedby="perfil-direccion-error"
+            class="campo mt-2"
+          />
+          @if (invalido('direccion')) {
+            <p id="perfil-direccion-error" role="alert" class="mt-1.5 fs-secundario text-rose-300">Escribe tu dirección.</p>
+          }
+        </div>
+      }
+
+      @if (errorMensaje) {
+        <div role="alert" class="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 fs-cuerpo text-rose-200 sm:col-span-2">
+          {{ errorMensaje }}
+        </div>
+      }
+
+      <div class="flex flex-wrap gap-2 sm:col-span-2">
+        <button type="submit" [disabled]="guardando" class="boton-admin boton-admin--cobre disabled:cursor-not-allowed disabled:opacity-60">
+          {{ guardando ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" (click)="cancelar()" [disabled]="guardando" class="boton-fila-admin px-4 py-2.5 disabled:cursor-not-allowed disabled:opacity-60">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  } @else {
+    <dl class="mt-4 grid gap-4 fs-cuerpo sm:grid-cols-2">
+      <div>
+        <dt class="fs-secundario text-white/60">Nombre</dt>
+        <dd class="break-words text-white">{{ nombre || 'Sin registrar' }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Teléfono</dt>
+        <dd class="break-words text-white">{{ perfil.telefono || 'Sin registrar' }}</dd>
+      </div>
+      @if (conDireccion) {
+        <div class="sm:col-span-2">
+          <dt class="fs-secundario text-white/60">{{ esTecnico ? 'Dirección base' : 'Dirección' }}</dt>
+          <dd class="break-words text-white">{{ perfil.direccion || 'Sin registrar' }}</dd>
+        </div>
+      }
+    </dl>
+  }
+
+  <div class="mt-6 border-t border-white/10 pt-5">
+    <h3 class="fs-cuerpo font-semibold text-white">Datos que no puedes cambiar aquí</h3>
+    <dl class="mt-3 grid gap-4 fs-cuerpo sm:grid-cols-2">
+      <div>
+        <dt class="fs-secundario text-white/60">Correo</dt>
+        <dd class="break-all text-white">{{ perfil.correo }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Rol</dt>
+        <dd class="text-white">{{ etiquetaRol || 'Sin registrar' }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Documento</dt>
+        <dd class="break-words text-white">{{ documento || 'Sin registrar' }}</dd>
+      </div>
+      @if (esTecnico) {
+        <div>
+          <dt class="fs-secundario text-white/60">Radio de cobertura</dt>
+          <dd class="text-white">{{ perfil.radioCoberturaKm != null ? perfil.radioCoberturaKm + ' km' : 'Sin registrar' }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="fs-secundario text-white/60">Especialidades</dt>
+          <dd>
+            @if (perfil.especialidades?.length) {
+              <ul class="flex flex-wrap gap-1.5">
+                @for (especialidad of perfil.especialidades; track especialidad.id) {
+                  <li class="chip-admin">{{ especialidad.nombre }}</li>
+                }
+              </ul>
+            } @else {
+              <span class="text-white/60">Sin especialidades asignadas</span>
+            }
+          </dd>
+        </div>
+      }
+    </dl>
+    <p class="mt-4 fs-secundario text-white/60">Para cambiar estos datos contacta al administrador.</p>
+  </div>
+</section>

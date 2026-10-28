@@ -1,0 +1,66 @@
+:host {
+  display: block;
+  width: 100%;
+  --bounce-cards-sombra: 0 1px 2px rgb(0 0 0 / 0.12), 0 10px 28px -6px rgb(0 0 0 / 0.32);
+  --bounce-cards-sombra-activa: 0 2px 4px rgb(0 0 0 / 0.14), 0 22px 44px -10px rgb(0 0 0 / 0.42);
+}
+
+/* Se reduce con transform cuando no cabe, así que el contenedor mide solo el alto ya escalado. */
+.bounce-cards-ajuste {
+  position: relative;
+  width: 100%;
+}
+
+.bounce-cards {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform-origin: top center;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bounce-cards__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--bounce-cards-size);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: var(--bounce-cards-border) solid var(--bounce-cards-border-color);
+  border-radius: var(--bounce-cards-radius);
+  background: var(--bounce-cards-border-color);
+  box-shadow: var(--bounce-cards-shadow);
+  transform: translate(-50%, -50%) scale(0);
+  transition: box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.bounce-cards__card[data-active] {
+  box-shadow: var(--bounce-cards-shadow-active);
+}
+
+.bounce-cards__card--clickable {
+  cursor: pointer;
+}
+
+.bounce-cards__card--clickable:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 3px;
+}
+
+.bounce-cards__card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bounce-cards__card {
+    transition: none;
+  }
+}

@@ -1,0 +1,81 @@
+<div>
+  <input
+    #archivo
+    type="file"
+    class="hidden"
+    multiple
+    [accept]="tiposAceptados"
+    (change)="alElegir($event)"
+    aria-label="Elegir fotos del electrodoméstico"
+    tabindex="-1"
+  />
+
+  <div class="flex flex-wrap items-center gap-3">
+    <button
+      type="button"
+      data-agregar
+      (click)="archivo.click()"
+      [disabled]="deshabilitado || procesando || lleno"
+      class="boton-fila-admin px-4 py-2.5 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {{ procesando ? 'Preparando…' : 'Agregar fotos' }}
+    </button>
+    <span class="fs-cuerpo text-white/60" aria-live="polite">{{ vistas.length }} de {{ maximo }}</span>
+  </div>
+
+  @if (imagenes.length > 0) {
+    <div class="mt-3" role="group" aria-label="Fotos elegidas">
+      <app-bounce-cards
+        [images]="imagenes"
+        [containerWidth]="vistaPrevia.containerWidth"
+        [containerHeight]="vistaPrevia.containerHeight"
+        [cardSize]="vistaPrevia.cardSize"
+        [spread]="vistaPrevia.spread"
+        [rotation]="vistaPrevia.rotation"
+        [arc]="vistaPrevia.arc"
+        [pushDistance]="vistaPrevia.pushDistance"
+        [hoverScale]="vistaPrevia.hoverScale"
+        [bounciness]="vistaPrevia.bounciness"
+        [animationDelay]="vistaPrevia.animationDelay"
+        [animationStagger]="vistaPrevia.animationStagger"
+        [borderWidth]="vistaPrevia.borderWidth"
+        [borderColor]="vistaPrevia.borderColor"
+        [radius]="vistaPrevia.radius"
+        [shadow]="vistaPrevia.shadow"
+        [enableHover]="vistaPrevia.enableHover"
+        (cardClick)="ampliada = $event"
+      >
+      </app-bounce-cards>
+
+      <!-- Los botones de quitar van fuera de las tarjetas: no se mueven con el hover ni con la inclinación. -->
+      <ul class="mt-2 flex flex-wrap gap-2" aria-label="Quitar fotos">
+        @for (imagen of imagenes; track $index) {
+          <li>
+            <button
+              type="button"
+              data-quitar
+              (click)="quitar($index)"
+              [disabled]="deshabilitado"
+              class="boton-fila-admin disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Quitar foto {{ $index + 1 }}
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  <p class="mt-2 fs-secundario text-white/60">Opcional. JPEG, PNG o WebP; se reducen automáticamente.</p>
+
+  @if (error) {
+    <p role="alert" class="mt-2 fs-cuerpo text-rose-300">{{ error }}</p>
+  }
+</div>
+
+@if (ampliada !== null && vistas[ampliada]; as foto) {
+  <app-foto-ampliada [src]="foto" [alt]="'Foto ' + (ampliada + 1) + ' del electrodoméstico'" (cerrar)="ampliada = null"></app-foto-ampliada>
+}

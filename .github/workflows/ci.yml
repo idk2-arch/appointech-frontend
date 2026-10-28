@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [desarrollo]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build-test-sonar:
+    name: Build, pruebas y análisis de Sonar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Sonar necesita el historial completo para atribuir el código nuevo.
+          fetch-depth: 0
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Pruebas con cobertura
+        run: npm run test:ci
+
+      - name: Análisis de SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

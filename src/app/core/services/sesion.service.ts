@@ -2,38 +2,55 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 /**
- * Datos de la persona con sesión iniciada que la interfaz necesita mostrar (hoy, su foto).
- * Se guarda en localStorage para que sobreviva a un refresco de la página.
+ * Datos de la persona con sesión iniciada que la interfaz necesita mostrar (su foto y su nombre).
+ * Se guardan en localStorage para que sobrevivan a un refresco de la página.
  */
 @Injectable({ providedIn: 'root' })
 export class SesionService {
   private readonly FOTO_KEY = 'appointech_foto_url';
-  private readonly foto = new BehaviorSubject<string | null>(this.leerFoto());
+  private readonly NOMBRE_KEY = 'appointech_nombre';
+  private readonly foto = new BehaviorSubject<string | null>(this.leer(this.FOTO_KEY));
+  private readonly nombre = new BehaviorSubject<string | null>(this.leer(this.NOMBRE_KEY));
 
   readonly fotoUrl$: Observable<string | null> = this.foto.asObservable();
+  readonly nombre$: Observable<string | null> = this.nombre.asObservable();
 
   get fotoUrl(): string | null {
     return this.foto.value;
   }
 
+  get nombreActual(): string | null {
+    return this.nombre.value;
+  }
+
   establecerFoto(fotoUrl: string | null | undefined): void {
-    const valor = fotoUrl || null;
-    try {
-      if (valor) localStorage.setItem(this.FOTO_KEY, valor);
-      else localStorage.removeItem(this.FOTO_KEY);
-    } catch {
-      // Sin almacenamiento disponible la foto vale solo mientras la página siga abierta.
-    }
-    this.foto.next(valor);
+    this.foto.next(this.guardar(this.FOTO_KEY, fotoUrl));
+  }
+
+  establecerNombre(nombre: string | null | undefined): void {
+    this.nombre.next(this.guardar(this.NOMBRE_KEY, nombre));
   }
 
   limpiar(): void {
     this.establecerFoto(null);
+    this.establecerNombre(null);
   }
 
-  private leerFoto(): string | null {
+  /** Guarda (o borra, si no hay valor) y devuelve el valor normalizado. */
+  private guardar(clave: string, valor: string | null | undefined): string | null {
+    const normalizado = valor?.trim() || null;
     try {
-      return localStorage.getItem(this.FOTO_KEY);
+      if (normalizado) localStorage.setItem(clave, normalizado);
+      else localStorage.removeItem(clave);
+    } catch {
+      // Sin almacenamiento disponible el dato vale solo mientras la página siga abierta.
+    }
+    return normalizado;
+  }
+
+  private leer(clave: string): string | null {
+    try {
+      return localStorage.getItem(clave);
     } catch {
       return null;
     }

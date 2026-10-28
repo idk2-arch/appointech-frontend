@@ -48,6 +48,52 @@
     <app-dictado-voz [deshabilitado]="cargando" (dictado)="agregarDictado($event)"></app-dictado-voz>
   </div>
 
+  <!-- Electrodoméstico (todo opcional) -->
+  <div class="grid gap-4 sm:grid-cols-3">
+    <div>
+      <label for="solicitud-marca" class="block fs-cuerpo font-medium text-white">Marca (opcional)</label>
+      <input
+        id="solicitud-marca"
+        type="text"
+        formControlName="marcaElectrodomestico"
+        autocomplete="off"
+        [attr.maxlength]="maxTexto"
+        [attr.aria-invalid]="marca?.invalid ? true : null"
+        class="campo mt-2"
+      />
+      @if (marca?.invalid) {
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">La marca no puede superar {{ maxTexto }} caracteres.</p>
+      }
+    </div>
+    <div>
+      <label for="solicitud-modelo" class="block fs-cuerpo font-medium text-white">Modelo (opcional)</label>
+      <input
+        id="solicitud-modelo"
+        type="text"
+        formControlName="modeloElectrodomestico"
+        autocomplete="off"
+        [attr.maxlength]="maxTexto"
+        [attr.aria-invalid]="modelo?.invalid ? true : null"
+        class="campo mt-2"
+      />
+      @if (modelo?.invalid) {
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">El modelo no puede superar {{ maxTexto }} caracteres.</p>
+      }
+    </div>
+    <div>
+      <label for="solicitud-urgencia" class="block fs-cuerpo font-medium text-white">Urgencia</label>
+      <app-select inputId="solicitud-urgencia" formControlName="urgencia" [options]="opcionesUrgencia" class="mt-2"></app-select>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
+    <p class="fs-cuerpo font-medium text-white">Fotos del electrodoméstico (opcional)</p>
+    <p class="mt-1 fs-secundario text-white/60">Ayudan al técnico a llegar preparado. Hasta 3 fotos.</p>
+    <div class="mt-3">
+      <app-selector-fotos [fotos]="fotos" [deshabilitado]="cargando" (fotosCambio)="alCambiarFotos($event)"></app-selector-fotos>
+    </div>
+  </div>
+
   <!-- Ubicación: el cliente solo ve dirección, mapa y mensajes; las coordenadas van ocultas -->
   <div class="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
     <app-selector-direccion

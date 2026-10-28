@@ -8,6 +8,7 @@ import { CitaTecnicoService } from '../../../core/services/cita-tecnico.service'
 import { accionesTecnico, TransicionTecnico } from '../../../core/utils/acciones-cita';
 import { hoyIso } from '../../../core/utils/fecha-local';
 import { obtenerMensajeError } from '../../../core/utils/manejo-errores';
+import { equipoDeCita } from '../../../core/utils/urgencia';
 import { enlaceTelefono } from '../../../core/utils/telefono';
 
 type Dialogo =
@@ -35,6 +36,10 @@ export class MiAgendaComponent implements OnInit, OnDestroy {
 
   readonly enlaceTelefono = enlaceTelefono;
   readonly acciones = accionesTecnico;
+  readonly equipoDe = equipoDeCita;
+
+  /** Citas con las fotos desplegadas (se descargan solo cuando se piden). */
+  private readonly conFotos = new Set<number>();
 
   /** Diagnósticos guardados en esta sesión, para reabrirlos al corregir. */
   private diagnosticos = new Map<number, DiagnosticoCita>();
@@ -52,6 +57,14 @@ export class MiAgendaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.consulta?.unsubscribe();
+  }
+
+  fotosAbiertas(cita: CitaTecnico): boolean {
+    return this.conFotos.has(cita.id);
+  }
+
+  alternarFotos(cita: CitaTecnico): void {
+    if (!this.conFotos.delete(cita.id)) this.conFotos.add(cita.id);
   }
 
   cambiarFecha(fecha: string): void {

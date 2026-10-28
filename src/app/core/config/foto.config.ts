@@ -5,3 +5,6 @@ export const FOTO_TIPO_SALIDA = 'image/jpeg';
 export const FOTO_TIPOS_PERMITIDOS: readonly string[] = ['image/jpeg', 'image/png', 'image/webp'];
 /** Tamaño máximo de la imagen ya reducida. */
 export const FOTO_TAMANIO_MAXIMO_BYTES = 1024 * 1024;
+
+/** Fotos del electrodoméstico que se pueden adjuntar a una cita. */
+export const FOTOS_ELECTRODOMESTICO_MAXIMO = 3;

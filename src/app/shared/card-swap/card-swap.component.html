@@ -1,0 +1,30 @@
+<div
+  #raiz
+  class="card-swap"
+  [style]="estilos"
+  tabindex="0"
+  role="region"
+  aria-roledescription="carrusel"
+  [attr.aria-label]="ariaLabel"
+  (keydown)="alTeclear($event)"
+>
+  <div class="card-swap-sizer" aria-hidden="true"><span></span></div>
+  <div #escenario class="card-swap-stage">
+    @for (item of items; track $index) {
+      <div #ranura class="card-swap-slot" [attr.data-swap-index]="$index">
+        <div class="card-swap-card">
+          <div class="card-swap-item">
+            @if (item.title) {
+              <div class="card-swap-head"><span class="card-swap-title">{{ item.title }}</span></div>
+            }
+            <div class="card-swap-media">
+              <img [src]="item.imageUrl" [alt]="item.alt ?? item.title ?? ''" draggable="false" />
+            </div>
+          </div>
+          <span class="card-swap-card-rim" aria-hidden="true"></span>
+        </div>
+        <span #sombra class="card-swap-shade" aria-hidden="true"></span>
+      </div>
+    }
+  </div>
+</div>

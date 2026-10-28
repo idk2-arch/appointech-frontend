@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { API_BASE_URL } from '../config/api.config';
 import { AuthService } from './auth.service';
@@ -75,5 +75,59 @@ describe('AuthService y la foto de la sesión', () => {
     iniciarSesion('/api/fotos/abc');
     auth.cerrarSesion();
     expect(sesion.fotoUrl).toBeNull();
+  });
+});
+
+describe('SesionService: nombre', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+
+  it('guarda el nombre, lo publica y lo recupera tras un refresco', async () => {
+    const sesion = TestBed.inject(SesionService);
+    sesion.establecerNombre('  Ana Pérez ');
+
+    expect(sesion.nombreActual).toBe('Ana Pérez');
+    expect(await firstValueFrom(sesion.nombre$)).toBe('Ana Pérez');
+    expect(localStorage.getItem('appointech_nombre')).toBe('Ana Pérez');
+
+    TestBed.resetTestingModule();
+    expect(TestBed.inject(SesionService).nombreActual).toBe('Ana Pérez');
+  });
+
+  it('un nombre vacío lo borra', () => {
+    const sesion = TestBed.inject(SesionService);
+    sesion.establecerNombre('Ana');
+    sesion.establecerNombre('   ');
+    expect(sesion.nombreActual).toBeNull();
+    expect(localStorage.getItem('appointech_nombre')).toBeNull();
+  });
+
+  it('limpiar borra el nombre y la foto', () => {
+    const sesion = TestBed.inject(SesionService);
+    sesion.establecerNombre('Ana');
+    sesion.establecerFoto('/api/fotos/abc');
+
+    sesion.limpiar();
+
+    expect(sesion.nombreActual).toBeNull();
+    expect(sesion.fotoUrl).toBeNull();
+  });
+
+  it('cerrar sesión borra el nombre', () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const sesion = TestBed.inject(SesionService);
+    sesion.establecerNombre('Ana');
+    TestBed.inject(AuthService).cerrarSesion();
+    expect(sesion.nombreActual).toBeNull();
+  });
+
+  it('sin almacenamiento disponible sigue funcionando en memoria', () => {
+    const roto = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('bloqueado');
+    });
+    const sesion = TestBed.inject(SesionService);
+    sesion.establecerNombre('Ana');
+    expect(sesion.nombreActual).toBe('Ana');
+    roto.mockRestore();
   });
 });

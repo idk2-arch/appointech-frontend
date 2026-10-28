@@ -30,7 +30,33 @@
           <button type="button" (click)="abrir('cancelar')" class="boton-fila-admin px-4 py-2.5">Cancelar cita</button>
         </div>
       }
-      <app-detalle-cita [cita]="cita"></app-detalle-cita>
+      <app-detalle-cita
+        [cita]="cita"
+        [fotosEditables]="puedeModificar"
+        [fotosOcupadas]="enviandoFotos"
+        (quitarFoto)="quitarFoto($event)"
+      >
+        <div fotosAcciones>
+          @if (cupoFotos > 0) {
+            <app-selector-fotos
+              [maximo]="cupoFotos"
+              [fotos]="fotosNuevas"
+              [deshabilitado]="enviandoFotos"
+              (fotosCambio)="fotosNuevas = $event"
+            ></app-selector-fotos>
+            @if (fotosNuevas.length > 0) {
+              <button type="button" (click)="subirFotos()" [disabled]="enviandoFotos" class="boton-admin boton-admin--cobre mt-3">
+                {{ enviandoFotos ? 'Subiendo…' : fotosNuevas.length === 1 ? 'Subir foto' : 'Subir fotos' }}
+              </button>
+            }
+          } @else {
+            <p class="fs-cuerpo text-white/60">Ya tienes el máximo de fotos. Quita una para agregar otra.</p>
+          }
+          @if (errorFotos) {
+            <p role="alert" class="mt-3 fs-cuerpo text-rose-300">{{ errorFotos }}</p>
+          }
+        </div>
+      </app-detalle-cita>
     }
   </div>
 </div>

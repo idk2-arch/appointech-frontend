@@ -3,11 +3,12 @@ import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@ang
 import { aFechaHoraLocal, parsearFechaLocal } from './fecha-local';
 
 export const MAX_MOTIVO = 500;
+export const MAX_TEXTO_ELECTRODOMESTICO = 60;
 export const MAX_DIAGNOSTICO = 2000;
 export const MAX_RECOMENDACIONES = 1000;
 
 /** Un motivo compuesto solo de espacios cuenta como vacío. */
-const noSoloEspacios: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
+export const noSoloEspacios: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
   typeof control.value === 'string' && control.value.length > 0 && control.value.trim() === ''
     ? { required: true }
     : null;

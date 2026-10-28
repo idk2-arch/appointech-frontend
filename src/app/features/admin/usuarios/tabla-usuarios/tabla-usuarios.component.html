@@ -60,7 +60,7 @@
                   @if ($first) {
                     <div class="flex items-center gap-3">
                       <app-avatar [fotoUrl]="fila.fotoUrl" [nombre]="fila.nombre" tamano="sm"></app-avatar>
-                      {{ texto(fila, columna) }}
+                      <span class="min-w-0">{{ texto(fila, columna) }}</span>
                     </div>
                   } @else {
                     {{ texto(fila, columna) }}

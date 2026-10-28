@@ -1,0 +1,73 @@
+@if (fotos && fotos.length > 0) {
+  <div>
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-12 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando fotos…
+      </div>
+    } @else {
+      @if (items.length > 0) {
+        <div class="mx-auto w-full max-w-md">
+          <app-card-swap
+            [items]="items"
+            [delay]="4000"
+            [cardDistance]="60"
+            [verticalDistance]="70"
+            [depth]="90"
+            [skewAmount]="6"
+            [visibleCards]="4"
+            [cardRadius]="18"
+            [speed]="1"
+            [bounce]="0.35"
+            [parallax]="0.5"
+            [hoverSpread]="0.12"
+            [dim]="0.5"
+            [autoplay]="true"
+            [pauseOnHover]="true"
+            [draggable]="true"
+            ariaLabel="Fotos del electrodoméstico"
+            (change)="alCambiarFrente($event)"
+            (cardClick)="alPulsarCarta($event)"
+          ></app-card-swap>
+        </div>
+        <p class="mt-2 text-center fs-secundario text-white/60">Toca la foto del frente para verla en grande.</p>
+      }
+
+      @if (fallidas > 0) {
+        <div role="alert" class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300/30 bg-amber-300/10 px-3 py-2 fs-cuerpo text-amber-100">
+          <span>No pudimos cargar {{ fallidas === 1 ? 'una foto' : fallidas + ' fotos' }}.</span>
+          <button type="button" (click)="reintentar()" class="font-medium underline">Reintentar</button>
+        </div>
+      }
+    }
+
+    @if (editable && cargadas.length > 0) {
+      <ul class="mt-4 flex flex-wrap gap-3" aria-label="Fotos guardadas">
+        @for (foto of cargadas; track foto.id; let i = $index) {
+          <li class="relative">
+            <img [src]="items[i].imageUrl" [alt]="items[i].alt" class="h-20 w-20 rounded-xl border border-white/15 object-cover" />
+            <button
+              type="button"
+              (click)="quitar.emit(foto)"
+              [disabled]="ocupado"
+              [attr.aria-label]="'Quitar la foto ' + (i + 1)"
+              class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-fondo text-white/80 transition
+                     hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acento disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}
+
+@if (ampliada !== null && items[ampliada]; as foto) {
+  <app-foto-ampliada [src]="foto.imageUrl" [alt]="foto.alt ?? ''" (cerrar)="cerrarAmpliada()"></app-foto-ampliada>
+}

@@ -29,8 +29,48 @@
         <dt class="fs-secundario text-white/60">Problema</dt>
         <dd class="break-words text-white">{{ cita.descripcionProblema }}</dd>
       </div>
+      @if (equipo; as nombreEquipo) {
+        <div>
+          <dt class="fs-secundario text-white/60">Electrodoméstico</dt>
+          <dd class="break-words text-white">{{ nombreEquipo }}</dd>
+        </div>
+      }
+      @if (cita.urgencia; as urgencia) {
+        <div>
+          <dt class="fs-secundario text-white/60">Urgencia</dt>
+          <dd>
+            <span
+              class="inline-block whitespace-nowrap rounded-full border px-3 py-1 fs-secundario font-medium"
+              [class]="urgencia === 'URGENTE' ? 'border-rose-300/40 bg-rose-300/10 text-rose-200' : 'border-white/25 bg-white/10 text-white/80'"
+            >
+              {{ etiquetaUrgencia(urgencia) }}
+            </span>
+          </dd>
+        </div>
+      }
     </dl>
   </section>
+
+  @if (hayFotos || fotosEditables) {
+    <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="detalle-cita-fotos">
+      <h2 id="detalle-cita-fotos" class="fs-titulo font-semibold text-white">Fotos del electrodoméstico</h2>
+      <div class="mt-4">
+        <app-fotos-electrodomestico
+          [fotos]="cita.fotosElectrodomestico"
+          [editable]="fotosEditables"
+          [ocupado]="fotosOcupadas"
+          (quitar)="quitarFoto.emit($event)"
+        ></app-fotos-electrodomestico>
+      </div>
+      @if (fotosEditables) {
+        <div class="mt-4"><ng-content select="[fotosAcciones]"></ng-content></div>
+      }
+    </section>
+  }
+
+  @if (cita.preDiagnostico; as preDiagnostico) {
+    <app-prediagnostico [datos]="preDiagnostico"></app-prediagnostico>
+  }
 
   <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="detalle-cita-tecnico">
     <h2 id="detalle-cita-tecnico" class="fs-titulo font-semibold text-white">Técnico</h2>
@@ -40,7 +80,7 @@
           <dt class="fs-secundario text-white/60">Nombre</dt>
           <dd class="flex items-center gap-2 text-white">
             <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="tecnico" tamano="md"></app-avatar>
-            {{ tecnico }}
+            <span class="min-w-0 break-words">{{ tecnico }}</span>
           </dd>
         </div>
         @if (cita.tecnicoTelefono) {

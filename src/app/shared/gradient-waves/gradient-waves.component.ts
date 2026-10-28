@@ -194,13 +194,19 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const container = this.containerRef.nativeElement;
 
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2),
-    });
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer({
+        webgl: 2,
+        alpha: true,
+        premultipliedAlpha: true,
+        antialias: false,
+        dpr: Math.min(window.devicePixelRatio || 1, 2),
+      });
+    } catch {
+      // Sin WebGL2 (navegador antiguo, equipo sin GPU, pruebas) el fondo animado simplemente no se muestra.
+      return;
+    }
     this.renderer = renderer;
 
     const gl = renderer.gl;

@@ -41,6 +41,16 @@
     </ol>
   }
 
+  @if (subiendoFotos) {
+    <div role="status" class="mt-6 rounded-lg border border-white/15 bg-white/5 px-3 py-2 fs-cuerpo text-white/80">Subiendo tus fotos…</div>
+  }
+  @if (avisoFotos) {
+    <div role="alert" class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300/30 bg-amber-300/10 px-3 py-2 fs-cuerpo text-amber-100">
+      <span>{{ avisoFotos }}</span>
+      <button type="button" (click)="reintentarFotos()" [disabled]="subiendoFotos" class="font-medium underline disabled:opacity-60">Reintentar</button>
+    </div>
+  }
+
   <div class="mt-8">
     @switch (paso) {
       @case ('especialidad') {

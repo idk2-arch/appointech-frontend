@@ -1,0 +1,35 @@
+<section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="prediagnostico-titulo">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 id="prediagnostico-titulo" class="fs-titulo font-semibold text-white">Pre-diagnóstico</h2>
+    <span class="inline-flex items-center gap-2 fs-secundario text-white/60">
+      Urgencia sugerida
+      <span class="inline-block whitespace-nowrap rounded-full border px-3 py-1 font-medium" [class]="claseUrgencia(datos.urgenciaSugerida)">
+        {{ etiquetaUrgencia(datos.urgenciaSugerida) }}
+      </span>
+    </span>
+  </div>
+
+  <h3 class="mt-4 fs-secundario text-white/60">Causas probables</h3>
+  @if (datos.causasProbables.length > 0) {
+    <ul class="mt-1 list-disc space-y-1 pl-5 fs-cuerpo text-white">
+      @for (causa of datos.causasProbables; track $index) {
+        <li class="break-words">{{ causa }}</li>
+      }
+    </ul>
+  } @else {
+    <p class="mt-1 fs-cuerpo text-white/60">No se identificaron causas probables.</p>
+  }
+
+  @if (datos.preguntasParaElTecnico.length > 0) {
+    <h3 class="mt-4 fs-secundario text-white/60">Preguntas sugeridas para el técnico</h3>
+    <ul class="mt-1 list-disc space-y-1 pl-5 fs-cuerpo text-white">
+      @for (pregunta of datos.preguntasParaElTecnico; track $index) {
+        <li class="break-words">{{ pregunta }}</li>
+      }
+    </ul>
+  }
+
+  <p class="mt-4 fs-secundario text-white/60">
+    Orientación generada automáticamente por IA. No reemplaza el diagnóstico del técnico.
+  </p>
+</section>

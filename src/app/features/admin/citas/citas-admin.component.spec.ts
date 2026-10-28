@@ -82,6 +82,15 @@ describe('CitasAdminComponent', () => {
     expect(raiz().textContent).toContain('Mostrando 1–2 de 2 citas');
   });
 
+  it('el nombre del técnico va en un elemento que puede partirse, junto al avatar', async () => {
+    await crear(of(pagina([{ ...fila(1), nombreTecnico: 'María de los Ángeles Fernández-Villaseñor y Gutiérrez' }])));
+
+    const celda = raiz().querySelectorAll('tbody tr td')[3];
+    expect(Array.from(celda.querySelector('div')!.classList)).toEqual(expect.arrayContaining(['flex', 'items-center', 'gap-2']));
+    expect(celda.querySelector('app-avatar')).not.toBeNull();
+    expect(celda.querySelector('span.min-w-0')?.textContent).toContain('Villaseñor');
+  });
+
   it('Buscar aplica los filtros desde la página 0', async () => {
     await crear(of(pagina([fila(1)])));
 

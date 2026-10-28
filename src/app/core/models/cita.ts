@@ -29,12 +29,17 @@ export interface Cita extends SolicitudServicio {
   especialidadNombre?: string | null;
 }
 
+export type UrgenciaCita = 'NORMAL' | 'URGENTE';
+
 export interface CrearSolicitudRequest {
   especialidadId: number;
   descripcionProblema: string;
   direccionServicio: string;
   latitud: number;
   longitud: number;
+  marcaElectrodomestico?: string;
+  modeloElectrodomestico?: string;
+  urgencia?: UrgenciaCita;
 }
 
 /** POST /citas/solicitud-manual. El teléfono solo es obligatorio si la cuenta no tiene uno registrado. */
@@ -56,6 +61,9 @@ export interface ConfirmarCitaRequest {
 
 /** Elemento de GET /cliente/citas y respuesta de las acciones sobre una cita (CitaResponse). */
 export interface CitaResumen extends SolicitudServicio {
+  marcaElectrodomestico?: string | null;
+  modeloElectrodomestico?: string | null;
+  urgencia?: UrgenciaCita | null;
   tecnicoFotoUrl?: string | null;
   tecnicoNombre?: string | null;
   tecnicoApellido?: string | null;
@@ -79,7 +87,29 @@ export interface HistorialCita {
 }
 
 /** GET /cliente/citas/{id} y GET /admin/citas/{id}. El historial va del más antiguo al más reciente. */
-export interface DetalleCita extends CitaResumen {
+/** `url` es relativa al servidor y exige el token JWT para descargarse. */
+export interface FotoElectrodomestico {
+  id: number;
+  url: string;
+}
+
+export type UrgenciaSugerida = 'BAJA' | 'MEDIA' | 'ALTA';
+
+/** Orientación generada por IA para el técnico; no reemplaza su diagnóstico. */
+export interface PreDiagnostico {
+  causasProbables: string[];
+  urgenciaSugerida: UrgenciaSugerida;
+  preguntasParaElTecnico: string[];
+  generadoPorIA: boolean;
+}
+
+/** Lo que el detalle de una cita trae sobre el electrodoméstico. */
+export interface DatosElectrodomestico {
+  fotosElectrodomestico?: FotoElectrodomestico[] | null;
+  preDiagnostico?: PreDiagnostico | null;
+}
+
+export interface DetalleCita extends CitaResumen, DatosElectrodomestico {
   diagnostico: DiagnosticoCita | null;
   historial: HistorialCita[];
 }

@@ -1,6 +1,6 @@
 <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
   <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi perfil</h1>
-  <p class="mt-1 fs-cuerpo text-white/70">Tu foto aparece en el menú y en las citas.</p>
+  <p class="mt-1 fs-cuerpo text-white/70">Tu foto y tus datos de contacto. La foto aparece en el menú y en las citas.</p>
 
   @if (mensajeExito) {
     <div role="status" class="mt-4 flex items-start justify-between gap-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 fs-cuerpo text-emerald-200">
@@ -22,4 +22,29 @@
       ></app-carga-foto>
     </div>
   </section>
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-12 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando tus datos…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-12 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargarPerfil()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (perfil) {
+      <app-perfil-datos
+        [perfil]="perfil"
+        [rol]="rol"
+        [guardando]="guardandoDatos"
+        [errorMensaje]="errorDatos"
+        (guardar)="guardarDatos($event)"
+      ></app-perfil-datos>
+    }
+  </div>
 </div>

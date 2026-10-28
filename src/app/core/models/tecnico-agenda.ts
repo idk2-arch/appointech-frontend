@@ -1,4 +1,4 @@
-import { DiagnosticoCita, EstadoCita } from './cita';
+import { DatosElectrodomestico, DiagnosticoCita, EstadoCita, UrgenciaCita } from './cita';
 
 /** Fechas: LocalDateTime sin zona (hora local de Colombia), p. ej. 2026-10-13T08:00:00. */
 
@@ -23,8 +23,11 @@ export interface ClienteCita {
 }
 
 /** GET /tecnico/citas: solo citas activas (CONFIRMADA, EN_CAMINO, EN_PROCESO). */
-export interface CitaTecnico {
+export interface CitaTecnico extends DatosElectrodomestico {
   id: number;
+  marcaElectrodomestico?: string | null;
+  modeloElectrodomestico?: string | null;
+  urgencia?: UrgenciaCita | null;
   estado: EstadoCita;
   fechaHoraInicio: string;
   fechaHoraFin: string;

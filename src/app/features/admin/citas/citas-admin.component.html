@@ -115,7 +115,7 @@
                 <td class="text-white/80">
                   <div class="flex items-center gap-2">
                     <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita.nombreTecnico" tamano="sm"></app-avatar>
-                    {{ cita.nombreTecnico }}
+                    <span class="min-w-0 break-words">{{ cita.nombreTecnico }}</span>
                   </div>
                 </td>
                 <td class="text-white/80">{{ cita.servicio }}</td>

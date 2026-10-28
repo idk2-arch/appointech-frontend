@@ -4,15 +4,14 @@
     [alt]="alt"
     (error)="alFallar()"
     loading="lazy"
-    class="inline-block shrink-0 rounded-full border border-white/15 bg-white/5 object-cover"
-    [class]="clasesTamano"
+    class="block h-full w-full rounded-full border border-white/15 bg-white/5 object-cover"
   />
 } @else {
   <span
     role="img"
     [attr.aria-label]="alt"
-    class="inline-flex shrink-0 select-none items-center justify-center rounded-full border border-acento/40 bg-acento/10 font-medium text-acento"
-    [class]="clasesTamano"
+    class="flex h-full w-full select-none items-center justify-center rounded-full border border-acento/40 bg-acento/10 font-medium text-acento"
+    [class]="claseTexto"
   >
     {{ iniciales }}
   </span>

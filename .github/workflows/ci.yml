@@ -9,42 +9,121 @@ permissions:
   contents: read
   pull-requests: read
 
-jobs:
-  build-test-sonar:
-    name: Build, pruebas y análisis de Sonar
-    runs-on: ubuntu-latest
+# Una ejecución nueva en la misma rama cancela la anterior que siga en curso.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/preparar-frontend
+        with:
+          geoapify-api-key: ${{ secrets.GEOAPIFY_API_KEY }}
+
+      - name: Build
+        run: npm run build
+
+  test:
+    name: Pruebas con cobertura
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/preparar-frontend
+        with:
+          geoapify-api-key: ${{ secrets.GEOAPIFY_API_KEY }}
+
+      - name: Pruebas con cobertura
+        run: npm run test:ci
+
+      - name: Subir el reporte de cobertura
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: coverage/appointech-frontend/
+          if-no-files-found: error
+          retention-days: 14
+
+  sonar:
+    name: Análisis de Sonar y Quality Gate
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
         with:
           # Sonar necesita el historial completo para atribuir el código nuevo.
           fetch-depth: 0
 
-      - name: Instalar Node
-        uses: actions/setup-node@v4
+      - name: Descargar el reporte de cobertura
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: npm
+          name: cobertura
+          path: coverage/appointech-frontend
 
-      - name: Instalar dependencias
-        run: npm ci
+      - name: Análisis de SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # Espera el resultado del Quality Gate y falla el flujo si no pasa.
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
+  docker:
+    name: Imagen Docker (sin publicar)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
 
       - name: Generar la configuración de Geoapify
-        # El archivo real está en .gitignore. Con el secreto GEOAPIFY_API_KEY (opcional) se usa esa llave;
-        # sin él, un valor de relleno, suficiente para compilar y probar. GitHub oculta el secreto en los logs.
+        # El Dockerfile compila con "COPY . .", así que el archivo ignorado por git debe existir.
         env:
           GEOAPIFY_API_KEY: ${{ secrets.GEOAPIFY_API_KEY }}
         run: |
           printf "export const GEOAPIFY_API_KEY = '%s';\n" "${GEOAPIFY_API_KEY:-ci-placeholder}" > src/app/core/config/geoapify.config.ts
 
-      - name: Build
-        run: npm run build
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Pruebas con cobertura
-        run: npm run test:ci
+      - name: Construir la imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: appointech-frontend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Análisis de SonarQube Cloud
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  seguridad:
+    name: Auditoría de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: npm audit (no bloquea)
+        # Deja el reporte y marca el paso en amarillo, pero no tumba el flujo.
+        continue-on-error: true
+        run: |
+          npm audit --audit-level=high --json > npm-audit.json || status=$?
+          npm audit --audit-level=high || true
+          exit "${status:-0}"
+
+      - name: Subir el reporte de auditoría
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit
+          path: npm-audit.json
+          if-no-files-found: ignore
+          retention-days: 14

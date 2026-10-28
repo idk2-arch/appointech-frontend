@@ -1,0 +1,29 @@
+name: Preparar el frontend
+description: Instala Node y las dependencias (con caché de npm) y genera la configuración de Geoapify.
+
+inputs:
+  geoapify-api-key:
+    description: Llave de Geoapify (opcional). Sin ella se usa un valor de relleno, suficiente para compilar y probar.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Instalar Node
+      uses: actions/setup-node@v5
+      with:
+        node-version: 22
+        cache: npm
+
+    - name: Instalar dependencias
+      shell: bash
+      run: npm ci
+
+    - name: Generar la configuración de Geoapify
+      # El archivo real está en .gitignore. GitHub oculta el secreto en los logs.
+      shell: bash
+      env:
+        GEOAPIFY_API_KEY: ${{ inputs.geoapify-api-key }}
+      run: |
+        printf "export const GEOAPIFY_API_KEY = '%s';\n" "${GEOAPIFY_API_KEY:-ci-placeholder}" > src/app/core/config/geoapify.config.ts

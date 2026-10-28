@@ -12,10 +12,10 @@ import { SidebarMenuItem } from '../../../shared/sidebar-menu/sidebar-menu.compo
 export class ClienteShellComponent {
   readonly menuItems: SidebarMenuItem[] = [
     { value: 'solicitar', label: 'Solicitar servicio', icon: 'tool', routerLink: '/cliente/solicitar' },
-    { value: 'citas', label: 'Mis citas', icon: 'calendar', disabled: true },
+    { value: 'citas', label: 'Mis citas', icon: 'calendar', routerLink: '/cliente/citas' },
     { value: 'historial', label: 'Historial', icon: 'receipt', disabled: true },
     { value: 'notificaciones', label: 'Notificaciones', icon: 'bell', disabled: true },
-    { value: 'perfil', label: 'Mi perfil', icon: 'user', disabled: true },
+    { value: 'perfil', label: 'Mi perfil', icon: 'user', routerLink: '/cliente/perfil' },
   ];
 
   constructor(

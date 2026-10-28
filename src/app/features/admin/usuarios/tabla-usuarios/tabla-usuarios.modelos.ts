@@ -24,6 +24,7 @@ interface FilaBase {
   /** Id del usuario: es el que usa el cambio de estado. */
   usuarioId: number;
   nombre: string;
+  fotoUrl?: string | null;
   activo: boolean;
   /** Texto en minúsculas para la búsqueda por nombre o correo. */
   busqueda: string;

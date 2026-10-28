@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { AdminService, CrearAdministradorRequest } from '../../../../core/services/admin.service';
 
+import { OPCIONES_TIPO_DOCUMENTO } from '../../../../core/utils/formulario-persona';
+
 @Component({
   selector: 'app-crear-administrador-modal',
   standalone: false,
@@ -13,6 +15,8 @@ export class CrearAdministradorModalComponent implements OnChanges {
   @Input() abierto = false;
   @Output() cerrar = new EventEmitter<void>();
   @Output() creado = new EventEmitter<void>();
+
+  readonly opcionesTipoDocumento = OPCIONES_TIPO_DOCUMENTO;
 
   form: FormGroup;
   mostrarContrasena = false;

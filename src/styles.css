@@ -1,6 +1,8 @@
 @import "tailwindcss";
+@import "./app/shared/estilos/tokens.css";
 @import "./app/shared/estilos/tipografia.css";
 @import "./app/shared/estilos/admin.css";
+@import "./app/shared/estilos/campos.css";
 @import "./app/shared/estilos/autofill.css";
 @import "./app/shared/estilos/scrollbar.css";
 

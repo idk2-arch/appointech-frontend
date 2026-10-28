@@ -11,6 +11,9 @@ export const TIPOS_DOCUMENTO: { valor: TipoDocumento; etiqueta: string }[] = [
   { valor: 'PASAPORTE', etiqueta: 'Pasaporte' },
 ];
 
+/** Las mismas opciones con la forma que espera app-select. */
+export const OPCIONES_TIPO_DOCUMENTO = TIPOS_DOCUMENTO.map((t) => ({ value: t.valor, label: t.etiqueta }));
+
 export const LARGO_MINIMO_CONTRASENA = 8;
 
 function contrasenasCoincidenValidator(grupo: AbstractControl): ValidationErrors | null {

@@ -1,0 +1,158 @@
+<div class="pagina-admin">
+  <h1 class="titulo-admin">Citas</h1>
+  <p class="mt-1 fs-cuerpo text-white/50">Todas las citas de todos los técnicos.</p>
+
+  <form
+    [formGroup]="filtros"
+    (submit)="$event.preventDefault(); buscar()"
+    class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+    aria-label="Filtros de citas"
+  >
+    <div>
+      <label for="citas-tecnico" class="block fs-cuerpo font-medium text-white">Técnico</label>
+      <app-select
+        inputId="citas-tecnico"
+        formControlName="tecnicoId"
+        [options]="opcionesTecnico"
+        placeholder="Todos"
+        class="mt-2"
+      ></app-select>
+      @if (errorTecnicos) {
+        <p class="mt-1.5 fs-secundario text-amber-200">
+          No pudimos cargar los técnicos.
+          <button type="button" (click)="cargarTecnicos()" class="font-medium underline">Reintentar</button>
+        </p>
+      }
+    </div>
+
+    <div>
+      <label for="citas-estado" class="block fs-cuerpo font-medium text-white">Estado</label>
+      <app-select
+        inputId="citas-estado"
+        formControlName="estado"
+        [options]="opcionesEstado"
+        placeholder="Todos"
+        class="mt-2"
+      ></app-select>
+    </div>
+
+    <div>
+      <label for="citas-desde" class="block fs-cuerpo font-medium text-white">Desde</label>
+      <input
+        id="citas-desde"
+        type="date"
+        formControlName="fechaDesde"
+        class="campo mt-2"
+      />
+    </div>
+
+    <div>
+      <label for="citas-hasta" class="block fs-cuerpo font-medium text-white">Hasta</label>
+      <input
+        id="citas-hasta"
+        type="date"
+        formControlName="fechaHasta"
+        [attr.aria-invalid]="errorFiltros ? true : null"
+        aria-describedby="citas-error-filtros"
+        class="campo mt-2"
+      />
+    </div>
+
+    @if (errorFiltros) {
+      <p id="citas-error-filtros" role="alert" class="fs-secundario text-rose-300 sm:col-span-2 lg:col-span-4">{{ errorFiltros }}</p>
+    }
+
+    <div class="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
+      <button type="submit" [disabled]="cargando" class="boton-admin disabled:cursor-not-allowed disabled:opacity-60">Buscar</button>
+      <button type="button" (click)="limpiar()" [disabled]="cargando" class="boton-fila-admin px-4 py-2.5 disabled:cursor-not-allowed disabled:opacity-60">
+        Limpiar
+      </button>
+    </div>
+  </form>
+
+  <div class="mt-6" [attr.aria-busy]="cargando">
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando citas…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar(resultado?.pagina ?? 0)" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (resultado && resultado.contenido.length === 0) {
+      <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        No encontramos citas con esos filtros.
+      </div>
+    } @else if (resultado) {
+      <p class="mb-3 fs-cuerpo text-white/60" aria-live="polite">{{ resumen }}</p>
+
+      <div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.02]">
+        <table class="tabla-admin min-w-[56rem]">
+          <caption class="sr-only">Citas de todos los técnicos</caption>
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Hora</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Técnico</th>
+              <th scope="col">Servicio</th>
+              <th scope="col">Dirección</th>
+              <th scope="col">Estado</th>
+              <th scope="col"><span class="sr-only">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cita of resultado.contenido; track cita.id) {
+              <tr>
+                <td class="whitespace-nowrap text-white">{{ cita.fecha | fechaLocal: 'fechaCorta' }}</td>
+                <td class="whitespace-nowrap text-white/80">{{ cita.horaInicio | fechaLocal: 'hora' }} – {{ cita.horaFin | fechaLocal: 'hora' }}</td>
+                <td class="text-white">{{ cita.nombreCliente }}</td>
+                <td class="text-white/80">
+                  <div class="flex items-center gap-2">
+                    <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita.nombreTecnico" tamano="sm"></app-avatar>
+                    {{ cita.nombreTecnico }}
+                  </div>
+                </td>
+                <td class="text-white/80">{{ cita.servicio }}</td>
+                <td class="max-w-[16rem] break-words text-white/70">{{ cita.direccion }}</td>
+                <td><app-insignia-estado [estado]="cita.estado"></app-insignia-estado></td>
+                <td>
+                  <a [routerLink]="['/admin/citas', cita.id]" class="boton-fila-admin" [attr.aria-label]="'Ver detalle de la cita ' + cita.id">
+                    Ver detalle
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (hayPaginas) {
+        <nav class="mt-4 flex items-center justify-between gap-3" aria-label="Paginación de citas">
+          <button
+            type="button"
+            (click)="irAPagina(resultado.pagina - 1)"
+            [disabled]="resultado.pagina === 0"
+            class="boton-fila-admin px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span class="fs-cuerpo text-white/70">Página {{ resultado.pagina + 1 }} de {{ resultado.totalPaginas }}</span>
+          <button
+            type="button"
+            (click)="irAPagina(resultado.pagina + 1)"
+            [disabled]="resultado.pagina >= resultado.totalPaginas - 1"
+            class="boton-fila-admin px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </nav>
+      }
+    }
+  </div>
+</div>

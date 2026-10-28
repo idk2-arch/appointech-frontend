@@ -10,41 +10,24 @@
     ></app-rubber-segment>
 
     <div class="flex flex-1 flex-wrap items-center gap-3 sm:flex-none">
-      <div class="relative flex-1 sm:flex-none">
-        <label for="logs-tipo" class="sr-only">Tipo</label>
-        <select
-          id="logs-tipo"
-          [value]="tipoFiltro"
-          (change)="cambiarTipo($any($event.target).value)"
-          class="w-full appearance-none rounded-xl border border-white/15 bg-white/5 py-2 pr-9 pl-3 text-sm text-white
-                 outline-none transition focus:border-[#D98E4A]/60 sm:w-52"
-        >
-          <option value="" class="bg-[#111a30]">Todos los tipos</option>
-          @for (tipo of tipos; track tipo.value) {
-            <option [value]="tipo.value" class="bg-[#111a30]">{{ tipo.label }}</option>
-          }
-        </select>
-        <svg viewBox="0 0 24 24" class="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-white/40" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+      <div class="flex-1 sm:w-52 sm:flex-none">
+        <app-select
+          inputId="logs-tipo"
+          ariaLabel="Tipo"
+          [ngModel]="tipoFiltro"
+          (ngModelChange)="cambiarTipo($event)"
+          [options]="opcionesTipo"
+        ></app-select>
       </div>
 
-      <div class="relative">
-        <label for="logs-limite" class="sr-only">Límite</label>
-        <select
-          id="logs-limite"
-          [value]="limite"
-          (change)="cambiarLimite($any($event.target).value)"
-          class="appearance-none rounded-xl border border-white/15 bg-white/5 py-2 pr-9 pl-3 text-sm text-white
-                 outline-none transition focus:border-[#D98E4A]/60"
-        >
-          @for (opcion of limites; track opcion) {
-            <option [value]="opcion" class="bg-[#111a30]">Últimos {{ opcion }}</option>
-          }
-        </select>
-        <svg viewBox="0 0 24 24" class="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-white/40" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+      <div class="w-40">
+        <app-select
+          inputId="logs-limite"
+          ariaLabel="Límite"
+          [ngModel]="limite"
+          (ngModelChange)="cambiarLimite('' + $event)"
+          [options]="opcionesLimite"
+        ></app-select>
       </div>
 
       <button

@@ -32,8 +32,8 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-text-fill-color: #fff;
   caret-color: #fff;
-  -webkit-box-shadow: 0 0 0 1000px #171e2f inset;
-  box-shadow: 0 0 0 1000px #171e2f inset;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-campo-autofill) inset;
+  box-shadow: 0 0 0 1000px var(--color-campo-autofill) inset;
   transition: background-color 9999s ease-out 0s;
 }
 
@@ -43,6 +43,6 @@ input:autofill:focus,
 input:autofill:active {
   -webkit-text-fill-color: #fff;
   caret-color: #fff;
-  box-shadow: 0 0 0 1000px #171e2f inset;
+  box-shadow: 0 0 0 1000px var(--color-campo-autofill) inset;
   transition: background-color 9999s ease-out 0s;
 }

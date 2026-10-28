@@ -57,6 +57,11 @@
   line-height: 1rem;
 }
 
+.boton-fila-admin:disabled,
+.boton-admin:disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
 .boton-fila-admin--exito {
   @apply hover:border-emerald-400/40 hover:text-emerald-300;
 }

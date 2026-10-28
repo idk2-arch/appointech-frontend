@@ -18,6 +18,7 @@ export interface ClienteResponse {
   direccion: string | null;
   latitud: number | null;
   longitud: number | null;
+  fotoUrl?: string | null;
 }
 
 /** Lo ausente no se modifica. latitud y longitud van juntas o ninguna, dentro de Colombia. */

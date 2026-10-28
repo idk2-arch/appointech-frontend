@@ -145,18 +145,13 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label for="crear-tipo-documento" class="mb-1.5 block text-xs text-white/50">Tipo de documento</label>
-            <select
-              id="crear-tipo-documento"
+            <app-select
+              inputId="crear-tipo-documento"
               formControlName="tipoDocumento"
-              [attr.aria-invalid]="tipoDocumento?.invalid && tipoDocumento?.touched ? true : null"
-              class="w-full appearance-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white
-                     outline-none transition focus:border-[#D98E4A]/60 focus:bg-white/[0.08]"
-            >
-              <option value="" disabled class="bg-[#111a30] text-white/50">Selecciona...</option>
-              <option value="CC" class="bg-[#111a30] text-white">Cédula de ciudadanía</option>
-              <option value="CE" class="bg-[#111a30] text-white">Cédula de extranjería</option>
-              <option value="PASAPORTE" class="bg-[#111a30] text-white">Pasaporte</option>
-            </select>
+              [options]="opcionesTipoDocumento"
+              placeholder="Selecciona..."
+              claseBoton="py-3.5"
+            ></app-select>
             @if (tipoDocumento?.invalid && tipoDocumento?.touched) {
               <p role="alert" class="mt-1.5 text-xs text-rose-300">Selecciona un tipo de documento.</p>
             }

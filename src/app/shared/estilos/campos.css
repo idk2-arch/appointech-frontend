@@ -1,0 +1,50 @@
+/*
+ * Controles de formulario comunes (texto, fecha, hora y el botón de app-select).
+ * Van en la capa `components` para que cualquier clase de Tailwind (p. ej. `py-3.5`) pueda ajustarlos.
+ * Los tamaños de letra vienen de tipografia.css y los colores de tokens.css.
+ */
+@layer components {
+  .campo {
+    @apply w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-white placeholder-white/35 outline-none transition;
+    font-size: var(--fs-cuerpo);
+    line-height: 1.25rem;
+    min-height: 2.5rem;
+    color-scheme: dark;
+  }
+
+  .campo:hover:not(:disabled) {
+    @apply border-white/25;
+  }
+
+  .campo:focus,
+  .campo:focus-visible {
+    @apply bg-white/[0.08];
+    border-color: var(--color-acento);
+  }
+
+  .campo:disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+
+  .campo[aria-invalid='true'] {
+    @apply border-rose-400/60;
+  }
+}
+
+/* Los selectores nativos de fecha y hora (también los que no usan .campo) siguen el tema oscuro. */
+input[type='date'],
+input[type='time'] {
+  color-scheme: dark;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 150ms ease;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator:hover,
+input[type='time']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}

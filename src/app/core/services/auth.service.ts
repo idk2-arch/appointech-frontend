@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { map, Observable, tap } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
 import { RespuestaEnvuelta } from '../models/respuesta-envuelta';
+import { SesionService } from './sesion.service';
 
 export interface LoginRequest {
   correo: string;
@@ -13,6 +14,7 @@ export interface LoginRequest {
 export interface AuthResponse {
   token: string;
   perfilCompleto: boolean;
+  fotoUrl?: string | null;
 }
 
 export type TipoDocumento = 'CC' | 'CE' | 'PASAPORTE';
@@ -62,12 +64,15 @@ interface JwtPayload {
 export class AuthService {
   private readonly TOKEN_KEY = 'appointech_token';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private sesion: SesionService
+  ) {}
 
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http.post<RespuestaEnvuelta<AuthResponse>>(`${API_BASE_URL}/auth/login`, request).pipe(
       map((respuesta) => respuesta.datos),
-      tap((datos) => this.guardarToken(datos.token))
+      tap((datos) => this.iniciarSesion(datos))
     );
   }
 
@@ -88,7 +93,7 @@ export class AuthService {
     const request: GoogleLoginRequest = { idToken };
     return this.http.post<RespuestaEnvuelta<AuthResponse>>(`${API_BASE_URL}/auth/google`, request).pipe(
       map((respuesta) => respuesta.datos),
-      tap((datos) => this.guardarToken(datos.token))
+      tap((datos) => this.iniciarSesion(datos))
     );
   }
 
@@ -96,6 +101,11 @@ export class AuthService {
     return this.http
       .patch<RespuestaEnvuelta<CompletarPerfilResponse>>(`${API_BASE_URL}/auth/completar-perfil`, request)
       .pipe(map((respuesta) => respuesta.datos));
+  }
+
+  private iniciarSesion(datos: AuthResponse): void {
+    this.guardarToken(datos.token);
+    this.sesion.establecerFoto(datos.fotoUrl);
   }
 
   guardarToken(token: string): void {
@@ -108,6 +118,7 @@ export class AuthService {
 
   cerrarSesion(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    this.sesion.limpiar();
   }
 
   estaAutenticado(): boolean {

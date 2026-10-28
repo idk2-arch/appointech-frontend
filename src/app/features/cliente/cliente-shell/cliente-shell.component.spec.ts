@@ -83,7 +83,7 @@ describe('ClienteShellComponent', () => {
     const navegar = vi.spyOn(router, 'navigateByUrl');
     const apagados = Array.from(raiz().querySelectorAll<HTMLButtonElement>('button.sidebar-menu__row'));
 
-    expect(apagados).toHaveLength(4);
+    expect(apagados).toHaveLength(2);
     for (const boton of apagados) {
       expect(boton.disabled).toBe(true);
       expect(boton.getAttribute('aria-disabled')).toBe('true');

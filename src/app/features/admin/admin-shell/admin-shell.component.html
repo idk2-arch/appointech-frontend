@@ -45,7 +45,28 @@
       <app-sidebar-menu [items]="menuItems"></app-sidebar-menu>
     </nav>
 
+    <form
+      class="relative z-10 border-t border-white/10 px-4 py-3"
+      (submit)="$event.preventDefault(); buscarCita(numeroCita.value)"
+    >
+      <label for="buscar-cita" class="block text-xs text-white/60">Buscar cita por número</label>
+      <div class="mt-1.5 flex gap-2">
+        <input
+          #numeroCita
+          id="buscar-cita"
+          type="number"
+          min="1"
+          inputmode="numeric"
+          placeholder="N.º de cita"
+          class="min-w-0 flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white placeholder-white/35 outline-none
+                 transition focus:border-[#D98E4A]"
+        />
+        <button type="submit" class="boton-fila-admin">Buscar</button>
+      </div>
+    </form>
+
     <div class="relative z-10 border-t border-white/10 p-3">
+      <app-perfil-sesion rol="Admin" enlace="/admin/perfil" class="mb-1 block fs-cuerpo"></app-perfil-sesion>
       <button
         type="button"
         (click)="cerrarSesion()"

@@ -1,0 +1,25 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi perfil</h1>
+  <p class="mt-1 fs-cuerpo text-white/70">Tu foto aparece en el menú y en las citas.</p>
+
+  @if (mensajeExito) {
+    <div role="status" class="mt-4 flex items-start justify-between gap-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 fs-cuerpo text-emerald-200">
+      <span>{{ mensajeExito }}</span>
+      <button type="button" (click)="mensajeExito = null" class="shrink-0 fs-secundario font-medium underline">Cerrar</button>
+    </div>
+  }
+
+  <section class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="perfil-foto">
+    <h2 id="perfil-foto" class="fs-cuerpo font-semibold text-white">Foto de perfil</h2>
+    <div class="mt-4">
+      <app-carga-foto
+        [fotoUrl]="fotoUrl$ | async"
+        nombre="tu perfil"
+        [enviando]="enviando"
+        [errorMensaje]="errorMensaje"
+        (guardar)="guardar($event)"
+        (quitar)="quitar()"
+      ></app-carga-foto>
+    </div>
+  </section>
+</div>

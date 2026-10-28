@@ -1,0 +1,39 @@
+<div class="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+  <app-avatar [fotoUrl]="vistaPrevia ?? fotoUrl" [nombre]="nombre" tamano="lg"></app-avatar>
+
+  <div class="flex min-w-0 flex-col items-center gap-3 sm:items-start">
+    <input
+      #archivo
+      type="file"
+      class="hidden"
+      [accept]="tiposAceptados"
+      (change)="alElegirArchivo($event)"
+      aria-label="Elegir imagen de perfil"
+      tabindex="-1"
+    />
+
+    <div class="flex flex-wrap justify-center gap-2 sm:justify-start">
+      @if (vistaPrevia) {
+        <button type="button" (click)="confirmar()" [disabled]="ocupado" class="boton-admin boton-admin--cobre">
+          {{ enviando ? 'Guardando…' : 'Guardar foto' }}
+        </button>
+        <button type="button" (click)="descartar()" [disabled]="ocupado" class="boton-fila-admin px-4 py-2.5">Descartar</button>
+      } @else {
+        <button type="button" (click)="archivo.click()" [disabled]="ocupado" class="boton-admin">
+          {{ procesando ? 'Preparando…' : fotoUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
+        </button>
+        @if (fotoUrl && permitirQuitar) {
+          <button type="button" (click)="quitar.emit()" [disabled]="ocupado" class="boton-fila-admin px-4 py-2.5">
+            {{ enviando ? 'Quitando…' : 'Quitar foto' }}
+          </button>
+        }
+      }
+    </div>
+
+    <p class="fs-secundario text-white/60">JPEG, PNG o WebP. Se reduce automáticamente (máximo 1 MB).</p>
+
+    @if (error) {
+      <p role="alert" class="fs-cuerpo text-rose-300">{{ error }}</p>
+    }
+  </div>
+</div>

@@ -44,6 +44,9 @@
     </nav>
 
     <div class="relative z-10 border-t border-white/10 p-3">
+      @if (enlacePerfil) {
+        <app-perfil-sesion [rol]="rol" [enlace]="enlacePerfil" class="mb-1 block fs-cuerpo"></app-perfil-sesion>
+      }
       <button
         type="button"
         (click)="cerrarSesion.emit()"

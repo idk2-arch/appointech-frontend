@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { SharedModule } from '../../shared/shared.module';
 import { AdminRoutingModule } from './admin-routing.module';
@@ -19,6 +19,9 @@ import { AsignarEspecialidadesModalComponent } from './especialidades/asignar-es
 import { CoberturaComponent } from './cobertura/cobertura.component';
 import { SolicitudesManualesComponent } from './solicitudes-manuales/solicitudes-manuales.component';
 import { AsignarSolicitudModalComponent } from './solicitudes-manuales/asignar-solicitud-modal/asignar-solicitud-modal.component';
+import { CitasAdminComponent } from './citas/citas-admin.component';
+import { DetalleCitaAdminComponent } from './detalle-cita/detalle-cita-admin.component';
+import { FotoUsuarioModalComponent } from './usuarios/foto-usuario-modal/foto-usuario-modal.component';
 import { LogsComponent } from './logs/logs.component';
 
 @NgModule({
@@ -39,7 +42,10 @@ import { LogsComponent } from './logs/logs.component';
     SolicitudesManualesComponent,
     AsignarSolicitudModalComponent,
     LogsComponent,
+    DetalleCitaAdminComponent,
+    CitasAdminComponent,
+    FotoUsuarioModalComponent,
   ],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule, AdminRoutingModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, AdminRoutingModule],
 })
 export class AdminModule {}

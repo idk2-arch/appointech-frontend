@@ -18,8 +18,7 @@
             formControlName="fecha"
             [min]="hoy"
             [attr.aria-invalid]="fecha?.invalid && fecha?.touched ? true : null"
-            class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
-                   [color-scheme:dark] focus:border-[#D98E4A]/60"
+            class="campo"
           />
           @if (fecha?.touched && fecha?.hasError('required')) {
             <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige el día.</p>
@@ -37,8 +36,7 @@
               type="time"
               formControlName="horaInicio"
               [attr.aria-invalid]="horaInicio?.invalid && horaInicio?.touched ? true : null"
-              class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
-                     [color-scheme:dark] focus:border-[#D98E4A]/60"
+              class="campo"
             />
             @if (horaInicio?.touched && horaInicio?.hasError('required')) {
               <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la hora.</p>
@@ -51,8 +49,7 @@
               type="time"
               formControlName="horaFin"
               [attr.aria-invalid]="horaFin?.invalid && horaFin?.touched ? true : null"
-              class="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-4 fs-cuerpo text-white outline-none transition
-                     [color-scheme:dark] focus:border-[#D98E4A]/60"
+              class="campo"
             />
             @if (horaFin?.touched && horaFin?.hasError('required')) {
               <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la hora.</p>

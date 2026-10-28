@@ -27,6 +27,7 @@ export interface TecnicoResponse {
   activo: boolean;
   latitudBase: number | null;
   longitudBase: number | null;
+  fotoUrl?: string | null;
 }
 
 export interface AsignarEspecialidadesRequest {

@@ -16,6 +16,7 @@ export class AdminShellComponent {
     { value: 'dashboard', label: 'Dashboard', icon: 'chart', disabled: true },
     { value: 'usuarios', label: 'Usuarios', icon: 'users', routerLink: '/admin/usuarios' },
     { value: 'especialidades', label: 'Especialidades de técnicos', icon: 'tool', routerLink: '/admin/especialidades' },
+    { value: 'citas', label: 'Citas', icon: 'calendar', routerLink: '/admin/citas' },
     { value: 'solicitudes-manuales', label: 'Solicitudes por coordinar', icon: 'alert', routerLink: '/admin/solicitudes-manuales' },
     { value: 'gestion', label: 'Gestión operativa', icon: 'alert', disabled: true },
     { value: 'cobertura', label: 'Cobertura', icon: 'settings', routerLink: '/admin/cobertura' },
@@ -27,6 +28,14 @@ export class AdminShellComponent {
     private authService: AuthService,
     private router: Router
   ) {}
+
+  /** Abre el detalle de una cita por su número; ignora entradas que no sean un entero positivo. */
+  buscarCita(valor: string): void {
+    const id = Number(valor.trim());
+    if (!Number.isInteger(id) || id <= 0) return;
+    this.cerrarSidebar();
+    this.router.navigate(['/admin/citas', id]);
+  }
 
   abrirSidebar(): void {
     this.sidebarAbierto = true;

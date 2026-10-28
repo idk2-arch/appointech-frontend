@@ -1,4 +1,4 @@
-import { EstadoCita } from './cita';
+import { DiagnosticoCita, EstadoCita } from './cita';
 
 /** Fechas: LocalDateTime sin zona (hora local de Colombia), p. ej. 2026-10-13T08:00:00. */
 
@@ -19,6 +19,7 @@ export interface ClienteCita {
   nombre: string;
   apellido: string;
   telefono: string | null;
+  fotoUrl?: string | null;
 }
 
 /** GET /tecnico/citas: solo citas activas (CONFIRMADA, EN_CAMINO, EN_PROCESO). */
@@ -32,6 +33,8 @@ export interface CitaTecnico {
   latitud: number | null;
   longitud: number | null;
   cliente: ClienteCita;
+  /** Si el backend lo envía, el formulario de diagnóstico se abre con estos datos. */
+  diagnostico?: DiagnosticoCita | null;
 }
 
 export interface PuntoGeografico {

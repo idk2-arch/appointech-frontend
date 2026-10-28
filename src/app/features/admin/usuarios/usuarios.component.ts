@@ -35,6 +35,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   mostrarModalCrear = false;
   mostrarModalTecnico = false;
+  filaConFoto: FilaUsuario | null = null;
   tecnicoEditando: TecnicoResponse | null = null;
   clienteEditando: ClienteResponse | null = null;
   usuarioEditando: UsuarioAdmin | null = null;

@@ -1,47 +1,47 @@
 <div [formGroup]="form" class="space-y-5">
   <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
     <div>
-      <label [for]="id + '-nombre'" class="block text-base font-medium text-white">Nombre</label>
+      <label [for]="id + '-nombre'" class="block fs-cuerpo font-medium text-white">Nombre</label>
       <input
         [id]="id + '-nombre'"
         type="text"
         formControlName="nombre"
         autocomplete="given-name"
         [attr.aria-invalid]="invalido('nombre') ? true : null"
-        class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+        class="campo mt-2"
       />
       @if (invalido('nombre')) {
-        <p role="alert" class="mt-1.5 text-sm text-rose-300">Escribe el nombre.</p>
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Escribe el nombre.</p>
       }
     </div>
     <div>
-      <label [for]="id + '-apellido'" class="block text-base font-medium text-white">Apellido</label>
+      <label [for]="id + '-apellido'" class="block fs-cuerpo font-medium text-white">Apellido</label>
       <input
         [id]="id + '-apellido'"
         type="text"
         formControlName="apellido"
         autocomplete="family-name"
         [attr.aria-invalid]="invalido('apellido') ? true : null"
-        class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+        class="campo mt-2"
       />
       @if (invalido('apellido')) {
-        <p role="alert" class="mt-1.5 text-sm text-rose-300">Escribe el apellido.</p>
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Escribe el apellido.</p>
       }
     </div>
   </div>
 
   <div>
-    <label [for]="id + '-correo'" class="block text-base font-medium text-white">Correo electrónico</label>
+    <label [for]="id + '-correo'" class="block fs-cuerpo font-medium text-white">Correo electrónico</label>
     <input
       [id]="id + '-correo'"
       type="email"
       formControlName="correo"
       autocomplete="email"
       [attr.aria-invalid]="invalido('correo') ? true : null"
-      class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+      class="campo mt-2"
     />
     @if (invalido('correo')) {
-      <p role="alert" class="mt-1.5 text-sm text-rose-300">
+      <p role="alert" class="mt-1.5 fs-secundario text-rose-300">
         @if (tiene('correo', 'required')) {
           Escribe el correo electrónico.
         } @else {
@@ -53,7 +53,7 @@
 
   @if (conContrasena) {
   <div>
-    <label [for]="id + '-contrasena'" class="block text-base font-medium text-white">Contraseña</label>
+    <label [for]="id + '-contrasena'" class="block fs-cuerpo font-medium text-white">Contraseña</label>
     <div class="relative">
       <input
         [id]="id + '-contrasena'"
@@ -74,7 +74,7 @@
     </div>
     <p class="mt-1.5 text-sm text-white/60">Mínimo {{ largoMinimo }} caracteres.</p>
     @if (invalido('contrasena')) {
-      <p role="alert" class="mt-1 text-sm text-rose-300">
+      <p role="alert" class="mt-1 fs-secundario text-rose-300">
         @if (tiene('contrasena', 'required')) {
           Escribe una contraseña.
         } @else {
@@ -87,7 +87,7 @@
 
   @if (conConfirmacion) {
     <div>
-      <label [for]="id + '-confirmar'" class="block text-base font-medium text-white">Repite la contraseña</label>
+      <label [for]="id + '-confirmar'" class="block fs-cuerpo font-medium text-white">Repite la contraseña</label>
       <div class="relative">
         <input
           [id]="id + '-confirmar'"
@@ -107,7 +107,7 @@
         </button>
       </div>
       @if (confirmacionInvalida) {
-        <p role="alert" class="mt-1.5 text-sm text-rose-300">
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">
           @if (tiene('confirmarContrasena', 'required')) {
             Repite la contraseña.
           } @else {
@@ -120,42 +120,38 @@
 
   <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
     <div>
-      <label [for]="id + '-tipoDocumento'" class="block text-base font-medium text-white">Tipo de documento</label>
-      <select
-        [id]="id + '-tipoDocumento'"
+      <label [for]="id + '-tipoDocumento'" class="block fs-cuerpo font-medium text-white">Tipo de documento</label>
+      <app-select
+        [inputId]="id + '-tipoDocumento'"
         formControlName="tipoDocumento"
-        [attr.aria-invalid]="invalido('tipoDocumento') ? true : null"
-        class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
-      >
-        <option value="" disabled class="bg-[#111a30]">Elige una opción</option>
-        @for (t of tiposDocumento; track t.valor) {
-          <option [value]="t.valor" class="bg-[#111a30] text-white">{{ t.etiqueta }}</option>
-        }
-      </select>
+        [options]="opcionesTipoDocumento"
+        placeholder="Elige una opción"
+        class="mt-2"
+      ></app-select>
       @if (invalido('tipoDocumento')) {
-        <p role="alert" class="mt-1.5 text-sm text-rose-300">Elige el tipo de documento.</p>
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige el tipo de documento.</p>
       }
     </div>
     <div>
-      <label [for]="id + '-numeroDocumento'" class="block text-base font-medium text-white">Número de documento (opcional)</label>
+      <label [for]="id + '-numeroDocumento'" class="block fs-cuerpo font-medium text-white">Número de documento (opcional)</label>
       <input
         [id]="id + '-numeroDocumento'"
         type="text"
         formControlName="numeroDocumento"
         autocomplete="off"
-        class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+        class="campo mt-2"
       />
     </div>
   </div>
 
   <div>
-    <label [for]="id + '-telefono'" class="block text-base font-medium text-white">Teléfono (opcional)</label>
+    <label [for]="id + '-telefono'" class="block fs-cuerpo font-medium text-white">Teléfono (opcional)</label>
     <input
       [id]="id + '-telefono'"
       type="tel"
       formControlName="telefono"
       autocomplete="tel"
-      class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+      class="campo mt-2"
     />
   </div>
 

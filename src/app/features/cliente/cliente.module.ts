@@ -11,6 +11,9 @@ import { DetalleSolicitudComponent } from './solicitar-servicio/detalle-solicitu
 import { ElegirFranjaComponent } from './solicitar-servicio/elegir-franja/elegir-franja.component';
 import { ConfirmarCitaComponent } from './solicitar-servicio/confirmar-cita/confirmar-cita.component';
 import { CitaConfirmadaComponent } from './solicitar-servicio/cita-confirmada/cita-confirmada.component';
+import { MisCitasComponent } from './mis-citas/mis-citas.component';
+import { DetalleCitaClienteComponent } from './detalle-cita/detalle-cita-cliente.component';
+import { ReprogramarModalComponent } from './reprogramar-modal/reprogramar-modal.component';
 import { DictadoVozComponent } from './dictado-voz/dictado-voz.component';
 
 @NgModule({
@@ -23,6 +26,9 @@ import { DictadoVozComponent } from './dictado-voz/dictado-voz.component';
     ConfirmarCitaComponent,
     DictadoVozComponent,
     CitaConfirmadaComponent,
+    MisCitasComponent,
+    DetalleCitaClienteComponent,
+    ReprogramarModalComponent,
   ],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, ClienteRoutingModule],
 })

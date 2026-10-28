@@ -100,20 +100,13 @@
           <!-- Tipo de documento -->
           <div class="relative">
             <label for="tipoDocumento" class="mb-1.5 block text-xs text-white/50">Tipo de documento</label>
-            <select
-              id="tipoDocumento"
+            <app-select
+              inputId="tipoDocumento"
               formControlName="tipoDocumento"
-              [attr.aria-invalid]="tipoDocumento?.invalid && tipoDocumento?.touched ? true : null"
-              [attr.aria-describedby]="tipoDocumento?.invalid && tipoDocumento?.touched ? 'tipoDocumento-error' : null"
-              class="w-full appearance-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white
-                     outline-none transition focus:border-[#D98E4A]/60 focus:bg-white/[0.08]
-                     [&>option]:bg-[#0B1224] [&>option]:text-white"
-            >
-              <option value="" disabled>Selecciona un tipo</option>
-              <option value="CC">Cédula de ciudadanía</option>
-              <option value="CE">Cédula de extranjería</option>
-              <option value="PASAPORTE">Pasaporte</option>
-            </select>
+              [options]="opcionesTipoDocumento"
+              placeholder="Selecciona un tipo"
+              claseBoton="py-3.5"
+            ></app-select>
             @if (tipoDocumento?.invalid && tipoDocumento?.touched) {
               <p id="tipoDocumento-error" role="alert" class="mt-1.5 text-xs text-rose-300">
                 Selecciona tu tipo de documento.

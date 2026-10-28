@@ -1,0 +1,75 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <h1 class="fs-titulo font-semibold tracking-tight text-white">Mis citas</h1>
+  <p class="mt-1 fs-cuerpo text-white/70">Revisa el estado de tus servicios, cancélalos o cambia su horario.</p>
+
+  @if (!cargando && !errorCarga && citas.length > 0) {
+    <div class="mt-6 max-w-xs">
+      <label for="citas-filtro" class="block fs-cuerpo font-medium text-white">Filtrar por estado</label>
+      <app-select
+        inputId="citas-filtro"
+        [ngModel]="filtro"
+        (ngModelChange)="cambiarFiltro($event)"
+        [options]="opcionesFiltro"
+        class="mt-2"
+      ></app-select>
+    </div>
+  }
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando tus citas…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (citas.length === 0) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p class="fs-cuerpo text-white/70">Aún no tienes citas.</p>
+        <a routerLink="/cliente/solicitar" class="boton-admin boton-admin--cobre">Solicitar un servicio</a>
+      </div>
+    } @else if (citasVisibles.length === 0) {
+      <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        No tienes citas con ese estado.
+      </div>
+    } @else {
+      <p class="mb-3 fs-cuerpo text-white/70" aria-live="polite">
+        {{ citasVisibles.length }} {{ citasVisibles.length === 1 ? 'cita' : 'citas' }}
+      </p>
+      <ul class="space-y-3">
+        @for (cita of citasVisibles; track cita.id) {
+          <li>
+            <a
+              [routerLink]="['/cliente/citas', cita.id]"
+              class="block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/25
+                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D98E4A]"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="fs-cuerpo font-semibold text-white">{{ cita.especialidadNombre || 'Servicio' }}</p>
+                <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
+              </div>
+              <p class="mt-2 fs-cuerpo text-[#D98E4A]">
+                @if (cita.fechaHoraInicio) {
+                  <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fechaCorta' }}</span>,
+                  {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}
+                } @else {
+                  Por coordinar
+                }
+              </p>
+              <p class="mt-2 flex items-center gap-2 fs-cuerpo text-white/70">
+                <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita | nombreTecnico" tamano="sm"></app-avatar>
+                Técnico: {{ (cita | nombreTecnico) || 'Sin asignar' }}
+              </p>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

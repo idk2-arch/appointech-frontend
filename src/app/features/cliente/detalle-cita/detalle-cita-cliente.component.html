@@ -1,0 +1,59 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <a routerLink="/cliente/citas" class="fs-cuerpo text-white/70 underline underline-offset-4 hover:text-white">← Volver a mis citas</a>
+  <h1 class="mt-3 fs-titulo font-semibold tracking-tight text-white">Detalle de la cita</h1>
+
+  @if (mensajeExito) {
+    <div role="status" class="mt-4 flex items-start justify-between gap-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 fs-cuerpo text-emerald-200">
+      <span>{{ mensajeExito }}</span>
+      <button type="button" (click)="mensajeExito = null" class="shrink-0 fs-secundario font-medium underline">Cerrar</button>
+    </div>
+  }
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando la cita…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (cita) {
+      @if (puedeModificar) {
+        <div class="mb-4 flex flex-wrap gap-2">
+          <button type="button" (click)="abrir('reprogramar')" class="boton-admin boton-admin--cobre">Reprogramar</button>
+          <button type="button" (click)="abrir('cancelar')" class="boton-fila-admin px-4 py-2.5">Cancelar cita</button>
+        </div>
+      }
+      <app-detalle-cita [cita]="cita"></app-detalle-cita>
+    }
+  </div>
+</div>
+
+@if (dialogo === 'cancelar') {
+  <app-dialogo-motivo
+    titulo="Cancelar cita"
+    subtitulo="Esta acción no se puede deshacer."
+    etiqueta="Motivo de la cancelación"
+    textoEnviar="Cancelar cita"
+    textoCargando="Cancelando…"
+    [cargando]="enviando"
+    [errorMensaje]="errorDialogo"
+    (cerrar)="cerrarDialogo()"
+    (confirmar)="cancelar($event)"
+  ></app-dialogo-motivo>
+}
+
+@if (dialogo === 'reprogramar') {
+  <app-reprogramar-modal
+    [cargando]="enviando"
+    [errorMensaje]="errorDialogo"
+    (cerrar)="cerrarDialogo()"
+    (confirmar)="reprogramar($event)"
+  ></app-reprogramar-modal>
+}

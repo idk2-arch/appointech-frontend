@@ -4,6 +4,7 @@ import { NivelLog, RegistroLog, TipoLog } from '../../../core/models/registro-lo
 import { LogService } from '../../../core/services/log.service';
 import { obtenerMensajeError } from '../../../core/utils/manejo-errores';
 import { RubberSegmentItem } from '../../../shared/rubber-segment/rubber-segment.component';
+import { OpcionSelect } from '../../../shared/select/select.component';
 
 @Component({
   selector: 'app-logs',
@@ -33,6 +34,9 @@ export class LogsComponent implements OnInit {
   ];
 
   readonly limites = [50, 100, 200, 500];
+
+  readonly opcionesTipo: OpcionSelect[] = [{ value: '', label: 'Todos los tipos' }, ...this.tipos];
+  readonly opcionesLimite: OpcionSelect[] = this.limites.map((n) => ({ value: n, label: `Últimos ${n}` }));
 
   nivelFiltro = 'todos';
   tipoFiltro: TipoLog | '' = '';

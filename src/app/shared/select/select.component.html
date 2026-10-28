@@ -1,0 +1,65 @@
+<button
+  #boton
+  type="button"
+  role="combobox"
+  [id]="inputId"
+  [class]="'campo select__boton ' + claseBoton"
+  [disabled]="estaDeshabilitado"
+  [attr.aria-label]="ariaLabel"
+  aria-haspopup="listbox"
+  [attr.aria-expanded]="abierto"
+  [attr.aria-controls]="abierto ? listaId : null"
+  [attr.aria-activedescendant]="idActivo"
+  (click)="alternar()"
+  (keydown)="alPresionarTecla($event)"
+>
+  <span class="select__texto" [class.select__texto--vacio]="!seleccion">{{ seleccion ? seleccion.label : placeholder }}</span>
+  <svg
+    viewBox="0 0 24 24"
+    class="select__flecha"
+    [class.select__flecha--abierta]="abierto"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    aria-hidden="true"
+  >
+    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+</button>
+
+@if (abierto) {
+  <ul
+    role="listbox"
+    [id]="listaId"
+    tabindex="-1"
+    class="select__menu"
+    [class.select__menu--arriba]="arriba"
+    [attr.aria-label]="ariaLabel"
+    [style.--indice]="indiceActivo"
+  >
+    @if (options.length > 0) {
+      <span class="select__pildora" aria-hidden="true"></span>
+    }
+    @for (opcion of options; track $index) {
+      <li
+        #opcion
+        role="option"
+        [id]="listaId + '-' + $index"
+        class="select__opcion"
+        [class.select__opcion--activa]="$index === indiceActivo"
+        [attr.aria-selected]="seleccion === opcion"
+        (mouseenter)="resaltar($index)"
+        (click)="elegir($index)"
+      >
+        <span class="select__texto">{{ opcion.label }}</span>
+        @if (seleccion === opcion) {
+          <svg viewBox="0 0 24 24" class="select__marca" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        }
+      </li>
+    } @empty {
+      <li class="select__vacio" role="presentation">No hay opciones</li>
+    }
+  </ul>
+}

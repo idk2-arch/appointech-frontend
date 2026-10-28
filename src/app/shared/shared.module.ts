@@ -17,6 +17,14 @@ import { MapaUbicacionComponent } from './mapa-ubicacion/mapa-ubicacion.componen
 import { CamposPersonaComponent } from './campos-persona/campos-persona.component';
 import { ModalFormularioComponent } from './modal-formulario/modal-formulario.component';
 import { SelectorDireccionComponent } from './selector-direccion/selector-direccion.component';
+import { AvatarComponent } from './avatar/avatar.component';
+import { CargaFotoComponent } from './carga-foto/carga-foto.component';
+import { MiPerfilComponent } from './mi-perfil/mi-perfil.component';
+import { PerfilSesionComponent } from './perfil-sesion/perfil-sesion.component';
+import { SelectComponent } from './select/select.component';
+import { InsigniaEstadoComponent } from './insignia-estado/insignia-estado.component';
+import { DialogoMotivoComponent } from './dialogo-motivo/dialogo-motivo.component';
+import { DetalleCitaComponent } from './detalle-cita/detalle-cita.component';
 import { SelectorEspecialidadesComponent } from './selector-especialidades/selector-especialidades.component';
 
 @NgModule({
@@ -37,6 +45,14 @@ import { SelectorEspecialidadesComponent } from './selector-especialidades/selec
     CamposPersonaComponent,
     SelectorEspecialidadesComponent,
     ModalFormularioComponent,
+    InsigniaEstadoComponent,
+    DialogoMotivoComponent,
+    DetalleCitaComponent,
+    SelectComponent,
+    AvatarComponent,
+    CargaFotoComponent,
+    MiPerfilComponent,
+    PerfilSesionComponent,
   ],
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   exports: [
@@ -56,6 +72,14 @@ import { SelectorEspecialidadesComponent } from './selector-especialidades/selec
     CamposPersonaComponent,
     SelectorEspecialidadesComponent,
     ModalFormularioComponent,
+    InsigniaEstadoComponent,
+    DialogoMotivoComponent,
+    DetalleCitaComponent,
+    SelectComponent,
+    AvatarComponent,
+    CargaFotoComponent,
+    MiPerfilComponent,
+    PerfilSesionComponent,
   ],
 })
 export class SharedModule {}

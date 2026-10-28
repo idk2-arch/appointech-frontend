@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
 
+import { OPCIONES_TIPO_DOCUMENTO } from '../../core/utils/formulario-persona';
+
 @Component({
   selector: 'app-completar-perfil',
   standalone: false,
@@ -11,6 +13,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrls: ['./completar-perfil.component.css'],
 })
 export class CompletarPerfilComponent {
+  readonly opcionesTipoDocumento = OPCIONES_TIPO_DOCUMENTO;
+
   form: FormGroup;
   cargando = false;
   errorMensaje: string | null = null;

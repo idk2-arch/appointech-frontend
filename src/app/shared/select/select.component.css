@@ -1,0 +1,139 @@
+:host {
+  position: relative;
+  display: block;
+}
+
+.select__boton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.select__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select__texto--vacio {
+  color: rgb(255 255 255 / 0.4);
+}
+
+.select__flecha {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: rgb(255 255 255 / 0.4);
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.select__flecha--abierta {
+  transform: rotate(180deg);
+}
+
+.select__menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  left: 0;
+  max-height: 15rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 0.75rem;
+  background: var(--color-superficie);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+  outline: none;
+  transform-origin: top;
+  animation: select-abrir 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.select__menu--arriba {
+  top: auto;
+  bottom: calc(100% + 0.375rem);
+  transform-origin: bottom;
+  animation-name: select-abrir-arriba;
+}
+
+/* Cada opción mide 2.25 rem, así que la píldora se ubica por índice sin medir el DOM. */
+.select__pildora {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  left: 0.25rem;
+  height: 2.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-acento) 25%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-acento) 10%, transparent);
+  pointer-events: none;
+  transform: translateY(calc(var(--indice, 0) * 2.25rem));
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.select__opcion {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  color: rgb(255 255 255 / 0.75);
+  font-size: var(--fs-cuerpo);
+  line-height: 1.25rem;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.select__opcion--activa {
+  color: #fff;
+}
+
+.select__opcion[aria-selected='true'] {
+  color: var(--color-acento);
+}
+
+.select__marca {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.select__vacio {
+  padding: 0.5rem 0.75rem;
+  color: rgb(255 255 255 / 0.5);
+  font-size: var(--fs-cuerpo);
+}
+
+@keyframes select-abrir {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes select-abrir-arriba {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select__menu,
+  .select__pildora,
+  .select__flecha,
+  .select__opcion {
+    animation: none;
+    transition: none;
+  }
+}

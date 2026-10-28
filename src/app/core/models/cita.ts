@@ -53,3 +53,38 @@ export interface ConfirmarCitaRequest {
   inicio: string;
   fin: string;
 }
+
+/** Elemento de GET /cliente/citas y respuesta de las acciones sobre una cita (CitaResponse). */
+export interface CitaResumen extends SolicitudServicio {
+  tecnicoFotoUrl?: string | null;
+  tecnicoNombre?: string | null;
+  tecnicoApellido?: string | null;
+  tecnicoTelefono?: string | null;
+  especialidadNombre?: string | null;
+}
+
+export interface DiagnosticoCita {
+  diagnostico: string;
+  recomendaciones: string | null;
+  fecha: string;
+}
+
+/** Una fila del historial; en una reprogramación el estado anterior y el nuevo son iguales. */
+export interface HistorialCita {
+  estadoAnterior: EstadoCita | null;
+  estadoNuevo: EstadoCita;
+  fecha: string;
+  actor: string;
+  motivo: string | null;
+}
+
+/** GET /cliente/citas/{id} y GET /admin/citas/{id}. El historial va del más antiguo al más reciente. */
+export interface DetalleCita extends CitaResumen {
+  diagnostico: DiagnosticoCita | null;
+  historial: HistorialCita[];
+}
+
+export interface DiagnosticoRequest {
+  diagnostico: string;
+  recomendaciones?: string;
+}

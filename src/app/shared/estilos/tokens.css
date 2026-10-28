@@ -1,0 +1,15 @@
+/*
+ * Colores del proyecto como tokens de diseño. Son los mismos valores que ya se usaban sueltos
+ * en las plantillas; centralizarlos permite usar `bg-acento`, `text-acento`, `border-fondo`...
+ * en Tailwind y `var(--color-acento)` en CSS de componentes. Los blancos y bordes atenuados
+ * siguen siendo `white/<opacidad>`.
+ *
+ * `static` fuerza a emitir todas las variables aunque Tailwind no vea clases que las usen.
+ */
+@theme static {
+  --color-acento: #d98e4a;
+  --color-acento-claro: #e29c5c;
+  --color-fondo: #0b1224;
+  --color-superficie: #111a30;
+  --color-campo-autofill: #171e2f;
+}

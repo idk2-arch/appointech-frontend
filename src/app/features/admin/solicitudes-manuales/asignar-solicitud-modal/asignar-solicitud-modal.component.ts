@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 
 import { SolicitudManualAdmin, SolicitudManualAdminService } from '../../../../core/services/solicitud-manual-admin.service';
 import { TecnicoResponse, TecnicoService } from '../../../../core/services/tecnico.service';
+import { OpcionSelect } from '../../../../shared/select/select.component';
 import { aFechaHoraLocal, hoyIso } from '../../../../core/utils/fecha-local';
 import { obtenerMensajeError, obtenerMensajeErrorEscritura } from '../../../../core/utils/manejo-errores';
 
@@ -28,6 +29,7 @@ export class AsignarSolicitudModalComponent implements OnChanges, OnDestroy {
   readonly hoy = hoyIso();
   form: FormGroup;
   tecnicos: TecnicoResponse[] = [];
+  opcionesTecnicos: OpcionSelect[] = [];
   cargandoTecnicos = false;
   errorTecnicos: string | null = null;
   cargando = false;
@@ -86,6 +88,7 @@ export class AsignarSolicitudModalComponent implements OnChanges, OnDestroy {
         this.tecnicos = (Array.isArray(tecnicos) ? tecnicos : []).filter(
           (t) => t.activo && t.especialidades.some((e) => e.id === solicitud.especialidadId)
         );
+        this.opcionesTecnicos = this.tecnicos.map((t) => ({ value: t.id, label: `${t.nombre} ${t.apellido}` }));
         this.cargandoTecnicos = false;
         this.cdr.markForCheck();
       },

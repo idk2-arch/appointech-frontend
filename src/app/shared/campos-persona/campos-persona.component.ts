@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
-import { LARGO_MINIMO_CONTRASENA, TIPOS_DOCUMENTO } from '../../core/utils/formulario-persona';
+import { LARGO_MINIMO_CONTRASENA, OPCIONES_TIPO_DOCUMENTO } from '../../core/utils/formulario-persona';
 import { UbicacionElegida } from '../selector-direccion/selector-direccion.component';
 
 let contador = 0;
@@ -20,7 +20,7 @@ export class CamposPersonaComponent {
   @Input({ required: true }) form!: FormGroup;
 
   readonly id = `persona-${++contador}`;
-  readonly tiposDocumento = TIPOS_DOCUMENTO;
+  readonly opcionesTipoDocumento = OPCIONES_TIPO_DOCUMENTO;
   readonly largoMinimo = LARGO_MINIMO_CONTRASENA;
   mostrarContrasena = false;
   mostrarConfirmacion = false;

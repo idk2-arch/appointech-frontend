@@ -1,0 +1,62 @@
+<app-modal-formulario
+  [titulo]="existente ? 'Corregir diagnóstico' : 'Registrar diagnóstico'"
+  textoEnviar="Guardar diagnóstico"
+  [cargando]="cargando"
+  [errorMensaje]="errorMensaje"
+  (cerrar)="cerrar.emit()"
+  (enviar)="enviar()"
+>
+  <div [formGroup]="form" class="space-y-5">
+    <div>
+      <label for="diagnostico-texto" class="block fs-cuerpo font-medium text-white">Diagnóstico</label>
+      <textarea
+        id="diagnostico-texto"
+        formControlName="diagnostico"
+        rows="5"
+        [attr.aria-invalid]="form.controls.diagnostico.invalid && form.controls.diagnostico.touched ? true : null"
+        aria-describedby="diagnostico-ayuda"
+        class="mt-2 w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 fs-cuerpo text-white outline-none transition
+               focus:border-[#D98E4A] focus:bg-white/[0.08]"
+      ></textarea>
+      <div id="diagnostico-ayuda" class="mt-1.5 flex items-start justify-between gap-3 fs-secundario">
+        @if (form.controls.diagnostico.invalid && form.controls.diagnostico.touched) {
+          <p role="alert" class="text-rose-300">
+            @if (form.controls.diagnostico.hasError('required')) {
+              Describe el diagnóstico.
+            } @else {
+              El diagnóstico no puede superar {{ maxDiagnostico }} caracteres.
+            }
+          </p>
+        } @else {
+          <span></span>
+        }
+        <span class="shrink-0" [class]="form.controls.diagnostico.value.length > maxDiagnostico ? 'text-rose-300' : 'text-white/60'">
+          {{ form.controls.diagnostico.value.length }}/{{ maxDiagnostico }}
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <label for="diagnostico-recomendaciones" class="block fs-cuerpo font-medium text-white">Recomendaciones (opcional)</label>
+      <textarea
+        id="diagnostico-recomendaciones"
+        formControlName="recomendaciones"
+        rows="3"
+        [attr.aria-invalid]="form.controls.recomendaciones.invalid && form.controls.recomendaciones.touched ? true : null"
+        aria-describedby="recomendaciones-ayuda"
+        class="mt-2 w-full resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 fs-cuerpo text-white outline-none transition
+               focus:border-[#D98E4A] focus:bg-white/[0.08]"
+      ></textarea>
+      <div id="recomendaciones-ayuda" class="mt-1.5 flex items-start justify-between gap-3 fs-secundario">
+        @if (form.controls.recomendaciones.invalid && form.controls.recomendaciones.touched) {
+          <p role="alert" class="text-rose-300">Las recomendaciones no pueden superar {{ maxRecomendaciones }} caracteres.</p>
+        } @else {
+          <span></span>
+        }
+        <span class="shrink-0" [class]="form.controls.recomendaciones.value.length > maxRecomendaciones ? 'text-rose-300' : 'text-white/60'">
+          {{ form.controls.recomendaciones.value.length }}/{{ maxRecomendaciones }}
+        </span>
+      </div>
+    </div>
+  </div>
+</app-modal-formulario>

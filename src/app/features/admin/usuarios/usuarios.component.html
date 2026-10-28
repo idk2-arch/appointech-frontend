@@ -87,6 +87,7 @@
           [columnas]="columnas"
           [filas]="filasVisibles"
           (editar)="editar($event)"
+          (cambiarFoto)="filaConFoto = $event"
           (desactivar)="desactivar($event)"
           (activar)="solicitarActivacion($event)"
         ></app-tabla-usuarios>
@@ -165,3 +166,9 @@
   (cerrar)="cerrarModalEditar()"
   (actualizado)="onUsuarioActualizado()"
 ></app-usuario-editar-modal>
+
+<app-foto-usuario-modal
+  [fila]="filaConFoto"
+  (cerrar)="filaConFoto = null"
+  (actualizada)="cargarUsuarios(false)"
+></app-foto-usuario-modal>

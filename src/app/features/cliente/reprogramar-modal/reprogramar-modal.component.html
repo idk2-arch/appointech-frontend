@@ -1,0 +1,43 @@
+<app-modal-formulario
+  titulo="Reprogramar cita"
+  subtitulo="Elige la nueva fecha y hora. Debe estar libre para tu técnico."
+  textoEnviar="Reprogramar"
+  textoCargando="Reprogramando…"
+  [cargando]="cargando"
+  [errorMensaje]="errorMensaje"
+  (cerrar)="cerrar.emit()"
+  (enviar)="enviar()"
+>
+  <div [formGroup]="form" class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label for="reprogramar-fecha" class="block fs-cuerpo font-medium text-white">Fecha</label>
+      <input
+        id="reprogramar-fecha"
+        type="date"
+        formControlName="fecha"
+        [min]="minimo"
+        [attr.aria-invalid]="form.controls.fecha.invalid && form.controls.fecha.touched ? true : null"
+        class="campo mt-2"
+      />
+      @if (form.controls.fecha.invalid && form.controls.fecha.touched) {
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige una fecha.</p>
+      }
+    </div>
+    <div>
+      <label for="reprogramar-hora" class="block fs-cuerpo font-medium text-white">Hora</label>
+      <input
+        id="reprogramar-hora"
+        type="time"
+        formControlName="hora"
+        [attr.aria-invalid]="form.controls.hora.invalid && form.controls.hora.touched ? true : null"
+        class="campo mt-2"
+      />
+      @if (form.controls.hora.invalid && form.controls.hora.touched) {
+        <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige una hora.</p>
+      }
+    </div>
+    @if (form.hasError('enElPasado')) {
+      <p role="alert" class="fs-secundario text-rose-300 sm:col-span-2">La nueva hora no puede estar en el pasado.</p>
+    }
+  </div>
+</app-modal-formulario>

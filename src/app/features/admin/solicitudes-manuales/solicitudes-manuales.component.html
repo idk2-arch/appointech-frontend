@@ -29,16 +29,13 @@
       </div>
       <div>
         <label for="solicitudes-orden" class="block fs-cuerpo font-medium text-white">Ordenar</label>
-        <select
-          id="solicitudes-orden"
-          [value]="orden"
-          (change)="cambiarOrden($any($event.target).value)"
-          class="mt-2 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 fs-cuerpo text-white outline-none transition
-                 focus:border-[#D98E4A] focus:bg-white/[0.08]"
-        >
-          <option value="antiguas" class="bg-[#111a30]">Más antiguas primero</option>
-          <option value="recientes" class="bg-[#111a30]">Más recientes primero</option>
-        </select>
+        <app-select
+          inputId="solicitudes-orden"
+          [ngModel]="orden"
+          (ngModelChange)="cambiarOrden($event)"
+          [options]="opcionesOrden"
+          class="mt-2 block sm:w-52"
+        ></app-select>
       </div>
     </div>
     @if (!cargando) {
@@ -162,6 +159,7 @@
                   WhatsApp
                 </a>
               }
+              <a [routerLink]="['/admin/citas', t.solicitud.id]" class="boton-fila-admin">Ver detalle</a>
               <button
                 type="button"
                 (click)="abrirAsignar(t.solicitud)"

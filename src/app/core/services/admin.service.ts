@@ -20,6 +20,7 @@ export interface UsuarioAdmin {
   rol: string;
   activo: boolean;
   creadoEn: string;
+  fotoUrl?: string | null;
 }
 
 export interface CrearAdministradorRequest {

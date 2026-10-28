@@ -1,0 +1,22 @@
+<div class="pagina-admin max-w-3xl">
+  <h1 class="titulo-admin">Detalle de cita</h1>
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando la cita…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (cita) {
+      <app-detalle-cita [cita]="cita"></app-detalle-cita>
+    }
+  </div>
+</div>

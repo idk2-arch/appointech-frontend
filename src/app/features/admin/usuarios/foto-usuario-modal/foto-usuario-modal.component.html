@@ -1,0 +1,43 @@
+@if (fila) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 py-8" role="dialog" aria-modal="true" aria-labelledby="foto-usuario-titulo">
+    <div class="fixed inset-0 bg-black/60" (click)="!enviando && cerrar.emit()"></div>
+
+    <div class="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-superficie p-6 shadow-2xl">
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <h2 id="foto-usuario-titulo" class="fs-titulo font-semibold text-white">Foto de perfil</h2>
+          <p class="mt-0.5 truncate fs-cuerpo text-white/60">{{ fila.nombre }}</p>
+        </div>
+        <button
+          #botonCerrar
+          type="button"
+          (click)="cerrar.emit()"
+          [disabled]="enviando"
+          aria-label="Cerrar"
+          class="rounded-lg p-1 text-white/40 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed"
+        >
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      @if (mensajeExito) {
+        <div role="status" class="mt-4 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 fs-cuerpo text-emerald-200">
+          {{ mensajeExito }}
+        </div>
+      }
+
+      <div class="mt-6">
+        <app-carga-foto
+          [fotoUrl]="fotoActual"
+          [nombre]="fila.nombre"
+          [enviando]="enviando"
+          [errorMensaje]="errorMensaje"
+          [permitirQuitar]="false"
+          (guardar)="guardar($event)"
+        ></app-carga-foto>
+      </div>
+    </div>
+  </div>
+}

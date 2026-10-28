@@ -8,6 +8,7 @@ import { TecnicoShellComponent } from './tecnico-shell/tecnico-shell.component';
 import { SelectorDiaComponent } from './selector-dia/selector-dia.component';
 import { MiAgendaComponent } from './mi-agenda/mi-agenda.component';
 import { NoDisponibilidadComponent } from './no-disponibilidad/no-disponibilidad.component';
+import { DiagnosticoModalComponent } from './diagnostico-modal/diagnostico-modal.component';
 import { MiRutaComponent } from './mi-ruta/mi-ruta.component';
 import { MapaRutaComponent } from './mi-ruta/mapa-ruta/mapa-ruta.component';
 
@@ -19,6 +20,7 @@ import { MapaRutaComponent } from './mi-ruta/mapa-ruta/mapa-ruta.component';
     NoDisponibilidadComponent,
     MiRutaComponent,
     MapaRutaComponent,
+    DiagnosticoModalComponent,
   ],
   imports: [CommonModule, ReactiveFormsModule, SharedModule, TecnicoRoutingModule],
 })

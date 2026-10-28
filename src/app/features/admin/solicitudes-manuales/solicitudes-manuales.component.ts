@@ -32,6 +32,7 @@ function normalizar(texto: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
 }
+import { OpcionSelect } from '../../../shared/select/select.component';
 
 @Component({
   selector: 'app-solicitudes-manuales',
@@ -47,6 +48,11 @@ export class SolicitudesManualesComponent implements OnInit, OnDestroy {
   errorCarga: string | null = null;
 
   busqueda = '';
+  readonly opcionesOrden: OpcionSelect[] = [
+    { value: 'antiguas', label: 'Más antiguas primero' },
+    { value: 'recientes', label: 'Más recientes primero' },
+  ];
+
   orden: OrdenSolicitudes = 'antiguas';
 
   solicitudAsignando: SolicitudManualAdmin | null = null;

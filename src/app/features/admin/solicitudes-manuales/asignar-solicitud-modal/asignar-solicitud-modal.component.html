@@ -11,78 +11,74 @@
   >
     <div [formGroup]="form" class="space-y-5">
       <div>
-        <label for="asignar-tecnico" class="block text-base font-medium text-white">Técnico</label>
+        <label for="asignar-tecnico" class="block fs-cuerpo font-medium text-white">Técnico</label>
         @if (cargandoTecnicos) {
-          <p class="mt-2 text-base text-white/70" role="status">Cargando técnicos…</p>
+          <p class="mt-2 fs-cuerpo text-white/70" role="status">Cargando técnicos…</p>
         } @else if (errorTecnicos) {
-          <div role="alert" class="mt-2 rounded-lg border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-base text-rose-200">
+          <div role="alert" class="mt-2 rounded-lg border border-rose-400/30 bg-rose-400/10 px-4 py-3 fs-cuerpo text-rose-200">
             {{ errorTecnicos }}
             <button type="button" (click)="cargarTecnicos()" class="ml-2 font-medium underline">Intentar de nuevo</button>
           </div>
         } @else if (tecnicos.length === 0) {
-          <p role="status" class="mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-base text-amber-100">
+          <p role="status" class="mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-4 py-3 fs-cuerpo text-amber-100">
             No hay técnicos activos con la especialidad {{ solicitud.especialidadNombre }}.
           </p>
         } @else {
-          <select
-            id="asignar-tecnico"
+          <app-select
+            inputId="asignar-tecnico"
             formControlName="tecnicoId"
-            [attr.aria-invalid]="tecnicoId?.invalid && tecnicoId?.touched ? true : null"
-            class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
-          >
-            <option [ngValue]="null" disabled class="bg-[#111a30]">Elige un técnico</option>
-            @for (t of tecnicos; track t.id) {
-              <option [ngValue]="t.id" class="bg-[#111a30] text-white">{{ t.nombre }} {{ t.apellido }}</option>
-            }
-          </select>
+            placeholder="Elige un técnico"
+            [options]="opcionesTecnicos"
+            class="mt-2"
+          ></app-select>
           @if (tecnicoId?.invalid && tecnicoId?.touched) {
-            <p role="alert" class="mt-1.5 text-sm text-rose-300">Elige un técnico.</p>
+            <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige un técnico.</p>
           }
         }
       </div>
 
       <div>
-        <label for="asignar-fecha" class="block text-base font-medium text-white">Fecha de la visita</label>
+        <label for="asignar-fecha" class="block fs-cuerpo font-medium text-white">Fecha de la visita</label>
         <input
           id="asignar-fecha"
           type="date"
           [min]="hoy"
           formControlName="fecha"
           [attr.aria-invalid]="fecha?.invalid && fecha?.touched ? true : null"
-          class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+          class="campo mt-2"
         />
         @if (fecha?.invalid && fecha?.touched) {
-          <p role="alert" class="mt-1.5 text-sm text-rose-300">Elige la fecha.</p>
+          <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la fecha.</p>
         }
       </div>
 
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <label for="asignar-inicio" class="block text-base font-medium text-white">Hora de inicio</label>
+          <label for="asignar-inicio" class="block fs-cuerpo font-medium text-white">Hora de inicio</label>
           <input
             id="asignar-inicio"
             type="time"
             formControlName="horaInicio"
             [attr.aria-invalid]="horaInicio?.invalid && horaInicio?.touched ? true : null"
-            class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+            class="campo mt-2"
           />
           @if (horaInicio?.invalid && horaInicio?.touched) {
-            <p role="alert" class="mt-1.5 text-sm text-rose-300">Elige la hora de inicio.</p>
+            <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la hora de inicio.</p>
           }
         </div>
         <div>
-          <label for="asignar-fin" class="block text-base font-medium text-white">Hora de fin</label>
+          <label for="asignar-fin" class="block fs-cuerpo font-medium text-white">Hora de fin</label>
           <input
             id="asignar-fin"
             type="time"
             formControlName="horaFin"
             [attr.aria-invalid]="(horaFin?.invalid || form.hasError('finAntesDeInicio')) && horaFin?.touched ? true : null"
-            class="mt-2 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-lg text-white outline-none transition focus:border-[#D98E4A] focus:bg-white/[0.08]"
+            class="campo mt-2"
           />
           @if (horaFin?.touched && horaFin?.invalid) {
-            <p role="alert" class="mt-1.5 text-sm text-rose-300">Elige la hora de fin.</p>
+            <p role="alert" class="mt-1.5 fs-secundario text-rose-300">Elige la hora de fin.</p>
           } @else if (horaFin?.touched && form.hasError('finAntesDeInicio')) {
-            <p role="alert" class="mt-1.5 text-sm text-rose-300">La hora de fin debe ser después de la de inicio.</p>
+            <p role="alert" class="mt-1.5 fs-secundario text-rose-300">La hora de fin debe ser después de la de inicio.</p>
           }
         </div>
       </div>

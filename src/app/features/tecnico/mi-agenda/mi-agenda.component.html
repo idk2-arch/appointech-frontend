@@ -2,6 +2,19 @@
   <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi agenda</h1>
   <p class="mt-1 fs-cuerpo text-white/70">Tus citas activas del día.</p>
 
+  @if (mensajeExito) {
+    <div role="status" class="mt-4 flex items-start justify-between gap-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 fs-cuerpo text-emerald-200">
+      <span>{{ mensajeExito }}</span>
+      <button type="button" (click)="mensajeExito = null" class="shrink-0 fs-secundario font-medium underline">Cerrar</button>
+    </div>
+  }
+  @if (mensajeError) {
+    <div role="alert" class="mt-4 flex items-start justify-between gap-3 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 fs-cuerpo text-rose-200">
+      <span>{{ mensajeError }}</span>
+      <button type="button" (click)="mensajeError = null" class="shrink-0 fs-secundario font-medium underline">Cerrar</button>
+    </div>
+  }
+
   <div class="mt-6">
     <app-selector-dia [fecha]="fecha" [deshabilitado]="cargando" (fechaCambio)="cambiarFecha($event)"></app-selector-dia>
   </div>
@@ -41,9 +54,7 @@
               <p class="fs-titulo font-semibold text-[#D98E4A]">
                 {{ cita.fechaHoraInicio | fechaLocal: 'hora' }} – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}
               </p>
-              <span class="rounded-full border px-3 py-1 fs-secundario font-medium" [ngClass]="claseEstado(cita.estado)">
-                {{ etiquetaEstado(cita.estado) }}
-              </span>
+              <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
             </div>
 
             <p class="mt-4 fs-cuerpo text-white">{{ cita.descripcionProblema }}</p>
@@ -55,7 +66,10 @@
               </div>
               <div>
                 <dt class="fs-secundario text-white/60">Cliente</dt>
-                <dd class="text-white">{{ cita.cliente.nombre }} {{ cita.cliente.apellido }}</dd>
+                <dd class="flex items-center gap-2 text-white">
+                  <app-avatar [fotoUrl]="cita.cliente.fotoUrl" [nombre]="cita.cliente.nombre + ' ' + cita.cliente.apellido" tamano="sm"></app-avatar>
+                  {{ cita.cliente.nombre }} {{ cita.cliente.apellido }}
+                </dd>
               </div>
             </dl>
 
@@ -75,9 +89,88 @@
                 Llamar al {{ cita.cliente.telefono }}
               </a>
             }
+
+            @let a = acciones(cita.estado);
+            @if (a.transicion || a.registrarDiagnostico || a.cancelar) {
+              <div class="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
+                @if (a.registrarDiagnostico) {
+                  <button
+                    type="button"
+                    (click)="abrirDialogo({ tipo: 'diagnostico', cita: cita })"
+                    [disabled]="citaEnviando !== null"
+                    class="boton-fila-admin px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {{ diagnosticoDe(cita) ? 'Corregir diagnóstico' : 'Registrar diagnóstico' }}
+                  </button>
+                }
+                @if (a.transicion; as t) {
+                  <button
+                    type="button"
+                    (click)="avanzar(cita, t)"
+                    [disabled]="citaEnviando !== null"
+                    class="boton-admin boton-admin--cobre disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {{ citaEnviando === cita.id && !dialogo ? 'Actualizando…' : t.etiqueta }}
+                  </button>
+                }
+                @if (a.cancelar) {
+                  <button
+                    type="button"
+                    (click)="abrirDialogo({ tipo: 'cancelar', cita: cita })"
+                    [disabled]="citaEnviando !== null"
+                    class="boton-fila-admin px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60 sm:ml-auto"
+                  >
+                    Cancelar
+                  </button>
+                }
+              </div>
+            }
           </li>
         }
       </ul>
     }
   </div>
 </div>
+
+@if (dialogo; as d) {
+  @switch (d.tipo) {
+    @case ('cancelar') {
+      <app-dialogo-motivo
+        titulo="Cancelar cita"
+        subtitulo="El cliente será notificado con este motivo."
+        etiqueta="Motivo de la cancelación"
+        [obligatorio]="true"
+        textoEnviar="Cancelar cita"
+        textoCargando="Cancelando…"
+        [cargando]="citaEnviando !== null"
+        [errorMensaje]="errorDialogo"
+        (cerrar)="cerrarDialogo()"
+        (confirmar)="cancelar($event)"
+      ></app-dialogo-motivo>
+    }
+    @case ('diagnostico') {
+      <app-diagnostico-modal
+        [existente]="diagnosticoDe(d.cita)"
+        [cargando]="citaEnviando !== null"
+        [errorMensaje]="errorDialogo"
+        (cerrar)="cerrarDialogo()"
+        (guardar)="guardarDiagnostico($event)"
+      ></app-diagnostico-modal>
+    }
+    @case ('finalizar') {
+      <app-modal-formulario
+        titulo="Finalizar servicio"
+        textoEnviar="Finalizar servicio"
+        textoCargando="Finalizando…"
+        [cargando]="citaEnviando !== null"
+        [errorMensaje]="errorDialogo"
+        (cerrar)="cerrarDialogo()"
+        (enviar)="confirmarFinalizar()"
+      >
+        <p class="fs-cuerpo text-white/80">
+          ¿Confirmas que terminaste el servicio? Después de finalizarlo ya no podrás registrar ni corregir el diagnóstico.
+        </p>
+      </app-modal-formulario>
+    }
+  }
+}

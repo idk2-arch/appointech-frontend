@@ -15,6 +15,8 @@ import type { SidebarMenuItem } from '../sidebar-menu/sidebar-menu.component';
 export class PanelLateralComponent {
   @Input({ required: true }) rol!: string;
   @Input({ required: true }) menuItems: SidebarMenuItem[] = [];
+  /** Ruta de la página de perfil; si falta, no se muestra la foto de la sesión. */
+  @Input() enlacePerfil: string | null = null;
   @Output() cerrarSesion = new EventEmitter<void>();
 
   sidebarAbierto = false;

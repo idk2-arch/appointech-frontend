@@ -15,6 +15,7 @@ export class TablaUsuariosComponent {
   @Input({ required: true }) columnas: ColumnaTabla[] = [];
   @Input({ required: true }) filas: FilaUsuario[] = [];
   @Output() editar = new EventEmitter<FilaUsuario>();
+  @Output() cambiarFoto = new EventEmitter<FilaUsuario>();
   @Output() desactivar = new EventEmitter<FilaUsuario>();
   @Output() activar = new EventEmitter<FilaUsuario>();
 

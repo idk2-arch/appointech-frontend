@@ -1,0 +1,100 @@
+<div class="space-y-6">
+  <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="detalle-cita-datos">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 id="detalle-cita-datos" class="fs-titulo font-semibold text-white">Cita n.º {{ cita.id }}</h2>
+      <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
+    </div>
+
+    <dl class="mt-4 grid gap-4 fs-cuerpo sm:grid-cols-2">
+      <div>
+        <dt class="fs-secundario text-white/60">Fecha y hora</dt>
+        <dd class="text-white">
+          @if (cita.fechaHoraInicio) {
+            <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fecha' }}</span>,
+            {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}@if (cita.fechaHoraFin) { – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}}
+          } @else {
+            Por coordinar
+          }
+        </dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Especialidad</dt>
+        <dd class="text-white">{{ cita.especialidadNombre || 'Sin especificar' }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="fs-secundario text-white/60">Dirección</dt>
+        <dd class="break-words text-white">{{ cita.direccionServicio }}</dd>
+      </div>
+      <div class="sm:col-span-2">
+        <dt class="fs-secundario text-white/60">Problema</dt>
+        <dd class="break-words text-white">{{ cita.descripcionProblema }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="detalle-cita-tecnico">
+    <h2 id="detalle-cita-tecnico" class="fs-titulo font-semibold text-white">Técnico</h2>
+    @if (cita | nombreTecnico; as tecnico) {
+      <dl class="mt-4 grid gap-4 fs-cuerpo sm:grid-cols-2">
+        <div>
+          <dt class="fs-secundario text-white/60">Nombre</dt>
+          <dd class="flex items-center gap-2 text-white">
+            <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="tecnico" tamano="md"></app-avatar>
+            {{ tecnico }}
+          </dd>
+        </div>
+        @if (cita.tecnicoTelefono) {
+          <div>
+            <dt class="fs-secundario text-white/60">Teléfono</dt>
+            <dd>
+              <a [href]="enlaceTelefono(cita.tecnicoTelefono)" class="font-medium text-[#D98E4A] underline underline-offset-4">
+                {{ cita.tecnicoTelefono }}
+              </a>
+            </dd>
+          </div>
+        }
+      </dl>
+    } @else {
+      <p class="mt-3 fs-cuerpo text-white/60">Todavía no hay un técnico asignado.</p>
+    }
+  </section>
+
+  @if (cita.diagnostico; as diagnostico) {
+    <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="detalle-cita-diagnostico">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="detalle-cita-diagnostico" class="fs-titulo font-semibold text-white">Diagnóstico</h2>
+        <span class="fs-secundario text-white/60">{{ diagnostico.fecha | fechaLocal }}</span>
+      </div>
+      <p class="mt-3 whitespace-pre-line break-words fs-cuerpo text-white">{{ diagnostico.diagnostico }}</p>
+      @if (diagnostico.recomendaciones) {
+        <h3 class="mt-4 fs-secundario text-white/60">Recomendaciones</h3>
+        <p class="mt-1 whitespace-pre-line break-words fs-cuerpo text-white">{{ diagnostico.recomendaciones }}</p>
+      }
+    </section>
+  }
+
+  <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="detalle-cita-historial">
+    <h2 id="detalle-cita-historial" class="fs-titulo font-semibold text-white">Historial</h2>
+    <p class="mt-1 fs-secundario text-white/60">Del cambio más antiguo al más reciente.</p>
+    @if (cita.historial.length === 0) {
+      <p class="mt-4 fs-cuerpo text-white/60">Aún no hay movimientos registrados.</p>
+    } @else {
+      <ol class="mt-4 border-l border-white/15">
+        @for (fila of cita.historial; track $index) {
+          <li class="relative pb-5 pl-5 last:pb-0">
+            <span
+              class="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full"
+              [class]="$last ? 'bg-[#D98E4A]' : 'bg-white/40'"
+              aria-hidden="true"
+            ></span>
+            <p class="fs-cuerpo font-medium text-white">{{ titulo(fila) }}</p>
+            <p class="fs-secundario text-white/60">{{ fila.fecha | fechaLocal }} · {{ fila.actor }}</p>
+            @if (fila.motivo) {
+              <p class="mt-1 break-words fs-cuerpo text-white/80">{{ fila.motivo }}</p>
+            }
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</div>

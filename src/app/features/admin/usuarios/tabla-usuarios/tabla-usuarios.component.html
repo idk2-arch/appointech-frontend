@@ -57,7 +57,14 @@
                   }
                 }
                 @default {
-                  {{ texto(fila, columna) }}
+                  @if ($first) {
+                    <div class="flex items-center gap-3">
+                      <app-avatar [fotoUrl]="fila.fotoUrl" [nombre]="fila.nombre" tamano="sm"></app-avatar>
+                      {{ texto(fila, columna) }}
+                    </div>
+                  } @else {
+                    {{ texto(fila, columna) }}
+                  }
                 }
               }
             </td>
@@ -69,6 +76,14 @@
           </td>
           <td>
             <div class="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                (click)="cambiarFoto.emit(fila)"
+                [attr.aria-label]="'Cambiar la foto de ' + fila.nombre"
+                class="boton-fila-admin"
+              >
+                Foto
+              </button>
               <button
                 type="button"
                 (click)="editar.emit(fila)"

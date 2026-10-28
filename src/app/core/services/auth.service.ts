@@ -147,12 +147,12 @@ export class AuthService {
       TECNICO: '/tecnico',
     };
     const ruta = rutasPorRol[this.obtenerRol() ?? ''] ?? '/';
-    router.navigate([ruta]);
+    void router.navigate([ruta]);
   }
 
   redirigirSegunRolYPerfil(router: Router, perfilCompleto: boolean): void {
     if (!perfilCompleto) {
-      router.navigate(['/completar-perfil']);
+      void router.navigate(['/completar-perfil']);
       return;
     }
     this.redirigirSegunRol(router);

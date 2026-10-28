@@ -25,6 +25,6 @@ export class EnConstruccionComponent implements OnInit {
 
   cerrarSesion(): void {
     this.authService.cerrarSesion();
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/login']);
   }
 }

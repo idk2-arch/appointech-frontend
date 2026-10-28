@@ -41,7 +41,7 @@ export class RegistroComponent {
     this.authService.registrarCliente(aSolicitudCliente(this.form.value)).subscribe({
       next: () => {
         this.cargando = false;
-        this.router.navigate([this.authService.estaAutenticado() ? '/' : '/login']);
+        void this.router.navigate([this.authService.estaAutenticado() ? '/' : '/login']);
         this.cdr.markForCheck();
       },
       error: (err) => {

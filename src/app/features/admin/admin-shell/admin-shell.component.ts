@@ -34,7 +34,7 @@ export class AdminShellComponent {
     const id = Number(valor.trim());
     if (!Number.isInteger(id) || id <= 0) return;
     this.cerrarSidebar();
-    this.router.navigate(['/admin/citas', id]);
+    void this.router.navigate(['/admin/citas', id]);
   }
 
   abrirSidebar(): void {
@@ -47,6 +47,6 @@ export class AdminShellComponent {
 
   cerrarSesion(): void {
     this.authService.cerrarSesion();
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/login']);
   }
 }

@@ -35,7 +35,7 @@ export class FechaLocalPipe implements PipeTransform {
     if (!valor) return '';
     // Acepta también una hora suelta ("08:00:00") por si el backend no la manda con fecha.
     const fecha = parsearFechaLocal(/^\d{1,2}:\d{2}/.test(valor) ? `1970-01-01T${valor}` : valor);
-    if (isNaN(fecha.getTime())) return valor;
+    if (Number.isNaN(fecha.getTime())) return valor;
     return new Intl.DateTimeFormat('es-CO', FORMATOS[formato]).format(fecha);
   }
 }

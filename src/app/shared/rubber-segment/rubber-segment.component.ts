@@ -65,7 +65,6 @@ export class RubberSegmentComponent implements AfterViewInit, OnChanges, OnDestr
   @Input() ariaLabel = 'Control segmentado';
 
   @Output() valueChange = new EventEmitter<string>();
-  @Output() change = new EventEmitter<string>();
 
   @ViewChild('track') private trackRef?: ElementRef<HTMLElement>;
   @ViewChildren('itemBtn') private itemRefs?: QueryList<ElementRef<HTMLButtonElement>>;
@@ -161,7 +160,6 @@ export class RubberSegmentComponent implements AfterViewInit, OnChanges, OnDestr
     const val = list[index].value;
     this.innerValue = val;
     this.valueChange.emit(val);
-    this.change.emit(val);
     this.cdr.markForCheck();
     this.measure();
   }

@@ -30,7 +30,7 @@ describe('CardSwapComponent', () => {
     for (const [clave, valor] of Object.entries(entradas)) fixture.componentRef.setInput(clave, valor);
     cambios = [];
     clics = [];
-    fixture.componentInstance.change.subscribe((i) => cambios.push(i));
+    fixture.componentInstance.frontChange.subscribe((i) => cambios.push(i));
     fixture.componentInstance.cardClick.subscribe((i) => clics.push(i));
     fixture.detectChanges();
   }

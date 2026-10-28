@@ -75,7 +75,7 @@ export class CardSwapComponent implements OnInit, AfterViewInit, OnChanges, OnDe
   /** Índice (en `items`) de la carta pulsada. */
   @Output() cardClick = new EventEmitter<number>();
   /** Índice de la carta que quedó al frente. */
-  @Output() change = new EventEmitter<number>();
+  @Output() frontChange = new EventEmitter<number>();
 
   @ViewChild('raiz', { static: true }) private raiz!: ElementRef<HTMLElement>;
   @ViewChild('escenario', { static: true }) private escenario!: ElementRef<HTMLElement>;
@@ -337,7 +337,7 @@ export class CardSwapComponent implements OnInit, AfterViewInit, OnChanges, OnDe
 
   private avisarCambio(): void {
     const frente = this.motor?.indiceFrente ?? 0;
-    this.zona.run(() => this.change.emit(frente));
+    this.zona.run(() => this.frontChange.emit(frente));
   }
 
   private irA(posicion: number): void {

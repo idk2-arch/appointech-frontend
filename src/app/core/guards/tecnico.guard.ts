@@ -11,6 +11,6 @@ export const tecnicoGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/login']);
+  void router.navigate(['/login']);
   return false;
 };

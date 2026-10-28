@@ -26,11 +26,10 @@
       Por ahora no hay especialidades disponibles. Vuelve más tarde.
     </div>
   } @else {
-    <div class="grid gap-3 sm:grid-cols-2" role="list">
+    <div class="grid gap-3 sm:grid-cols-2">
       @for (especialidad of especialidades; track especialidad.id) {
         <button
           type="button"
-          role="listitem"
           (click)="seleccionar.emit(especialidad)"
           class="group flex items-start gap-4 rounded-2xl border p-4 text-left transition"
           [ngClass]="

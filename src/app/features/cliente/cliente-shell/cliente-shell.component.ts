@@ -25,6 +25,6 @@ export class ClienteShellComponent {
 
   cerrarSesion(): void {
     this.authService.cerrarSesion();
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/login']);
   }
 }

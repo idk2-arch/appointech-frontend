@@ -46,6 +46,15 @@
       </p>
     }
     <app-dictado-voz [deshabilitado]="cargando" (dictado)="agregarDictado($event)"></app-dictado-voz>
+    <div class="flex flex-wrap items-start gap-x-3">
+      <app-sugerir-prediagnostico [descripcion]="descripcionProblema?.value" [especialidad]="especialidad.nombre"></app-sugerir-prediagnostico>
+      <app-redactar-tecnico
+        [descripcion]="descripcionProblema?.value"
+        [especialidad]="especialidad.nombre"
+        (redactado)="reemplazarDescripcion($event)"
+        (restaurar)="reemplazarDescripcion($event)"
+      ></app-redactar-tecnico>
+    </div>
   </div>
 
   <!-- Electrodoméstico (todo opcional) -->

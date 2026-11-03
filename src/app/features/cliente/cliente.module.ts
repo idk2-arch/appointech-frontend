@@ -15,6 +15,8 @@ import { MisCitasComponent } from './mis-citas/mis-citas.component';
 import { DetalleCitaClienteComponent } from './detalle-cita/detalle-cita-cliente.component';
 import { ReprogramarModalComponent } from './reprogramar-modal/reprogramar-modal.component';
 import { DictadoVozComponent } from './dictado-voz/dictado-voz.component';
+import { RedactarTecnicoComponent } from './solicitar-servicio/redactar-tecnico/redactar-tecnico.component';
+import { SugerirPrediagnosticoComponent } from './solicitar-servicio/sugerir-prediagnostico/sugerir-prediagnostico.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +27,8 @@ import { DictadoVozComponent } from './dictado-voz/dictado-voz.component';
     ElegirFranjaComponent,
     ConfirmarCitaComponent,
     DictadoVozComponent,
+    SugerirPrediagnosticoComponent,
+    RedactarTecnicoComponent,
     CitaConfirmadaComponent,
     MisCitasComponent,
     DetalleCitaClienteComponent,

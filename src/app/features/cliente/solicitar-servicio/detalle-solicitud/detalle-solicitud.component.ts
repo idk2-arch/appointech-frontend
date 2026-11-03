@@ -149,6 +149,13 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
     this.descripcionProblema?.markAsTouched();
   }
 
+  /** Texto que entra por la IA (redactado o restaurado): el campo queda editable, válido y modificado. */
+  reemplazarDescripcion(texto: string): void {
+    this.descripcionProblema?.setValue(texto);
+    this.descripcionProblema?.markAsDirty();
+    this.descripcionProblema?.markAsTouched();
+  }
+
   // ---- Ubicación ----
 
   /** Dirección elegida de la lista, GPS o pin movido: se guardan dirección y coordenadas (ocultas). */

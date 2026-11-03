@@ -1,0 +1,32 @@
+<div class="mt-3" [attr.aria-busy]="cargando">
+  <button
+    type="button"
+    (click)="sugerir()"
+    [disabled]="!puedeSugerir"
+    class="inline-flex items-center gap-2 rounded-full border border-[#D98E4A]/40 bg-[#D98E4A]/10 px-4 py-2 text-sm font-medium
+           text-[#D98E4A] transition hover:border-[#D98E4A]/70 disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    @if (cargando) {
+      <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+      </svg>
+    }
+    Sugerir pre-diagnóstico con IA
+  </button>
+
+  <div aria-live="polite">
+    @if (cargando) {
+      <p class="mt-3 text-sm text-white/60">Preparando la sugerencia…</p>
+    }
+    @if (sugerencia) {
+      <section aria-label="Pre-diagnóstico sugerido" class="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+        <p class="text-base whitespace-pre-line text-white">{{ sugerencia }}</p>
+        <p class="mt-3 text-xs font-medium text-[#D98E4A]">{{ etiquetaOrientativo }}</p>
+      </section>
+    }
+    @if (aviso) {
+      <p class="mt-3 text-sm text-white/60">{{ aviso }}</p>
+    }
+  </div>
+</div>

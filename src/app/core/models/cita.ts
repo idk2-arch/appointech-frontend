@@ -118,3 +118,20 @@ export interface DiagnosticoRequest {
   diagnostico: string;
   recomendaciones?: string;
 }
+
+export interface PedirSugerenciaRequest {
+  descripcionProblema: string;
+  especialidad?: string;
+}
+
+/** Sugerencia orientativa de la IA mientras se describe el problema; el backend no la guarda. */
+export interface SugerenciaPreDiagnostico {
+  disponible: boolean;
+  sugerencia: string;
+}
+
+/** Descripción del cliente reescrita en lenguaje técnico por la IA; el cliente decide si la conserva. */
+export interface RedaccionTecnica {
+  disponible: boolean;
+  textoTecnico: string;
+}

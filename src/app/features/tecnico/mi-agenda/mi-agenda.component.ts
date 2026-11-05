@@ -33,6 +33,8 @@ export class MiAgendaComponent implements OnInit, OnDestroy {
   errorDialogo: string | null = null;
   mensajeExito: string | null = null;
   mensajeError: string | null = null;
+  /** Cita recién finalizada: se ofrece ir a registrar su costo final. */
+  citaPorCobrar: number | null = null;
 
   readonly enlaceTelefono = enlaceTelefono;
   readonly acciones = accionesTecnico;
@@ -154,7 +156,9 @@ export class MiAgendaComponent implements OnInit, OnDestroy {
       this.citaTecnicoService.cambiarEstado(cita.id, transicion.destino),
       transicion.destino === 'FINALIZADA' ? 'El servicio fue finalizado.' : 'El estado de la cita fue actualizado.',
       'No fue posible actualizar el estado de la cita.',
-      () => undefined
+      () => {
+        if (transicion.destino === 'FINALIZADA') this.citaPorCobrar = cita.id;
+      }
     );
   }
 
@@ -169,6 +173,7 @@ export class MiAgendaComponent implements OnInit, OnDestroy {
     this.errorDialogo = null;
     this.mensajeError = null;
     this.mensajeExito = null;
+    this.citaPorCobrar = null;
 
     peticion
       .pipe(

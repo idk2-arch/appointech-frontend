@@ -1,0 +1,33 @@
+<fieldset class="space-y-3">
+  <legend class="fs-cuerpo font-medium text-white">¿Cómo quieres pagar?</legend>
+
+  <div class="flex flex-col gap-3 sm:flex-row">
+    <button type="button" (click)="elegir('EFECTIVO')" [disabled]="enviando" class="boton-admin justify-center">
+      Pagar en efectivo
+    </button>
+    <button
+      type="button"
+      (click)="elegir('EN_LINEA')"
+      [disabled]="enviando || enLineaNoDisponible"
+      class="boton-admin boton-admin--cobre justify-center"
+    >
+      {{ enviando ? 'Procesando…' : 'Pagar en línea' }}
+    </button>
+  </div>
+  <p class="fs-secundario text-white/60">En efectivo le pagas directamente al técnico. En línea te llevamos a la pasarela de pagos.</p>
+</fieldset>
+
+<div aria-live="polite" role="status">
+  @if (errorMensaje) {
+    <p class="mt-3 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 fs-cuerpo text-rose-200">{{ errorMensaje }}</p>
+  }
+  @if (enLineaNoDisponible) {
+    <p class="mt-2 fs-cuerpo text-white/80">Por ahora puedes pagar en efectivo.</p>
+  }
+</div>
+
+@if (enProceso) {
+  <div class="mt-3">
+    <app-verificar-pago [citaId]="pago.citaId" (actualizado)="actualizado.emit($event)"></app-verificar-pago>
+  </div>
+}

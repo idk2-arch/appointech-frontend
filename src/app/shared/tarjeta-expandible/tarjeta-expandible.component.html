@@ -1,0 +1,42 @@
+<div #compacta class="tarjeta-expandible__compacta" appSpotlight (click)="alClicTarjeta($event)">
+  <ng-content select="[resumen]"></ng-content>
+  <div class="mt-3 flex justify-end">
+    <button
+      #abrirBoton
+      type="button"
+      class="tarjeta-expandible__abrir"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="abierta"
+      (click)="abrir()"
+    >
+      {{ textoAbrir }}
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span class="sr-only">: {{ etiqueta }}</span>
+    </button>
+  </div>
+</div>
+
+@if (abierta) {
+  <div #capa class="tarjeta-expandible__capa">
+    <div class="tarjeta-expandible__fondo" aria-hidden="true" (pointerdown)="cerrar()"></div>
+    <button type="button" class="tarjeta-expandible__cerrar" aria-label="Cerrar" (click)="cerrar()">
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6l-12 12" />
+        <path d="M6 6l12 12" />
+      </svg>
+    </button>
+    <div class="tarjeta-expandible__panel" role="dialog" aria-modal="true" [attr.aria-label]="etiqueta" tabindex="-1">
+      <div class="tarjeta-expandible__interior">
+        <div class="tarjeta-expandible__cabecera">
+          <div class="tarjeta-expandible__titulo"><ng-content select="[cabecera]"></ng-content></div>
+          <div class="tarjeta-expandible__acciones"><ng-content select="[acciones]"></ng-content></div>
+        </div>
+        <div class="tarjeta-expandible__cuerpo">
+          <div class="tarjeta-expandible__texto"><ng-content select="[expandido]"></ng-content></div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

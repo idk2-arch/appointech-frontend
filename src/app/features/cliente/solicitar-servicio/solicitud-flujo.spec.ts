@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Cita, SolicitudServicio } from '../../../core/models/cita';
 import { FranjaDisponible } from '../../../core/models/disponibilidad';
+import { AvisosPagoService } from '../../../shared/toast/avisos-pago.service';
 import { FotoElectrodomesticoService } from '../../../core/services/foto-electrodomestico.service';
 import { SolicitudService } from '../../../core/services/solicitud.service';
 import { EspecialidadResponse } from '../../../core/services/tecnico.service';
@@ -28,6 +29,8 @@ const FRANJA: FranjaDisponible = { tecnicoId: 3, inicio: '2026-11-04T14:00:00', 
 const CITA = { ...SOLICITUD, tecnicoId: 3, fechaHoraInicio: FRANJA.inicio, fechaHoraFin: FRANJA.fin, estado: 'CONFIRMADA' } as Cita;
 const cdr = { markForCheck: vi.fn() } as unknown as ChangeDetectorRef;
 const falloHttp = (status: number, error?: unknown): HttpErrorResponse => new HttpErrorResponse({ status, error });
+
+const avisos = { anunciarCitaConfirmada: vi.fn() };
 
 describe('DetalleSolicitudComponent: descripción, ubicación y errores', () => {
   let crearSolicitud: ReturnType<typeof vi.fn>;
@@ -199,7 +202,7 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
   beforeEach(() => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     vi.useFakeTimers({ now: new Date(2026, 9, 27, 12, 0, 0), toFake: ['Date'] });
-    flujo = new SolicitarServicioComponent({ subirVarias: vi.fn().mockReturnValue(of({})) } as unknown as FotoElectrodomesticoService, cdr);
+    flujo = new SolicitarServicioComponent({ subirVarias: vi.fn().mockReturnValue(of({})) } as unknown as FotoElectrodomesticoService, cdr, avisos as unknown as AvisosPagoService);
   });
 
   afterEach(() => {
@@ -253,8 +256,10 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
   });
 
   it('al confirmar la cita muestra la pantalla final (fuera del indicador de pasos)', () => {
+    avisos.anunciarCitaConfirmada.mockClear();
     flujo.onCitaConfirmada(CITA);
 
+    expect(avisos.anunciarCitaConfirmada).toHaveBeenCalledOnce();
     expect(flujo.cita).toBe(CITA);
     expect(flujo.paso).toBe('confirmada');
     expect(flujo.indicePaso).toBe(flujo.pasos.length);

@@ -33,6 +33,18 @@ import { InsigniaEstadoComponent } from './insignia-estado/insignia-estado.compo
 import { DialogoMotivoComponent } from './dialogo-motivo/dialogo-motivo.component';
 import { DetalleCitaComponent } from './detalle-cita/detalle-cita.component';
 import { SelectorEspecialidadesComponent } from './selector-especialidades/selector-especialidades.component';
+import { PesosPipe } from './pesos/pesos.pipe';
+import { InsigniaPagoComponent } from './insignia-pago/insignia-pago.component';
+import { AdvertenciaDiferenciaComponent } from './advertencia-diferencia/advertencia-diferencia.component';
+import { CostoFinalFormComponent } from './costo-final-form/costo-final-form.component';
+import { VerificarPagoComponent } from './verificar-pago/verificar-pago.component';
+import { SelectorMetodoPagoComponent } from './selector-metodo-pago/selector-metodo-pago.component';
+import { ComprobanteComponent } from './comprobante/comprobante.component';
+import { PanelPagoComponent } from './panel-pago/panel-pago.component';
+import { EstadoPagoCitaComponent } from './estado-pago-cita/estado-pago-cita.component';
+import { ToastModule } from './toast/toast.module';
+import { SpotlightDirective } from './spotlight/spotlight.directive';
+import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandible.component';
 
 @NgModule({
   declarations: [
@@ -67,9 +79,21 @@ import { SelectorEspecialidadesComponent } from './selector-especialidades/selec
     BounceCardsComponent,
     FotoAmpliadaComponent,
     PerfilDatosComponent,
+    PesosPipe,
+    InsigniaPagoComponent,
+    AdvertenciaDiferenciaComponent,
+    CostoFinalFormComponent,
+    VerificarPagoComponent,
+    SelectorMetodoPagoComponent,
+    ComprobanteComponent,
+    PanelPagoComponent,
+    EstadoPagoCitaComponent,
+    SpotlightDirective,
+    TarjetaExpandibleComponent,
   ],
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule],
   exports: [
+    ToastModule,
     GradientWavesComponent,
     SidebarMenuComponent,
     FuseButtonComponent,
@@ -101,6 +125,17 @@ import { SelectorEspecialidadesComponent } from './selector-especialidades/selec
     BounceCardsComponent,
     FotoAmpliadaComponent,
     PerfilDatosComponent,
+    PesosPipe,
+    InsigniaPagoComponent,
+    AdvertenciaDiferenciaComponent,
+    CostoFinalFormComponent,
+    VerificarPagoComponent,
+    SelectorMetodoPagoComponent,
+    ComprobanteComponent,
+    PanelPagoComponent,
+    EstadoPagoCitaComponent,
+    SpotlightDirective,
+    TarjetaExpandibleComponent,
   ],
 })
 export class SharedModule {}

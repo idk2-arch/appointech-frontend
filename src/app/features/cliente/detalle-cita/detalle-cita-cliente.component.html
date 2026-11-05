@@ -57,6 +57,9 @@
           }
         </div>
       </app-detalle-cita>
+      @if (mostrarPago) {
+        <div class="mt-6"><app-panel-pago [citaId]="cita.id" rol="CLIENTE"></app-panel-pago></div>
+      }
     }
   </div>
 </div>

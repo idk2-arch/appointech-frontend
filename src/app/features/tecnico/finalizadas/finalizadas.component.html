@@ -1,0 +1,57 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <h1 class="fs-titulo font-semibold tracking-tight text-white">Citas finalizadas</h1>
+  <p class="mt-1 fs-cuerpo text-white/70">Registra el costo final y revisa el cobro de cada servicio.</p>
+
+  <div class="mt-6">
+    @if (cargando) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando tus citas finalizadas…
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin px-6 py-2">Reintentar</button>
+      </div>
+    } @else if (citas.length === 0) {
+      <div role="status" class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        Aún no tienes citas finalizadas.
+      </div>
+    } @else {
+      <p class="mb-3 fs-cuerpo text-white/70" aria-live="polite">
+        {{ citas.length }} {{ citas.length === 1 ? 'cita finalizada' : 'citas finalizadas' }}
+        @if (sinCostoFinal > 0) {
+          · <span class="font-medium text-orange-200">{{ sinCostoFinal }} sin costo final</span>
+        }
+      </p>
+      <ul class="space-y-4">
+        @for (cita of citas; track cita.id) {
+          <li
+            appSpotlight
+            class="rounded-2xl p-5"
+            [class]="cita.estadoPago === 'SIN_COSTO_FINAL' ? 'bg-orange-300/[0.06] ring-1 ring-orange-300/50' : 'bg-white/[0.03]'"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p class="fs-titulo font-semibold text-[#D98E4A]">{{ cita.fechaHoraFin | fechaLocal }}</p>
+              <app-insignia-pago [estado]="cita.estadoPago"></app-insignia-pago>
+            </div>
+
+            <p class="mt-4 fs-cuerpo text-white">{{ cita.descripcionProblema }}</p>
+            @if (clienteDe(cita); as cliente) {
+              <p class="mt-2 fs-cuerpo text-white/80">Cliente: {{ cliente }}</p>
+            }
+            <p class="mt-1 fs-cuerpo text-white/80">{{ cita.direccionServicio }}</p>
+
+            <a [routerLink]="['/tecnico/citas', cita.id, 'pago']" class="boton-fila-admin mt-4 inline-block px-4 py-2">
+              {{ cita.estadoPago === 'SIN_COSTO_FINAL' ? 'Registrar costo final' : 'Ver cobro' }}
+              <span class="sr-only"> de la cita n.º {{ cita.id }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

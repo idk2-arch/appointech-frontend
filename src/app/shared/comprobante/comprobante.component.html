@@ -1,0 +1,54 @@
+@if (cargando) {
+  <p role="status" class="fs-cuerpo text-white/70">Cargando el comprobante…</p>
+} @else if (errorMensaje) {
+  <div class="flex flex-wrap items-center gap-3">
+    <p role="alert" class="fs-cuerpo text-rose-300">{{ errorMensaje }}</p>
+    <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+  </div>
+} @else if (comprobante; as c) {
+  <article appSpotlight class="comprobante-imprimible rounded-xl bg-white/[0.04] p-6" aria-labelledby="comprobante-titulo">
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
+      <h3 id="comprobante-titulo" class="fs-titulo font-semibold text-white">Comprobante de pago</h3>
+      <p class="fs-cuerpo font-medium text-[#D98E4A]">N.º {{ c.numero }}</p>
+    </div>
+
+    <dl class="mt-4 grid gap-4 fs-cuerpo sm:grid-cols-2">
+      <div>
+        <dt class="fs-secundario text-white/60">Fecha de emisión</dt>
+        <dd class="text-white">{{ c.emitidoEn | fechaLocal }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Fecha de pago</dt>
+        <dd class="text-white">{{ c.pagadoEn | fechaLocal }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Servicio</dt>
+        <dd class="text-white">{{ c.especialidad }} (cita n.º {{ c.citaId }})</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Monto</dt>
+        <dd class="font-semibold text-white">{{ c.monto | pesos }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Cliente</dt>
+        <dd class="break-words text-white">{{ c.cliente }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Técnico</dt>
+        <dd class="break-words text-white">{{ c.tecnico }}</dd>
+      </div>
+      <div>
+        <dt class="fs-secundario text-white/60">Método de pago</dt>
+        <dd class="text-white">{{ etiquetaMetodo(c.metodo) }}</dd>
+      </div>
+      @if (c.referencia) {
+        <div>
+          <dt class="fs-secundario text-white/60">Referencia</dt>
+          <dd class="break-all text-white">{{ c.referencia }}</dd>
+        </div>
+      }
+    </dl>
+  </article>
+
+  <button type="button" (click)="descargar()" class="boton-admin boton-admin--cobre mt-4">Descargar</button>
+}

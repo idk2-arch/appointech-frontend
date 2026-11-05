@@ -5,6 +5,11 @@
 @import "./app/shared/estilos/campos.css";
 @import "./app/shared/estilos/autofill.css";
 @import "./app/shared/estilos/scrollbar.css";
+@import "./app/shared/estilos/impresion.css";
+@import "./app/shared/estilos/spotlight.css";
+@import "./app/shared/estilos/tarjeta-expandible.css";
+@import "./app/shared/estilos/confirmacion.css";
+@import "./app/shared/estilos/toast.css";
 
 html, body {
   height: 100%;

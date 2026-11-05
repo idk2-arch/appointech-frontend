@@ -113,6 +113,20 @@ describe('DetalleCitaClienteComponent: carga, cancelar y reprogramar', () => {
       componente.cita = null;
       expect(componente.puedeModificar).toBe(false);
     });
+
+    it.each([
+      ['CONFIRMADA', false],
+      ['FINALIZADA', true],
+      ['CANCELADA', false],
+    ] as const)('en %s, muestra el pago: %s', (estado, esperado) => {
+      componente.cita = cita(estado);
+      expect(componente.mostrarPago).toBe(esperado);
+    });
+
+    it('sin cita cargada no muestra el pago', () => {
+      componente.cita = null;
+      expect(componente.mostrarPago).toBe(false);
+    });
   });
 
   describe('diálogos', () => {

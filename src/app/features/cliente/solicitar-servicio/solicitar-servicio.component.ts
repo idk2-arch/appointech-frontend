@@ -6,6 +6,7 @@ import { FranjaDisponible } from '../../../core/models/disponibilidad';
 import { FotoElectrodomesticoService } from '../../../core/services/foto-electrodomestico.service';
 import { EspecialidadResponse } from '../../../core/services/tecnico.service';
 import { hoyIso } from '../../../core/utils/fecha-local';
+import { AvisosPagoService } from '../../../shared/toast/avisos-pago.service';
 import { BorradorDetalle, SolicitudCreada } from './detalle-solicitud/detalle-solicitud.component';
 
 type Paso = 'especialidad' | 'detalle' | 'franja' | 'confirmar' | 'confirmada';
@@ -45,7 +46,8 @@ export class SolicitarServicioComponent implements OnDestroy {
 
   constructor(
     private fotoService: FotoElectrodomesticoService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private avisos: AvisosPagoService
   ) {}
 
   ngOnDestroy(): void {
@@ -88,6 +90,7 @@ export class SolicitarServicioComponent implements OnDestroy {
 
   onCitaConfirmada(cita: Cita): void {
     this.cita = cita;
+    this.avisos.anunciarCitaConfirmada();
     this.irA('confirmada');
   }
 

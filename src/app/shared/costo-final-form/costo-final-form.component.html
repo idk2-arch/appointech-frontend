@@ -1,0 +1,43 @@
+<form (submit)="$event.preventDefault(); registrar()" novalidate class="space-y-3">
+  <div>
+    <label for="costo-final-monto" class="block fs-cuerpo font-medium text-white">Costo final del servicio (COP)</label>
+    <input
+      id="costo-final-monto"
+      type="number"
+      inputmode="decimal"
+      step="any"
+      min="0"
+      autocomplete="off"
+      [formControl]="monto"
+      [attr.aria-invalid]="monto.invalid && monto.touched ? true : null"
+      aria-describedby="costo-final-ayuda"
+      class="mt-2 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 fs-cuerpo text-white outline-none transition
+             focus:border-[#D98E4A] focus:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-[#D98E4A]"
+    />
+    <div id="costo-final-ayuda" class="mt-1.5 fs-secundario">
+      @if (monto.invalid && monto.touched) {
+        <p role="alert" class="text-rose-300">
+          @if (monto.hasError('required')) {
+            Escribe el costo final.
+          } @else {
+            El costo final debe ser mayor que cero.
+          }
+        </p>
+      } @else if (monto.value) {
+        <p class="text-white/70">Se registrará: {{ monto.value | pesos }}</p>
+      } @else {
+        <p class="text-white/60">Valor total cobrado al cliente, en pesos colombianos.</p>
+      }
+    </div>
+  </div>
+
+  @if (errorMensaje) {
+    <p role="alert" class="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 fs-cuerpo text-rose-200">
+      {{ errorMensaje }}
+    </p>
+  }
+
+  <button type="submit" [disabled]="enviando" class="boton-admin boton-admin--cobre">
+    {{ enviando ? 'Registrando…' : 'Registrar costo final' }}
+  </button>
+</form>

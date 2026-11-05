@@ -1,0 +1,4 @@
+<button type="button" (click)="verificar()" [disabled]="verificando" class="boton-fila-admin px-4 py-2">
+  {{ verificando ? 'Verificando…' : 'Verificar resultado del pago' }}
+</button>
+<p aria-live="polite" class="mt-2 fs-cuerpo text-rose-300">{{ errorMensaje }}</p>

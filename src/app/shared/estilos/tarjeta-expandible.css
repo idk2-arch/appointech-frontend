@@ -1,0 +1,238 @@
+/*
+ * Port de Expandable Card (Aceternity UI) a CSS normal: cada regla trae entre comentarios la clase de
+ * Tailwind del original de la que sale. Se importa desde src/styles.css.
+ */
+
+app-tarjeta-expandible {
+  display: block;
+}
+
+.tarjeta-expandible__compacta {
+  /* p-4 ... rounded-xl cursor-pointer hover:bg-neutral-800 */
+  padding: 1.25rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  background-color: rgb(255 255 255 / 0.03);
+  transition: background-color 150ms;
+}
+
+.tarjeta-expandible__compacta:hover {
+  background-color: rgb(255 255 255 / 0.06);
+}
+
+.tarjeta-expandible__abrir {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.7);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.tarjeta-expandible__abrir:hover {
+  color: var(--color-acento);
+}
+
+.tarjeta-expandible__abrir:focus-visible,
+.tarjeta-expandible__cerrar:focus-visible,
+.tarjeta-expandible__panel:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
+}
+
+/* fixed inset-0 grid place-items-center z-[100] */
+.tarjeta-expandible__capa {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 100;
+}
+
+/* fixed inset-0 bg-black/20 h-full w-full z-10 (más oscuro: sobre el fondo del tema un 20 % apenas se nota) */
+.tarjeta-expandible__fondo {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgb(0 0 0 / 0.6);
+}
+
+/* flex absolute top-2 right-2 lg:hidden items-center justify-center bg-white rounded-full h-6 w-6 */
+.tarjeta-expandible__cerrar {
+  display: flex;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: #000;
+  border-radius: 9999px;
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .tarjeta-expandible__cerrar {
+    display: none;
+  }
+}
+
+/* w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] flex flex-col bg-neutral-900 sm:rounded-3xl overflow-hidden */
+.tarjeta-expandible__panel {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-superficie);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .tarjeta-expandible__panel {
+    border-radius: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .tarjeta-expandible__panel {
+    height: fit-content;
+    max-height: 90%;
+  }
+}
+
+.tarjeta-expandible__interior {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Las consultas de contenedor miden el contenido, no el panel: durante la animación su ancho no cambia. */
+  container-type: inline-size;
+}
+
+/*
+ * flex justify-between items-start p-4: en angosto el título va arriba y las acciones debajo; con ancho
+ * suficiente las acciones pasan a la derecha sin apretar el título.
+ */
+.tarjeta-expandible__cabecera {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+.tarjeta-expandible__titulo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tarjeta-expandible__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@container (min-width: 460px) {
+  .tarjeta-expandible__cabecera {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .tarjeta-expandible__acciones {
+    max-width: 14rem;
+    justify-content: flex-end;
+  }
+}
+
+/* Rejilla de datos: etiqueta pequeña arriba, valor debajo, mismo hueco entre grupos, todo a la izquierda. */
+.tarjeta-expandible__rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem 1rem;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+
+.tarjeta-expandible__dato {
+  min-width: 0;
+}
+
+.tarjeta-expandible__dato dt {
+  margin: 0 0 0.25rem;
+  font-size: var(--fs-secundario);
+  line-height: 1rem;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.tarjeta-expandible__dato dd {
+  margin: 0;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+@container (min-width: 400px) {
+  .tarjeta-expandible__rejilla {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tarjeta-expandible__dato--ancho {
+    grid-column: 1 / -1;
+  }
+}
+
+/* pt-4 relative px-4 */
+.tarjeta-expandible__cuerpo {
+  position: relative;
+  padding: 1rem 1rem 0;
+  flex: 1 1 0;
+  min-height: 10rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/*
+ * h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto + [mask:...] [scrollbar-width:none]
+ * El desvanecido se limita a los 2.5rem del relleno inferior para no apagar contenido útil.
+ */
+.tarjeta-expandible__texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1 1 auto;
+  padding-bottom: 2.5rem;
+  overflow: auto;
+  color: rgb(255 255 255 / 0.8);
+  font-size: var(--fs-cuerpo);
+  line-height: 1.25rem;
+  -webkit-mask: linear-gradient(to bottom, #fff calc(100% - 2.5rem), transparent);
+  mask: linear-gradient(to bottom, #fff calc(100% - 2.5rem), transparent);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tarjeta-expandible__texto::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .tarjeta-expandible__cuerpo {
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+
+  .tarjeta-expandible__texto {
+    height: fit-content;
+  }
+}

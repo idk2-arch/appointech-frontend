@@ -17,6 +17,8 @@ import { ReprogramarModalComponent } from './reprogramar-modal/reprogramar-modal
 import { DictadoVozComponent } from './dictado-voz/dictado-voz.component';
 import { RedactarTecnicoComponent } from './solicitar-servicio/redactar-tecnico/redactar-tecnico.component';
 import { SugerirPrediagnosticoComponent } from './solicitar-servicio/sugerir-prediagnostico/sugerir-prediagnostico.component';
+import { CotizacionEstimadaComponent } from './solicitar-servicio/cotizacion-estimada/cotizacion-estimada.component';
+import { ResultadoPagoComponent } from './pago-resultado/resultado-pago.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +35,8 @@ import { SugerirPrediagnosticoComponent } from './solicitar-servicio/sugerir-pre
     MisCitasComponent,
     DetalleCitaClienteComponent,
     ReprogramarModalComponent,
+    CotizacionEstimadaComponent,
+    ResultadoPagoComponent,
   ],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, ClienteRoutingModule],
 })

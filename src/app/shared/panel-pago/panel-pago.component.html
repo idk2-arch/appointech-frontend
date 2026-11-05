@@ -1,0 +1,115 @@
+<section appSpotlight class="rounded-2xl bg-white/[0.03] p-6" aria-labelledby="panel-pago-titulo">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 id="panel-pago-titulo" class="fs-titulo font-semibold text-white">Pago del servicio</h2>
+    @if (pago) {
+      <app-insignia-pago [estado]="pago.estado"></app-insignia-pago>
+    }
+  </div>
+
+  <div aria-live="polite" role="status">
+    @if (mensajeResultado) {
+      <p class="mt-3 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 fs-cuerpo text-emerald-200">
+        {{ mensajeResultado }}
+      </p>
+    }
+  </div>
+
+  <div class="mt-5 space-y-5">
+    @if (cargando) {
+      <p role="status" class="fs-cuerpo text-white/70">Cargando el pago…</p>
+    } @else if (errorCarga) {
+      <div class="flex flex-wrap items-center gap-3">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else {
+      @if (!costoRegistrado) {
+        @if (rol === 'TECNICO') {
+          <p class="fs-cuerpo text-white/80">Registra el costo final del servicio para que el cliente pueda pagar.</p>
+          <app-costo-final-form [citaId]="citaId" (registrado)="alActualizar($event, 'El costo final fue registrado.')"></app-costo-final-form>
+        } @else {
+          <p class="fs-cuerpo text-white/70">{{ avisoSinPago || 'El técnico aún no registra el costo final.' }}</p>
+        }
+      } @else if (pago) {
+        @if (advertirDiferencia) {
+          <app-advertencia-diferencia [pago]="pago"></app-advertencia-diferencia>
+        }
+
+        <dl class="grid gap-5 fs-cuerpo sm:grid-cols-2">
+          @if (!advertirDiferencia) {
+            @if (pago.montoCotizado) {
+              <div>
+                <dt class="fs-secundario text-white/60">Costo estimado</dt>
+                <dd class="text-white">{{ pago.montoCotizado | pesos }}</dd>
+              </div>
+            }
+            <div>
+              <dt class="fs-secundario text-white/60">Costo final</dt>
+              <dd class="text-2xl font-semibold text-[#D98E4A]">{{ pago.montoFinal | pesos }}</dd>
+            </div>
+          }
+          @if (pago.metodo) {
+            <div>
+              <dt class="fs-secundario text-white/60">Método de pago</dt>
+              <dd class="text-white">{{ etiquetaMetodo(pago.metodo) }}</dd>
+            </div>
+          }
+        </dl>
+
+        @if (pagoFallido) {
+          <p role="alert" class="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 fs-cuerpo text-rose-200">
+            @if (rol === 'CLIENTE') {
+              El pago no se completó. Puedes intentarlo de nuevo o elegir otro método.
+            } @else {
+              El pago en línea del cliente no se completó.
+            }
+          </p>
+        }
+
+        @if (puedeElegirMetodo) {
+          <app-selector-metodo-pago [pago]="pago" (actualizado)="alActualizar($event)"></app-selector-metodo-pago>
+        }
+
+        @if (efectivoPendiente) {
+          @if (rol === 'CLIENTE') {
+            <p class="fs-cuerpo text-white/80">Elegiste pagar en efectivo: le pagarás directamente al técnico. El pago queda pendiente hasta que él lo confirme.</p>
+          } @else if (rol === 'TECNICO') {
+            <p class="fs-cuerpo text-white/80">El cliente pagará en efectivo. Confirma cuando hayas recibido el dinero.</p>
+            <button type="button" (click)="abrirConfirmacionEfectivo()" class="boton-admin boton-admin--cobre">
+              Confirmar pago en efectivo
+            </button>
+          }
+        }
+
+        @if (enLineaPendiente && rol === 'CLIENTE') {
+          <p class="fs-cuerpo text-white/80">Tu pago en línea está en proceso. Si ya pagaste, verifica el resultado.</p>
+          <app-verificar-pago [citaId]="citaId" (actualizado)="alActualizar($event)"></app-verificar-pago>
+        }
+
+        @if (tecnicoEsperaMetodo) {
+          <p class="fs-cuerpo text-white/70">El cliente aún no ha elegido cómo pagar.</p>
+        }
+
+        @if (pagado) {
+          <app-comprobante [citaId]="citaId"></app-comprobante>
+        }
+      }
+    }
+  </div>
+</section>
+
+@if (confirmandoEfectivo) {
+  <app-modal-formulario
+    titulo="Confirmar pago en efectivo"
+    textoEnviar="Confirmar pago"
+    textoCargando="Confirmando…"
+    [cargando]="enviandoEfectivo"
+    [errorMensaje]="errorEfectivo"
+    (cerrar)="cerrarConfirmacionEfectivo()"
+    (enviar)="confirmarEfectivo()"
+  >
+    <p class="fs-cuerpo text-white/80">
+      ¿Confirmas que recibiste {{ pago?.montoFinal | pesos }} en efectivo? Esta acción registra el pago como pagado y no se puede deshacer.
+    </p>
+  </app-modal-formulario>
+}

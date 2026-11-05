@@ -55,6 +55,11 @@ export class DetalleCitaClienteComponent implements OnInit, OnDestroy {
     return !!this.cita && clientePuedeModificar(this.cita.estado);
   }
 
+  /** El pago existe una vez que el técnico finalizó el servicio. */
+  get mostrarPago(): boolean {
+    return this.cita?.estado === 'FINALIZADA';
+  }
+
   /** Cuántas fotos más caben en la cita. */
   get cupoFotos(): number {
     return Math.max(0, FOTOS_ELECTRODOMESTICO_MAXIMO - (this.cita?.fotosElectrodomestico?.length ?? 0));

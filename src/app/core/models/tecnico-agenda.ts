@@ -1,3 +1,4 @@
+import { EstadoPagoFinalizada } from './pago';
 import { DatosElectrodomestico, DiagnosticoCita, EstadoCita, UrgenciaCita } from './cita';
 
 /** Fechas: LocalDateTime sin zona (hora local de Colombia), p. ej. 2026-10-13T08:00:00. */
@@ -38,6 +39,18 @@ export interface CitaTecnico extends DatosElectrodomestico {
   cliente: ClienteCita;
   /** Si el backend lo envía, el formulario de diagnóstico se abre con estos datos. */
   diagnostico?: DiagnosticoCita | null;
+}
+
+/** GET /tecnico/citas/finalizadas: citas FINALIZADAS del técnico con el estado de su cobro. */
+export interface CitaFinalizadaTecnico {
+  id: number;
+  estado: string;
+  fechaHoraInicio: string;
+  fechaHoraFin: string;
+  descripcionProblema: string;
+  direccionServicio: string;
+  cliente: ClienteCita;
+  estadoPago: EstadoPagoFinalizada;
 }
 
 export interface PuntoGeografico {

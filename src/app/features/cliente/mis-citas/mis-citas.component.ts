@@ -2,10 +2,12 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { finalize, Subscription } from 'rxjs';
 
 import { CitaResumen, EstadoCita } from '../../../core/models/cita';
+import { Pago } from '../../../core/models/pago';
 import { OpcionSelect } from '../../../shared/select/select.component';
 import { CitaClienteService } from '../../../core/services/cita-cliente.service';
 import { etiquetaEstadoCita } from '../../../core/utils/estado-cita';
 import { obtenerMensajeError } from '../../../core/utils/manejo-errores';
+import { tieneCostoFinal } from '../../../core/utils/pago';
 
 const ESTADOS: EstadoCita[] = ['PENDIENTE', 'CONFIRMADA', 'EN_CAMINO', 'EN_PROCESO', 'FINALIZADA', 'CANCELADA'];
 
@@ -24,6 +26,8 @@ export class MisCitasComponent implements OnInit, OnDestroy {
   cargando = true;
   errorCarga: string | null = null;
 
+  /** Pagos ya consultados al expandir una tarjeta: el listado no los trae y no se piden de antemano. */
+  private readonly pagos = new Map<number, Pago>();
   private consulta?: Subscription;
 
   constructor(
@@ -41,6 +45,16 @@ export class MisCitasComponent implements OnInit, OnDestroy {
 
   get citasVisibles(): CitaResumen[] {
     return this.filtro ? this.citas.filter((c) => c.estado === this.filtro) : this.citas;
+  }
+
+  recordarPago(pago: Pago): void {
+    this.pagos.set(pago.citaId, pago);
+  }
+
+  /** El pago de la cita, solo si ya se conoce y tiene costo final (el listado no lo incluye). */
+  pagoConCosto(citaId: number): Pago | null {
+    const pago = this.pagos.get(citaId) ?? null;
+    return tieneCostoFinal(pago) ? pago : null;
   }
 
   cambiarFiltro(valor: string): void {

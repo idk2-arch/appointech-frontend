@@ -55,6 +55,8 @@ export interface OpcionesAnimacion {
   /** Duración del tween, o tiempo en que se asienta el resorte. */
   duracionMs: number;
   alActualizar: (valor: number) => void;
+  /** Se llama una vez: con `true` al llegar al destino y con `false` si se canceló antes. */
+  alTerminar?: (completa: boolean) => void;
   /** Con esto la animación es un resorte; sin esto, un tween con `curva`. */
   resorte?: { bounce: number; velocidad: number };
   curva?: readonly [number, number, number, number];
@@ -62,22 +64,18 @@ export interface OpcionesAnimacion {
 
 export interface ControlAnimacion {
   cancelar(): void;
-  /** `true` si llegó al final; `false` si se canceló antes. */
-  terminada: Promise<boolean>;
 }
 
 export function animarNumero(opciones: OpcionesAnimacion): ControlAnimacion {
-  const { desde, hasta, duracionMs, alActualizar, resorte, curva = [0, 0, 1, 1] } = opciones;
+  const { desde, hasta, duracionMs, alActualizar, alTerminar, resorte, curva = [0, 0, 1, 1] } = opciones;
   const facilidad = curvaBezier(...curva);
   const parametros = resorte ? parametrosResorte(duracionMs / 1000, resorte.bounce) : null;
   let cuadro = 0;
   let cancelada = false;
-  let resolver!: (completa: boolean) => void;
-  const terminada = new Promise<boolean>((alResolver) => (resolver = alResolver));
 
   const terminar = (): void => {
     alActualizar(hasta);
-    resolver(true);
+    alTerminar?.(true);
   };
   let inicio: number | null = null;
   const paso = (ahora: number): void => {
@@ -99,12 +97,11 @@ export function animarNumero(opciones: OpcionesAnimacion): ControlAnimacion {
   cuadro = requestAnimationFrame(paso);
 
   return {
-    terminada,
     cancelar: () => {
       if (cancelada) return;
       cancelada = true;
       cancelAnimationFrame(cuadro);
-      resolver(false);
+      alTerminar?.(false);
     },
   };
 }

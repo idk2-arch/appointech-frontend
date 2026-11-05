@@ -103,6 +103,17 @@ describe('AvisosPagoService', () => {
     });
   });
 
+  it('si la navegación falla no deja una promesa rechazada sin manejar', async () => {
+    navigate.mockRejectedValue(new Error('navegación cancelada'));
+    avisos.anunciarResultado(pagoDe({ estado: 'PAGADO' }));
+
+    toast.visibles()[0].accion!.accion();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(navigate).toHaveBeenCalledOnce();
+  });
+
   it('efectivo confirmado: éxito con acción hacia el cobro del técnico', () => {
     avisos.anunciarEfectivoConfirmado(9);
 

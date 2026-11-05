@@ -323,12 +323,30 @@ describe('TarjetaExpandibleComponent', () => {
 
   it('si la animación se cancela igualmente termina de cerrar', async () => {
     (Element.prototype as { animate?: unknown }).animate = vi.fn().mockImplementation((marcos: { width?: string }[]) => ({
-      finished: marcos[0]?.width ? Promise.reject(new Error('cancelada')) : Promise.resolve(),
+      finished: marcos[0]?.width ? Promise.reject(new DOMException('cancelada', 'AbortError')) : Promise.resolve(),
       cancel: vi.fn(),
     }));
     await abrir();
     await cerrar();
     expect(capa()).toBeNull();
+  });
+
+  it('si el componente se destruye mientras se cierra, el final de la animación no lo vuelve a tocar', async () => {
+    let terminarCierre!: () => void;
+    (Element.prototype as { animate?: unknown }).animate = vi.fn().mockImplementation((marcos: { width?: string }[]) => ({
+      finished: marcos[1]?.width ? new Promise<void>((resolver) => (terminarCierre = resolver)) : Promise.resolve(),
+      cancel: vi.fn(),
+    }));
+    await abrir();
+    tarjeta.cerrar();
+    fixture.destroy();
+
+    terminarCierre();
+    await esperar();
+
+    expect(fixture.componentInstance.cambios).toEqual([true]);
+    expect(capa()).toBeNull();
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('al destruirse abierta quita el diálogo del body y libera el scroll', async () => {

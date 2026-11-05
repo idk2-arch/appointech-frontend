@@ -96,7 +96,7 @@ describe('ToastComponent', () => {
       expect(boton('close').getAttribute('aria-label')).toBe('Cerrar aviso');
       expect(tarjeta().getAttribute('role')).toBe('status');
       expect(tarjeta().getAttribute('aria-live')).toBe('polite');
-      expect(tarjeta().getAttribute('tabindex')).toBe('0');
+      expect(tarjeta().hasAttribute('tabindex')).toBe(false);
     });
 
     it('sin descripción, acción ni botón no los dibuja', async () => {
@@ -334,6 +334,52 @@ describe('ToastComponent', () => {
     it('nace cerrado si open es falso desde el principio', async () => {
       await crear({ open: false });
       expect(fase()).toBe('closing');
+    });
+  });
+
+  describe('teclado (el foco entra por los botones, no por la tarjeta)', () => {
+    it('la tarjeta no es focusable: el recorrido es acción → cerrar', async () => {
+      await crear({ actionLabel: 'Ver', closeButton: true });
+      const enfocables = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[tabindex], button, a[href]'));
+
+      expect(enfocables).toEqual([boton('action'), boton('close')]);
+      expect(enfocables.every((el) => !el.hasAttribute('tabindex') || el.getAttribute('tabindex') === '0')).toBe(true);
+    });
+
+    it('enfocar un botón pausa la mecha; pasar de un botón al otro la mantiene pausada; salir la reanuda', async () => {
+      await crear({ actionLabel: 'Ver', closeButton: true });
+      document.body.appendChild(fixture.nativeElement);
+      const mecha = animaciones[0];
+
+      boton('action').focus();
+      expect(mecha.playState).toBe('paused');
+
+      boton('close').focus();
+      expect(mecha.playState).toBe('paused');
+
+      boton('close').blur();
+      expect(mecha.playState).toBe('running');
+      fixture.nativeElement.remove();
+    });
+
+    it('Escape pulsado sobre un botón cierra el aviso al instante', async () => {
+      await crear({ actionLabel: 'Ver', closeButton: true });
+      boton('action').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(componente.fase()).toBe('closing');
+      vi.advanceTimersByTime(0);
+      expect(cerrados).toEqual(['escape']);
+    });
+
+    it('Enter sobre el botón de acción lo activa y cierra sin animación', async () => {
+      await crear({ actionLabel: 'Ver' });
+      boton('action').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      boton('action').click();
+      fixture.detectChanges();
+
+      expect(raiz().hasAttribute('data-instant')).toBe(true);
+      vi.advanceTimersByTime(0);
+      expect(cerrados).toEqual(['action']);
     });
   });
 

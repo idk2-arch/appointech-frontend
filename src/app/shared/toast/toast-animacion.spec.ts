@@ -78,9 +78,10 @@ describe('animarNumero', () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it('un tween avanza con la curva y termina exactamente en el destino', async () => {
+  it('un tween avanza con la curva y termina exactamente en el destino', () => {
     const valores: number[] = [];
-    const control = animarNumero({ desde: 0, hasta: 100, duracionMs: 200, alActualizar: (v) => valores.push(v) });
+    const alTerminar = vi.fn();
+    animarNumero({ desde: 0, hasta: 100, duracionMs: 200, alActualizar: (v) => valores.push(v), alTerminar });
 
     avanzar(1000);
     avanzar(1100);
@@ -88,18 +89,20 @@ describe('animarNumero', () => {
     avanzar(1200);
 
     expect(valores.at(-1)).toBe(100);
-    expect(await control.terminada).toBe(true);
+    expect(alTerminar).toHaveBeenCalledExactlyOnceWith(true);
     expect(cuadros).toHaveLength(0);
   });
 
-  it('un resorte parte del origen y termina en el destino', async () => {
+  it('un resorte parte del origen y termina en el destino', () => {
     const valores: number[] = [];
-    const control = animarNumero({
+    const alTerminar = vi.fn();
+    animarNumero({
       desde: 0,
       hasta: 100,
       duracionMs: 500,
       resorte: { bounce: 0.2, velocidad: 0 },
       alActualizar: (v) => valores.push(v),
+      alTerminar,
     });
 
     avanzar(0);
@@ -109,18 +112,19 @@ describe('animarNumero', () => {
     avanzar(600);
 
     expect(valores.at(-1)).toBe(100);
-    expect(await control.terminada).toBe(true);
+    expect(alTerminar).toHaveBeenCalledExactlyOnceWith(true);
   });
 
-  it('cancelar detiene la animación y avisa que no terminó', async () => {
+  it('cancelar detiene la animación y avisa que no terminó', () => {
     const alActualizar = vi.fn();
-    const control = animarNumero({ desde: 0, hasta: 10, duracionMs: 100, alActualizar });
+    const alTerminar = vi.fn();
+    const control = animarNumero({ desde: 0, hasta: 10, duracionMs: 100, alActualizar, alTerminar });
 
     control.cancelar();
     control.cancelar();
     avanzar(0);
 
     expect(alActualizar).not.toHaveBeenCalled();
-    expect(await control.terminada).toBe(false);
+    expect(alTerminar).toHaveBeenCalledExactlyOnceWith(false);
   });
 });

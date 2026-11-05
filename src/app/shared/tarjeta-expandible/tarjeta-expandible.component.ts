@@ -12,6 +12,8 @@ import {
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
+import { alAcabarAnimacion } from '../../core/utils/animacion';
+
 const ENFOCABLES =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const INTERACTIVOS = 'a, button, input, select, textarea, [role="button"], [role="link"]';
@@ -77,6 +79,7 @@ export class TarjetaExpandibleComponent implements OnDestroy {
   private enCurso: Animation[] = [];
   /** Identifica la animación vigente: los avisos de una animación cancelada no deben tocar la siguiente. */
   private generacion = 0;
+  private destruido = false;
 
   constructor(
     private renderer: Renderer2,
@@ -91,6 +94,7 @@ export class TarjetaExpandibleComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destruido = true;
     if (!this.capaEl) return;
     this.cancelarAnimaciones();
     this.liberar();
@@ -113,7 +117,9 @@ export class TarjetaExpandibleComponent implements OnDestroy {
   cerrar(): void {
     if (!this.abierta || this.cerrando) return;
     this.cerrando = true;
-    this.animar(false).then(() => this.terminarCierre());
+    this.animar(false, undefined, () => {
+      if (!this.destruido) this.terminarCierre();
+    });
   }
 
   /** Mueve la capa a `body` (para que ningún contenedor la recorte), bloquea el scroll y anima la apertura. */
@@ -157,7 +163,7 @@ export class TarjetaExpandibleComponent implements OnDestroy {
       if (typeof CSS !== 'undefined' && CSS.supports?.('scrollbar-gutter', 'stable')) {
         html.style.scrollbarGutter = 'stable';
       } else {
-        const actual = parseFloat(getComputedStyle(cuerpo).paddingRight) || 0;
+        const actual = Number.parseFloat(getComputedStyle(cuerpo).paddingRight) || 0;
         cuerpo.style.paddingRight = `${actual + anchoBarra}px`;
       }
     }
@@ -217,15 +223,21 @@ export class TarjetaExpandibleComponent implements OnDestroy {
    * Mientras dura la animación se quitan `max-width` y `max-height` del panel: con ellos el ancho de una
    * tarjeta más ancha que 500 px se recortaba y, al terminar, el panel "saltaba" a la forma de la tarjeta.
    */
-  private animar(abriendo: boolean, cajaOrigen?: DOMRect): Promise<void> {
+  private animar(abriendo: boolean, cajaOrigen?: DOMRect, alTerminar?: () => void): void {
     const capa = this.capaEl;
-    if (!capa) return Promise.resolve();
+    if (!capa) {
+      alTerminar?.();
+      return;
+    }
     const panel = this.panel(capa);
     const interior = capa.querySelector<HTMLElement>('.tarjeta-expandible__interior')!;
     const generacion = ++this.generacion;
     this.cancelarAnimaciones();
     this.limpiarPanel(panel, interior);
-    if (this.reducirMovimiento() || typeof panel.animate !== 'function') return Promise.resolve();
+    if (this.reducirMovimiento() || typeof panel.animate !== 'function') {
+      alTerminar?.();
+      return;
+    }
 
     const origen = cajaOrigen ?? this.compacta.nativeElement.getBoundingClientRect();
     const destino = panel.getBoundingClientRect();
@@ -246,10 +258,11 @@ export class TarjetaExpandibleComponent implements OnDestroy {
     ];
     this.enCurso = [movimiento, ...apagados.filter((a): a is Animation => !!a)];
 
-    const terminar = (): void => {
+    // Cancelar el movimiento (p. ej. cerrar mientras se abre) cuenta como un final: solo la animación vigente limpia.
+    alAcabarAnimacion(movimiento, () => {
       if (abriendo && generacion === this.generacion) this.limpiarPanel(panel, interior);
-    };
-    return movimiento.finished.then(terminar, terminar);
+      alTerminar?.();
+    });
   }
 
   /** Congela el panel en su rectángulo final con estilos en línea, sin transiciones de CSS que compitan. */

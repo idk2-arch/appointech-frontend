@@ -77,7 +77,11 @@ export class AvisosPagoService {
   /** Lleva a la pantalla del pago y, si ya está el comprobante, lo deja a la vista. */
   private verComprobante(ruta: (string | number)[]): () => void {
     return () => {
-      this.router.navigate(ruta).then(() => this.doc.querySelector('app-comprobante')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' }));
+      this.router
+        .navigate(ruta)
+        .then(() => this.doc.querySelector('app-comprobante')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' }))
+        // Si la navegación falla, el router ya lo reporta; aquí solo se evita una promesa sin manejar.
+        .catch(() => undefined);
     };
   }
 

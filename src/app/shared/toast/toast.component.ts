@@ -94,6 +94,7 @@ export class ToastComponent implements OnChanges, AfterViewInit, OnDestroy {
   private animacionMecha?: Animation;
   private arrastre: Arrastre | null = null;
   private movimiento?: ControlAnimacion;
+  private desvanecimiento?: ControlAnimacion;
   private y = 0;
   private opacidad = 1;
   private readonly banderas = { hover: false, interactuando: false, foco: false, oculta: false };
@@ -136,6 +137,7 @@ export class ToastComponent implements OnChanges, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     clearTimeout(this.temporizador);
     this.movimiento?.cancelar();
+    this.desvanecimiento?.cancelar();
     this.animacionMecha?.cancel();
     for (const [objetivo, tipo, oyente] of this.oyentes) objetivo.removeEventListener(tipo, oyente);
     this.oyentes = [];
@@ -224,15 +226,15 @@ export class ToastComponent implements OnChanges, AfterViewInit, OnDestroy {
         alActualizar: (valor) => this.moverY(valor),
       });
     }
-    const desvanecer = animarNumero({
+    this.desvanecimiento = animarNumero({
       desde: this.opacidad,
       hasta: 0,
       duracionMs: 200,
       curva: EASE_OUT,
       alActualizar: (valor) => this.cambiarOpacidad(valor),
-    });
-    desvanecer.terminada.then((completa) => {
-      if (completa) this.zona.run(() => this.terminar('swipe'));
+      alTerminar: (completa) => {
+        if (completa) this.zona.run(() => this.terminar('swipe'));
+      },
     });
   }
 

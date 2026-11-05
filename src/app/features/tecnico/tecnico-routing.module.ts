@@ -7,6 +7,8 @@ import { MiAgendaComponent } from './mi-agenda/mi-agenda.component';
 import { NoDisponibilidadComponent } from './no-disponibilidad/no-disponibilidad.component';
 import { MiPerfilComponent } from '../../shared/mi-perfil/mi-perfil.component';
 import { MiRutaComponent } from './mi-ruta/mi-ruta.component';
+import { FinalizadasComponent } from './finalizadas/finalizadas.component';
+import { PagoCitaTecnicoComponent } from './pago-cita/pago-cita-tecnico.component';
 
 const routes: Routes = [
   {
@@ -16,6 +18,8 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'agenda', pathMatch: 'full' },
       { path: 'agenda', component: MiAgendaComponent },
+      { path: 'finalizadas', component: FinalizadasComponent },
+      { path: 'citas/:id/pago', component: PagoCitaTecnicoComponent },
       { path: 'bloques', component: NoDisponibilidadComponent },
       { path: 'ruta', component: MiRutaComponent },
       { path: 'perfil', component: MiPerfilComponent },

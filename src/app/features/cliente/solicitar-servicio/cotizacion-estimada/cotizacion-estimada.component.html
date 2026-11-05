@@ -1,0 +1,13 @@
+<section appSpotlight class="mt-4 rounded-2xl bg-white/[0.03] px-5 py-4" aria-labelledby="cotizacion-titulo" aria-live="polite">
+  <h3 id="cotizacion-titulo" class="fs-cuerpo font-medium text-white/60">Cotización estimada</h3>
+  @if (cargando) {
+    <p role="status" class="mt-1 fs-cuerpo text-white/70">Consultando el valor estimado…</p>
+  } @else if (errorMensaje) {
+    <p class="mt-1 fs-cuerpo text-white/70">{{ errorMensaje }} Puedes continuar con tu solicitud.</p>
+  } @else if (cotizacion?.disponible) {
+    <p class="mt-1 text-xl font-semibold text-[#D98E4A]">{{ cotizacion?.montoEstimado | pesos }}</p>
+    <p class="mt-1 fs-secundario text-white/70">{{ nota }}</p>
+  } @else {
+    <p class="mt-1 fs-cuerpo text-white/70">{{ nota }}</p>
+  }
+</section>

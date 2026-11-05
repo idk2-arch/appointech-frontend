@@ -7,6 +7,7 @@ import { SolicitarServicioComponent } from './solicitar-servicio/solicitar-servi
 import { MiPerfilComponent } from '../../shared/mi-perfil/mi-perfil.component';
 import { MisCitasComponent } from './mis-citas/mis-citas.component';
 import { DetalleCitaClienteComponent } from './detalle-cita/detalle-cita-cliente.component';
+import { ResultadoPagoComponent } from './pago-resultado/resultado-pago.component';
 
 const routes: Routes = [
   {
@@ -19,6 +20,7 @@ const routes: Routes = [
       { path: 'citas', component: MisCitasComponent },
       { path: 'perfil', component: MiPerfilComponent },
       { path: 'citas/:id', component: DetalleCitaClienteComponent },
+      { path: 'pago/resultado', component: ResultadoPagoComponent },
     ],
   },
 ];

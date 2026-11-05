@@ -35,6 +35,8 @@
   </div>
 </dl>
 
+<app-cotizacion-estimada [especialidadId]="especialidad.id"></app-cotizacion-estimada>
+
 @if (errorMensaje) {
   <div role="alert" class="mt-4 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
     {{ errorMensaje }}

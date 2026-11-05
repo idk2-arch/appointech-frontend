@@ -112,6 +112,28 @@ describe('MiAgendaComponent', () => {
     expect(acciones.cambiarEstado).toHaveBeenCalledWith(5, 'FINALIZADA');
   });
 
+  it('al finalizar ofrece ir a registrar el costo final de esa cita', async () => {
+    await crear([cita(5, 'EN_PROCESO')]);
+
+    boton('Finalizar servicio')!.click();
+    fixture.detectChanges();
+    enviarDialogo();
+
+    const enlace = raiz().querySelector<HTMLAnchorElement>('[role="status"] a');
+    expect(enlace?.textContent).toContain('Registrar costo final');
+    expect(enlace?.getAttribute('href')).toBe('/tecnico/citas/5/pago');
+  });
+
+  it('otros cambios de estado no ofrecen el cobro', async () => {
+    await crear([cita(5, 'CONFIRMADA')]);
+
+    boton('Voy en camino')!.click();
+    fixture.detectChanges();
+
+    expect(raiz().querySelector('[role="status"]')).not.toBeNull();
+    expect(raiz().querySelector('[role="status"] a')).toBeNull();
+  });
+
   it('cancelar exige motivo y lo envía recortado', async () => {
     await crear([cita(5, 'CONFIRMADA')]);
 

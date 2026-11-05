@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
-import { CitaTecnico } from '../models/tecnico-agenda';
+import { CitaFinalizadaTecnico, CitaTecnico } from '../models/tecnico-agenda';
 
 @Injectable({ providedIn: 'root' })
 export class AgendaTecnicoService {
@@ -12,5 +12,10 @@ export class AgendaTecnicoService {
   obtenerCitas(fecha: string): Observable<CitaTecnico[]> {
     const params = new HttpParams().set('fecha', fecha);
     return this.http.get<CitaTecnico[]>(`${API_BASE_URL}/tecnico/citas`, { params });
+  }
+
+  /** Citas finalizadas del técnico con el estado de su cobro. */
+  obtenerFinalizadas(): Observable<CitaFinalizadaTecnico[]> {
+    return this.http.get<CitaFinalizadaTecnico[]>(`${API_BASE_URL}/tecnico/citas/finalizadas`);
   }
 }

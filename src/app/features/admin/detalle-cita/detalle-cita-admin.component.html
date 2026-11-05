@@ -17,6 +17,9 @@
       </div>
     } @else if (cita) {
       <app-detalle-cita [cita]="cita"></app-detalle-cita>
+      @if (mostrarPago) {
+        <div class="mt-6"><app-panel-pago [citaId]="cita.id" rol="ADMIN"></app-panel-pago></div>
+      }
     }
   </div>
 </div>

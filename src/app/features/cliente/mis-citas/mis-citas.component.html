@@ -45,28 +45,112 @@
       <ul class="space-y-3">
         @for (cita of citasVisibles; track cita.id) {
           <li>
-            <a
-              [routerLink]="['/cliente/citas', cita.id]"
-              class="block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/25
-                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D98E4A]"
-            >
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <p class="fs-cuerpo font-semibold text-white">{{ cita.especialidadNombre || 'Servicio' }}</p>
+            <app-tarjeta-expandible #tarjeta [etiqueta]="'Detalle de la cita de ' + (cita.especialidadNombre || 'servicio')">
+              <div resumen class="space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <p class="fs-cuerpo font-semibold text-white">{{ cita.especialidadNombre || 'Servicio' }}</p>
+                  <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
+                </div>
+                <p class="fs-cuerpo text-[#D98E4A]">
+                  @if (cita.fechaHoraInicio) {
+                    <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fechaCorta' }}</span>,
+                    {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}@if (cita.fechaHoraFin) { – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}}
+                  } @else {
+                    Por coordinar
+                  }
+                </p>
+                <p class="truncate fs-cuerpo text-white/80" [attr.title]="cita.direccionServicio">
+                  <span class="sr-only">Dirección: </span>{{ cita.direccionServicio }}
+                </p>
+                <p class="line-clamp-2 fs-cuerpo text-white/70">
+                  <span class="sr-only">Problema: </span>{{ cita.descripcionProblema }}
+                </p>
+                <p class="flex items-center gap-2 fs-cuerpo text-white/70">
+                  <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita | nombreTecnico" tamano="sm"></app-avatar>
+                  <span class="min-w-0 break-words">Técnico: {{ (cita | nombreTecnico) || 'Sin asignar' }}</span>
+                </p>
+                @if (pagoConCosto(cita.id); as pago) {
+                  <p class="flex flex-wrap items-center gap-2 fs-cuerpo">
+                    <app-insignia-pago [estado]="pago.estado"></app-insignia-pago>
+                    <span class="font-semibold text-white">{{ pago.montoFinal | pesos }}</span>
+                  </p>
+                }
+              </div>
+
+              <div cabecera class="space-y-2">
+                <h2 class="fs-titulo font-semibold text-white">{{ cita.especialidadNombre || 'Servicio' }}</h2>
                 <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
               </div>
-              <p class="mt-2 fs-cuerpo text-[#D98E4A]">
-                @if (cita.fechaHoraInicio) {
-                  <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fechaCorta' }}</span>,
-                  {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}
-                } @else {
-                  Por coordinar
+
+              <ng-container acciones>
+                <a [routerLink]="['/cliente/citas', cita.id]" class="boton-fila-admin px-4 py-2">Ver detalle</a>
+                @if (cita.estado === 'FINALIZADA') {
+                  @switch (pagoCita.modo) {
+                    @case ('por-pagar') {
+                      <a [routerLink]="['/cliente/citas', cita.id]" class="boton-admin boton-admin--cobre">Pagar</a>
+                    }
+                    @case ('pagado') {
+                      <a [routerLink]="['/cliente/citas', cita.id]" class="boton-admin boton-admin--cobre">Ver comprobante</a>
+                    }
+                    @case ('sin-costo') {
+                      <span class="fs-secundario text-white/60">Esperando el costo final del técnico</span>
+                    }
+                    @case ('cargando') {
+                      <span class="block h-9 w-24 animate-pulse rounded-xl bg-white/10 motion-reduce:animate-none" aria-hidden="true"></span>
+                    }
+                  }
                 }
-              </p>
-              <p class="mt-2 flex items-center gap-2 fs-cuerpo text-white/70">
-                <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita | nombreTecnico" tamano="sm"></app-avatar>
-                <span class="min-w-0 break-words">Técnico: {{ (cita | nombreTecnico) || 'Sin asignar' }}</span>
-              </p>
-            </a>
+              </ng-container>
+
+              <dl expandido class="tarjeta-expandible__rejilla">
+                <div class="tarjeta-expandible__dato">
+                  <dt>Fecha</dt>
+                  <dd>
+                    @if (cita.fechaHoraInicio) {
+                      <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fechaCorta' }}</span>
+                    } @else {
+                      Por coordinar
+                    }
+                  </dd>
+                </div>
+                <div class="tarjeta-expandible__dato">
+                  <dt>Horario</dt>
+                  <dd>
+                    @if (cita.fechaHoraInicio) {
+                      {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}@if (cita.fechaHoraFin) { – {{ cita.fechaHoraFin | fechaLocal: 'hora' }}}
+                    } @else {
+                      Por coordinar
+                    }
+                  </dd>
+                </div>
+                <div class="tarjeta-expandible__dato tarjeta-expandible__dato--ancho">
+                  <dt>Técnico</dt>
+                  <dd class="flex items-center gap-2">
+                    <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita | nombreTecnico" tamano="sm"></app-avatar>
+                    <span class="min-w-0">{{ (cita | nombreTecnico) || 'Sin asignar' }}</span>
+                  </dd>
+                </div>
+                <div class="tarjeta-expandible__dato tarjeta-expandible__dato--ancho">
+                  <dt>Dirección</dt>
+                  <dd>{{ cita.direccionServicio }}</dd>
+                </div>
+                <div class="tarjeta-expandible__dato tarjeta-expandible__dato--ancho">
+                  <dt>Problema</dt>
+                  <dd>{{ cita.descripcionProblema }}</dd>
+                </div>
+                <div class="tarjeta-expandible__dato tarjeta-expandible__dato--ancho" [hidden]="cita.estado !== 'FINALIZADA'">
+                  <dt>Pago</dt>
+                  <dd>
+                    <app-estado-pago-cita
+                      #pagoCita
+                      [citaId]="cita.id"
+                      [activo]="tarjeta.abierta && cita.estado === 'FINALIZADA'"
+                      (cargado)="recordarPago($event)"
+                    ></app-estado-pago-cita>
+                  </dd>
+                </div>
+              </dl>
+            </app-tarjeta-expandible>
           </li>
         }
       </ul>

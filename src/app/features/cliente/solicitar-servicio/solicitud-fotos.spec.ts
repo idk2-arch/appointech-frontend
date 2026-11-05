@@ -7,6 +7,7 @@ import { SolicitudServicio } from '../../../core/models/cita';
 import { FotoElectrodomesticoService, ResultadoSubidaFotos } from '../../../core/services/foto-electrodomestico.service';
 import { SolicitudService } from '../../../core/services/solicitud.service';
 import { EspecialidadResponse } from '../../../core/services/tecnico.service';
+import { AvisosPagoService } from '../../../shared/toast/avisos-pago.service';
 import { DetalleSolicitudComponent, SolicitudCreada } from './detalle-solicitud/detalle-solicitud.component';
 import { SolicitarServicioComponent } from './solicitar-servicio.component';
 
@@ -158,7 +159,7 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
   beforeEach(() => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     subirVarias = vi.fn().mockReturnValue(of(resultado({ subidas: [{ id: 1, url: '/f/1' }] })));
-    flujo = new SolicitarServicioComponent({ subirVarias } as unknown as FotoElectrodomesticoService, cdr);
+    flujo = new SolicitarServicioComponent({ subirVarias } as unknown as FotoElectrodomesticoService, cdr, { anunciarCitaConfirmada: vi.fn() } as unknown as AvisosPagoService);
   });
 
   afterEach(() => {

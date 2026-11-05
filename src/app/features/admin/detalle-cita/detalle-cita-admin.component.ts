@@ -39,6 +39,10 @@ export class DetalleCitaAdminComponent implements OnInit, OnDestroy {
     this.consulta?.unsubscribe();
   }
 
+  get mostrarPago(): boolean {
+    return this.cita?.estado === 'FINALIZADA';
+  }
+
   cargar(): void {
     this.consulta?.unsubscribe();
     this.cargando = true;

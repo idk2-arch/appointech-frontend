@@ -14,6 +14,7 @@ export class TecnicoShellComponent {
 
   readonly menuItems: SidebarMenuItem[] = [
     { value: 'agenda', label: 'Mi agenda', icon: 'calendar', routerLink: '/tecnico/agenda' },
+    { value: 'finalizadas', label: 'Finalizadas', icon: 'receipt', routerLink: '/tecnico/finalizadas' },
     { value: 'bloques', label: 'No disponibilidad', icon: 'block', routerLink: '/tecnico/bloques' },
     { value: 'ruta', label: 'Mi ruta', icon: 'route', routerLink: '/tecnico/ruta' },
   ];

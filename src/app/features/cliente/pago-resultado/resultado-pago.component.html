@@ -1,0 +1,38 @@
+<div class="mx-auto max-w-2xl px-4 py-8 sm:px-6">
+  <h1 class="fs-titulo font-semibold tracking-tight text-white">Resultado del pago</h1>
+
+  <div appSpotlight class="mt-6 rounded-2xl bg-white/[0.03] p-6" aria-live="polite">
+    @if (cargando) {
+      <p role="status" class="fs-cuerpo text-white/70">Verificando tu pago…</p>
+    } @else if (errorMensaje) {
+      <p role="alert" class="fs-cuerpo text-rose-300">{{ errorMensaje }}</p>
+      @if (citaId !== null) {
+        <button type="button" (click)="sincronizar()" class="boton-fila-admin mt-4 px-4 py-2">Reintentar la verificación</button>
+      }
+    } @else if (pago) {
+      <div class="flex flex-wrap items-center gap-3">
+        <app-insignia-pago [estado]="pago.estado"></app-insignia-pago>
+        <p class="fs-cuerpo text-white">{{ mensajeResultado }}</p>
+      </div>
+      @if (pago.montoFinal) {
+        <p class="mt-3 fs-cuerpo text-white/80">Monto: <span class="font-semibold text-white">{{ pago.montoFinal | pesos }}</span></p>
+      }
+      @if (fallido) {
+        <button type="button" (click)="reintentar()" [disabled]="reintentando" class="boton-admin boton-admin--cobre mt-4">
+          {{ reintentando ? 'Procesando…' : 'Reintentar el pago' }}
+        </button>
+        @if (errorReintento) {
+          <p role="alert" class="mt-3 fs-cuerpo text-rose-300">{{ errorReintento }}</p>
+        }
+      }
+    }
+  </div>
+
+  <p class="mt-6">
+    @if (citaId !== null) {
+      <a [routerLink]="['/cliente/citas', citaId]" class="fs-cuerpo text-white/70 underline underline-offset-4 hover:text-white">Volver a la cita</a>
+    } @else {
+      <a routerLink="/cliente/citas" class="fs-cuerpo text-white/70 underline underline-offset-4 hover:text-white">Mis citas</a>
+    }
+  </p>
+</div>

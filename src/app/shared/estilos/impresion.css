@@ -1,0 +1,27 @@
+/* Al imprimir (o guardar como PDF) solo sale el comprobante, en blanco y negro sobre papel blanco. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .comprobante-imprimible,
+  .comprobante-imprimible * {
+    visibility: visible;
+    color: #000 !important;
+    border-color: #000 !important;
+    background: #fff !important;
+  }
+
+  /* La luz del spotlight es solo decoración de pantalla. */
+  .comprobante-imprimible [class*='spotlight-card__'] {
+    display: none !important;
+  }
+
+  .comprobante-imprimible {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: 1px solid #000;
+  }
+}

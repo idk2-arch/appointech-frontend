@@ -48,6 +48,18 @@ describe('AdminShellComponent', () => {
     expect(itemAlertas(shell).badge).toBe(4);
   });
 
+  it('"Dashboard" ya no está deshabilitado y lleva al panel de métricas', () => {
+    const dashboard = crear().menuItems().find((i) => i.value === 'dashboard')!;
+    expect(dashboard).toMatchObject({ label: 'Dashboard', icon: 'chart', routerLink: '/admin/dashboard' });
+    expect(dashboard.disabled).toBeFalsy();
+  });
+
+  it('"Historial financiero" ya no está deshabilitado y lleva a los pagos', () => {
+    const historial = crear().menuItems().find((i) => i.value === 'historial')!;
+    expect(historial.routerLink).toBe('/admin/pagos');
+    expect(historial.disabled).toBeFalsy();
+  });
+
   it('el menú conserva su referencia mientras el total no cambia', () => {
     const shell = crear();
     expect(shell.menuItems()).toBe(shell.menuItems());

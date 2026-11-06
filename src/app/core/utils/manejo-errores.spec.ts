@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { describe, expect, it } from 'vitest';
 
-import { obtenerMensajeError, obtenerMensajeErrorEscritura } from './manejo-errores';
+import { esSolicitudYaAsignada, obtenerMensajeError, obtenerMensajeErrorEscritura } from './manejo-errores';
 
 const http = (status: number, error?: unknown): HttpErrorResponse => new HttpErrorResponse({ status, error });
 
@@ -60,5 +60,39 @@ describe('obtenerMensajeErrorEscritura', () => {
 
   it('un error que no es HTTP cae en el mensaje genérico', () => {
     expect(obtenerMensajeErrorEscritura(new Error('x'), 'crear', 'y')).toBe('No fue posible crear. Intenta de nuevo.');
+  });
+});
+
+describe('esSolicitudYaAsignada', () => {
+  const conflicto = (error: unknown): HttpErrorResponse => new HttpErrorResponse({ status: 409, error });
+
+  it('reconoce el 409 de una solicitud que ya no está pendiente, con el campo "error" o "detail"', () => {
+    expect(esSolicitudYaAsignada(conflicto({ timestamp: 'x', status: 409, error: 'La solicitud ya fue asignada.' }))).toBe(true);
+    expect(esSolicitudYaAsignada(conflicto({ detail: 'La solicitud ya está asignada a otro técnico.' }))).toBe(true);
+    expect(esSolicitudYaAsignada(conflicto({ error: 'La solicitud no está pendiente.' }))).toBe(true);
+  });
+
+  it('un 409 del técnico o del horario no lo es', () => {
+    expect(esSolicitudYaAsignada(conflicto({ error: 'El técnico ya tiene una cita en ese horario.' }))).toBe(false);
+    expect(esSolicitudYaAsignada(conflicto({ error: 'El técnico está inactivo.' }))).toBe(false);
+  });
+
+  it('otros estados, errores sin texto y errores que no son HTTP tampoco', () => {
+    expect(esSolicitudYaAsignada(new HttpErrorResponse({ status: 404, error: { error: 'La solicitud ya fue asignada.' } }))).toBe(false);
+    expect(esSolicitudYaAsignada(conflicto(null))).toBe(false);
+    expect(esSolicitudYaAsignada(conflicto({ error: 42 }))).toBe(false);
+    expect(esSolicitudYaAsignada(new Error('x'))).toBe(false);
+  });
+});
+
+describe('mensajes de los endpoints de asignación manual (formato con el campo "error")', () => {
+  const formato = (status: number, error: string): HttpErrorResponse => new HttpErrorResponse({ status, error: { timestamp: '2026-11-04T10:00:00', status, error } });
+
+  it.each([
+    [400, 'La fecha de fin debe ser posterior a la de inicio.'],
+    [404, 'La solicitud no existe.'],
+    [409, 'El técnico tiene un bloqueo en ese horario.'],
+  ])('un %s muestra tal cual el mensaje legible del servidor', (estado, mensaje) => {
+    expect(obtenerMensajeErrorEscritura(formato(estado, mensaje), 'asignar el técnico', 'texto por defecto')).toBe(mensaje);
   });
 });

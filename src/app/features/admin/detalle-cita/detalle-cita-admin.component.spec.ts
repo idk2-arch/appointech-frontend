@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, RouterModule, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DetalleCita } from '../../../core/models/cita';
 import { pagoDe } from '../../../core/models/pago.mock';
@@ -21,6 +21,46 @@ const cita = (estado: DetalleCita['estado']): DetalleCita => ({
   fechaHoraFin: '2026-11-04T15:00:00',
   diagnostico: null,
   historial: [],
+});
+
+describe('DetalleCitaAdminComponent: asignación manual', () => {
+  async function mostrar(extra: Partial<DetalleCita>): Promise<string> {
+    await TestBed.configureTestingModule({
+      imports: [AdminModule, RouterModule.forRoot([])],
+      providers: [
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '5' })) } },
+        { provide: CitaAdminService, useValue: { obtener: vi.fn().mockReturnValue(of({ ...cita('CONFIRMADA'), ...extra })) } },
+        { provide: PagoService, useValue: { obtener: vi.fn(), obtenerComprobante: vi.fn() } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(DetalleCitaAdminComponent);
+    fixture.detectChanges();
+    return ((fixture.nativeElement as HTMLElement).querySelector('[role="note"]')?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  }
+
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('muestra quién la asignó y cuándo', async () => {
+    const nota = await mostrar({
+      asignadaManualmente: true,
+      asignacionManual: { asignadaPorId: 1, asignadaPorNombre: 'Carlos Admin', asignadaEn: '2026-11-04T09:30:00' },
+    });
+    expect(nota).toBe('Asignada manualmente por Carlos Admin el mié, 4 de nov, 9:30 a. m.');
+  });
+
+  it('en las citas antiguas, con la trazabilidad en nulos, dice solo "Asignada manualmente"', async () => {
+    expect(await mostrar({ asignadaManualmente: true, asignacionManual: null })).toBe('Asignada manualmente');
+    TestBed.resetTestingModule();
+    expect(await mostrar({ asignadaManualmente: true, asignacionManual: { asignadaPorId: null, asignadaPorNombre: null, asignadaEn: null } })).toBe(
+      'Asignada manualmente'
+    );
+  });
+
+  it('si no fue asignada a mano no muestra nada', async () => {
+    expect(await mostrar({ asignadaManualmente: false, asignacionManual: null })).toBe('');
+    TestBed.resetTestingModule();
+    expect(await mostrar({})).toBe('');
+  });
 });
 
 describe('DetalleCitaAdminComponent: pago', () => {

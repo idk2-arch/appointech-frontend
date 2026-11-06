@@ -16,6 +16,23 @@
         <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
       </div>
     } @else if (cita) {
+      @if (cita.asignadaManualmente) {
+        <p role="note" class="mb-4 flex items-start gap-2 rounded-xl border border-[#D98E4A]/30 bg-[#D98E4A]/10 px-4 py-3 fs-cuerpo text-white/90">
+          <svg viewBox="0 0 24 24" class="mt-0.5 h-4 w-4 shrink-0 text-[#D98E4A]" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="8.5" r="3.5" />
+            <path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke-linecap="round" />
+          </svg>
+          <span>
+            Asignada manualmente
+            @if (cita.asignacionManual?.asignadaPorNombre; as quien) {
+              por {{ quien }}
+            }
+            @if (cita.asignacionManual?.asignadaEn; as cuando) {
+              el {{ cuando | fechaLocal: 'fechaCorta' }}, {{ cuando | fechaLocal: 'hora' }}
+            }
+          </span>
+        </p>
+      }
       <app-detalle-cita [cita]="cita"></app-detalle-cita>
       @if (mostrarPago) {
         <div class="mt-6"><app-panel-pago [citaId]="cita.id" rol="ADMIN"></app-panel-pago></div>

@@ -26,6 +26,8 @@ import { LogsComponent } from './logs/logs.component';
 import { CoberturaPestanasComponent } from './cobertura/cobertura-pestanas.component';
 import { ReglasFranjasComponent } from './reglas-franjas/reglas-franjas.component';
 import { AlertasAdminComponent } from './alertas/alertas-admin.component';
+import { HistorialPagosComponent } from './pagos/historial-pagos.component';
+import { DashboardAdminComponent } from './dashboard/dashboard-admin.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +53,8 @@ import { AlertasAdminComponent } from './alertas/alertas-admin.component';
     CoberturaPestanasComponent,
     ReglasFranjasComponent,
     AlertasAdminComponent,
+    HistorialPagosComponent,
+    DashboardAdminComponent,
   ],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, AdminRoutingModule],
 })

@@ -13,6 +13,8 @@ import { MiPerfilComponent } from '../../shared/mi-perfil/mi-perfil.component';
 import { LogsComponent } from './logs/logs.component';
 import { ReglasFranjasComponent } from './reglas-franjas/reglas-franjas.component';
 import { AlertasAdminComponent } from './alertas/alertas-admin.component';
+import { HistorialPagosComponent } from './pagos/historial-pagos.component';
+import { DashboardAdminComponent } from './dashboard/dashboard-admin.component';
 
 const routes: Routes = [
   {
@@ -21,6 +23,7 @@ const routes: Routes = [
     canActivate: [adminGuard],
     children: [
       { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardAdminComponent },
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'especialidades', component: EspecialidadesComponent },
       { path: 'solicitudes-manuales', component: SolicitudesManualesComponent },
@@ -29,6 +32,7 @@ const routes: Routes = [
       { path: 'cobertura', component: CoberturaComponent },
       { path: 'cobertura/franjas', component: ReglasFranjasComponent },
       { path: 'alertas', component: AlertasAdminComponent },
+      { path: 'pagos', component: HistorialPagosComponent },
       { path: 'logs', component: LogsComponent },
       { path: 'perfil', component: MiPerfilComponent },
     ],

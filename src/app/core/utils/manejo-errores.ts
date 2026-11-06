@@ -20,6 +20,14 @@ export function obtenerMensajeErrorEscritura(
   return obtenerMensajeError(err, porEstado[estado] ?? `No fue posible ${accion}. Intenta de nuevo.`);
 }
 
+/** 409 porque la solicitud ya no está pendiente (otro administrador la asignó); otros 409 son del técnico o del horario. */
+export function esSolicitudYaAsignada(err: unknown): boolean {
+  if (!(err instanceof HttpErrorResponse) || err.status !== 409) return false;
+  const cuerpo = err.error;
+  const mensaje = cuerpo && typeof cuerpo === 'object' ? (cuerpo.detail ?? cuerpo.error) : undefined;
+  return typeof mensaje === 'string' && /ya (fue|est[aá]) asignad|no est[aá] pendiente|ya fue gestionad/i.test(mensaje);
+}
+
 /**
  * El backend responde errores en dos formatos:
  *  - ProblemDetail (RFC 7807): { type, title, status, detail, instance }

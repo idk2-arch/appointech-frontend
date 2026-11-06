@@ -1,0 +1,47 @@
+<ng-template #contenido>
+  <ng-content></ng-content>
+  @for (onda of ondas; track onda.id) {
+    <span
+      class="magic-bento-card__onda"
+      aria-hidden="true"
+      [style.left.px]="onda.x"
+      [style.top.px]="onda.y"
+      (animationend)="quitarOnda(onda.id)"
+    ></span>
+  }
+</ng-template>
+
+@if (enlace) {
+  <a
+    class="magic-bento-card__superficie magic-bento-card__superficie--enlace"
+    [routerLink]="enlace"
+    [attr.aria-label]="etiqueta"
+    appSpotlight
+    spotlightColor="var(--color-acento)"
+    [intensity]="intensidad"
+    [spotlightSize]="radioLuz"
+    [borderGlow]="brillo"
+    [proximity]="proximidad"
+    [softness]="0.8"
+    [smoothing]="0.15"
+    [flare]="false"
+    (click)="alClic($event)"
+  >
+    <ng-container [ngTemplateOutlet]="contenido"></ng-container>
+  </a>
+} @else {
+  <div
+    class="magic-bento-card__superficie"
+    appSpotlight
+    spotlightColor="var(--color-acento)"
+    [intensity]="intensidad"
+    [spotlightSize]="radioLuz"
+    [borderGlow]="brillo"
+    [proximity]="proximidad"
+    [softness]="0.8"
+    [smoothing]="0.15"
+    [flare]="false"
+  >
+    <ng-container [ngTemplateOutlet]="contenido"></ng-container>
+  </div>
+}

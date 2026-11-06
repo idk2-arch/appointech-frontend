@@ -26,3 +26,15 @@ export function hoyIso(): string {
 export function aFechaHoraLocal(fecha: string, hora: string): string {
   return `${fecha}T${hora.slice(0, 5)}:00`;
 }
+
+/** Fecha y hora para un <input type="datetime-local">: "2026-10-13T08:00" (sin segundos ni zona). */
+export function aFechaHoraInput(fecha: Date): string {
+  const hora = String(fecha.getHours()).padStart(2, '0');
+  const minutos = String(fecha.getMinutes()).padStart(2, '0');
+  return `${aFechaIso(fecha)}T${hora}:${minutos}`;
+}
+
+/** Completa un valor de datetime-local con segundos para el backend: "2026-10-13T08:00" → "2026-10-13T08:00:00". */
+export function aLocalDateTime(valorInput: string): string {
+  return `${valorInput.slice(0, 16)}:00`;
+}

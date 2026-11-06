@@ -10,6 +10,7 @@
 @import "./app/shared/estilos/tarjeta-expandible.css";
 @import "./app/shared/estilos/confirmacion.css";
 @import "./app/shared/estilos/toast.css";
+@import "./app/shared/estilos/magic-bento.css";
 
 html, body {
   height: 100%;

@@ -1,0 +1,148 @@
+<div class="pagina-admin">
+  <h1 class="titulo-admin">Historial financiero</h1>
+  <p class="mt-1 fs-cuerpo text-white/50">Pagos de todas las citas, de los más recientes a los más antiguos.</p>
+
+  <form
+    [formGroup]="filtros"
+    (submit)="$event.preventDefault(); aplicar()"
+    class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+    aria-label="Filtros de pagos"
+  >
+    <div>
+      <label for="pagos-estado" class="block fs-cuerpo font-medium text-white">Estado</label>
+      <app-select inputId="pagos-estado" formControlName="estado" [options]="opcionesEstado" class="mt-2"></app-select>
+    </div>
+    <div>
+      <label for="pagos-metodo" class="block fs-cuerpo font-medium text-white">Método</label>
+      <app-select inputId="pagos-metodo" formControlName="metodo" [options]="opcionesMetodo" class="mt-2"></app-select>
+    </div>
+    <div>
+      <label for="pagos-desde" class="block fs-cuerpo font-medium text-white">Desde</label>
+      <input id="pagos-desde" type="date" formControlName="desde" class="campo mt-2" />
+    </div>
+    <div>
+      <label for="pagos-hasta" class="block fs-cuerpo font-medium text-white">Hasta</label>
+      <input
+        id="pagos-hasta"
+        type="date"
+        formControlName="hasta"
+        [attr.aria-invalid]="errorFiltros ? true : null"
+        aria-describedby="pagos-error-filtros"
+        class="campo mt-2"
+      />
+    </div>
+
+    <details class="sm:col-span-2 lg:col-span-4">
+      <summary class="cursor-pointer fs-cuerpo font-medium text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D98E4A]">Más filtros</summary>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <div>
+          <label for="pagos-cliente" class="block fs-cuerpo font-medium text-white">Cliente (ID)</label>
+          <input id="pagos-cliente" type="text" inputmode="numeric" autocomplete="off" formControlName="clienteId" class="campo mt-2" />
+        </div>
+        <div>
+          <label for="pagos-tecnico" class="block fs-cuerpo font-medium text-white">Técnico (ID)</label>
+          <input id="pagos-tecnico" type="text" inputmode="numeric" autocomplete="off" formControlName="tecnicoId" class="campo mt-2" />
+        </div>
+      </div>
+    </details>
+
+    @if (hayFechas) {
+      <p class="fs-secundario text-white/60 sm:col-span-2 lg:col-span-4">Con fechas solo se muestran los pagos ya realizados.</p>
+    }
+    @if (errorFiltros) {
+      <p id="pagos-error-filtros" role="alert" class="fs-secundario text-rose-300 sm:col-span-2 lg:col-span-4">{{ errorFiltros }}</p>
+    }
+
+    <div class="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
+      <button type="submit" [disabled]="cargando" class="boton-admin disabled:cursor-not-allowed disabled:opacity-60">Aplicar</button>
+      <button type="button" (click)="limpiar()" [disabled]="cargando" class="boton-fila-admin px-4 py-2.5 disabled:cursor-not-allowed disabled:opacity-60">Limpiar</button>
+    </div>
+  </form>
+
+  <div class="mt-6" [attr.aria-busy]="cargando">
+    @if (cargando) {
+      <div class="grid gap-4 md:grid-cols-2" role="status" aria-label="Cargando pagos">
+        @for (n of esqueletos; track n) {
+          <div class="animate-pulse rounded-2xl border border-white/10 bg-white/[0.02] p-5 motion-reduce:animate-none">
+            <div class="h-4 w-40 rounded bg-white/10"></div>
+            <div class="mt-4 h-3 w-full rounded bg-white/10"></div>
+            <div class="mt-2 h-3 w-4/5 rounded bg-white/10"></div>
+          </div>
+        }
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (pagos.length === 0) {
+      <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        No hay pagos con estos filtros.
+      </div>
+    } @else {
+      <ul class="grid gap-4 md:grid-cols-2">
+        @for (fila of pagos; track fila.citaId) {
+          <li appSpotlight class="flex min-w-0 flex-col rounded-2xl bg-white/[0.03] p-5">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h2 class="fs-cuerpo font-semibold text-white">Cita n.º {{ fila.citaId }}</h2>
+                <span class="chip-admin mt-1.5 inline-block">{{ fila.especialidad }}</span>
+              </div>
+              <app-insignia-pago [estado]="fila.estado"></app-insignia-pago>
+            </div>
+
+            <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 fs-cuerpo">
+              <div class="min-w-0">
+                <dt class="fs-secundario text-white/60">Cliente</dt>
+                <dd class="break-words text-white">{{ fila.clienteNombre }}</dd>
+              </div>
+              <div class="min-w-0">
+                <dt class="fs-secundario text-white/60">Técnico</dt>
+                <dd class="break-words text-white">{{ fila.tecnicoNombre || 'Sin asignar' }}</dd>
+              </div>
+              <div>
+                <dt class="fs-secundario text-white/60">Monto cotizado</dt>
+                <dd class="text-white">{{ (fila.montoCotizado | pesos) || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="fs-secundario text-white/60">Monto final</dt>
+                <dd class="font-semibold text-white">{{ (fila.montoFinal | pesos) || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="fs-secundario text-white/60">Método</dt>
+                <dd class="text-white">{{ metodoDe(fila) }}</dd>
+              </div>
+              <div>
+                <dt class="fs-secundario text-white/60">Fecha de pago</dt>
+                <dd class="text-white">
+                  @if (fila.pagadoEn; as fecha) {
+                    {{ fecha | fechaLocal: 'fechaCorta' }}, {{ fecha | fechaLocal: 'hora' }}
+                  } @else {
+                    —
+                  }
+                </dd>
+              </div>
+              <div class="col-span-2 min-w-0">
+                <dt class="fs-secundario text-white/60">Comprobante</dt>
+                <dd class="break-all text-white">{{ fila.numeroComprobante || '—' }}</dd>
+              </div>
+            </dl>
+
+            <div class="mt-4 border-t border-white/10 pt-4">
+              <a [routerLink]="['/admin/citas', fila.citaId]" class="boton-fila-admin" [attr.aria-label]="'Ver la cita ' + fila.citaId">Ver cita</a>
+            </div>
+          </li>
+        }
+      </ul>
+      <app-paginacion
+        [pagina]="pagina"
+        [tamano]="tamano"
+        [total]="total"
+        [cantidad]="pagos.length"
+        singular="pago"
+        plural="pagos"
+        (cambio)="irAPagina($event)"
+      ></app-paginacion>
+    }
+  </div>
+</div>

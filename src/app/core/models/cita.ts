@@ -9,6 +9,20 @@ export type EstadoCita =
 /** Por qué una solicitud no entra al agendamiento automático y la coordina un administrador. */
 export type MotivoSolicitudEspecial = 'SIN_TECNICOS_ESPECIALIDAD' | 'FUERA_DE_COBERTURA';
 
+/** Quién asignó el técnico a mano y cuándo; algún dato puede ser nulo en las citas anteriores a RF15. */
+export interface AsignacionManual {
+  asignadaPorId?: number | null;
+  asignadaPorNombre?: string | null;
+  /** LocalDateTime sin zona. */
+  asignadaEn?: string | null;
+}
+
+/** Solo lo ve el administrador: el backend no manda el objeto al cliente ni al técnico. */
+export interface TrazabilidadAsignacion {
+  asignadaManualmente?: boolean;
+  asignacionManual?: AsignacionManual | null;
+}
+
 /** Respuesta de POST /solicitudes (estado PENDIENTE, sin técnico ni horario). */
 export interface SolicitudServicio {
   id: number;
@@ -25,7 +39,7 @@ export interface SolicitudServicio {
 }
 
 /** Respuesta de POST /citas/confirmar: la misma solicitud ya agendada. */
-export interface Cita extends SolicitudServicio {
+export interface Cita extends SolicitudServicio, TrazabilidadAsignacion {
   tecnicoId: number;
   fechaHoraInicio: string;
   fechaHoraFin: string;
@@ -66,7 +80,7 @@ export interface ConfirmarCitaRequest {
 }
 
 /** Elemento de GET /cliente/citas y respuesta de las acciones sobre una cita (CitaResponse). */
-export interface CitaResumen extends SolicitudServicio {
+export interface CitaResumen extends SolicitudServicio, TrazabilidadAsignacion {
   marcaElectrodomestico?: string | null;
   modeloElectrodomestico?: string | null;
   urgencia?: UrgenciaCita | null;

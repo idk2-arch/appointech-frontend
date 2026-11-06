@@ -19,7 +19,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
 
   /** Se recalcula solo cuando cambia el total de alertas, para que el menú no se redibuje sin necesidad. */
   readonly menuItems = computed<SidebarMenuItem[]>(() => [
-    { value: 'dashboard', label: 'Dashboard', icon: 'chart', disabled: true },
+    { value: 'dashboard', label: 'Dashboard', icon: 'chart', routerLink: '/admin/dashboard' },
     { value: 'usuarios', label: 'Usuarios', icon: 'users', routerLink: '/admin/usuarios' },
     { value: 'especialidades', label: 'Especialidades de técnicos', icon: 'tool', routerLink: '/admin/especialidades' },
     { value: 'citas', label: 'Citas', icon: 'calendar', routerLink: '/admin/citas' },
@@ -27,7 +27,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     { value: 'alertas', label: 'Alertas', icon: 'bell', routerLink: '/admin/alertas', badge: this.alertas.total() },
     { value: 'gestion', label: 'Gestión operativa', icon: 'alert', disabled: true },
     { value: 'cobertura', label: 'Cobertura', icon: 'settings', routerLink: '/admin/cobertura' },
-    { value: 'historial', label: 'Historial financiero', icon: 'receipt', disabled: true },
+    { value: 'historial', label: 'Historial financiero', icon: 'receipt', routerLink: '/admin/pagos' },
     { value: 'logs', label: 'Logs', icon: 'logs', routerLink: '/admin/logs' },
   ]);
 

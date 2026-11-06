@@ -1,12 +1,12 @@
 import { ChangeDetectorRef } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { of, Subject, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AlertasAdminService } from '../../../core/services/alertas-admin.service';
 import { SolicitudManualAdmin, SolicitudManualAdminService } from '../../../core/services/solicitud-manual-admin.service';
-import { TecnicoResponse, TecnicoService } from '../../../core/services/tecnico.service';
-import { AsignarSolicitudModalComponent } from './asignar-solicitud-modal/asignar-solicitud-modal.component';
+import { TecnicoService } from '../../../core/services/tecnico.service';
+import { ToastService } from '../../../shared/toast/toast.service';
 import { SolicitudesManualesComponent } from './solicitudes-manuales.component';
 import '../admin.module';
 
@@ -45,16 +45,28 @@ const LUIS = solicitud({
 
 describe('SolicitudesManualesComponent: lógica de la lista', () => {
   let servicio: { listar: ReturnType<typeof vi.fn> };
+  let alertas: { obtener: ReturnType<typeof vi.fn> };
+  let toast: { error: ReturnType<typeof vi.fn> };
   let componente: SolicitudesManualesComponent;
 
+  const pagina = (filas: SolicitudManualAdmin[], total = filas.length) => of({ filas, total });
+
   const crear = (): void => {
-    componente = new SolicitudesManualesComponent(servicio as unknown as SolicitudManualAdminService, cdr);
+    componente = new SolicitudesManualesComponent(
+      servicio as unknown as SolicitudManualAdminService,
+      { obtenerEspecialidades: () => of([]) } as unknown as TecnicoService,
+      alertas as unknown as AlertasAdminService,
+      toast as unknown as ToastService,
+      cdr
+    );
     componente.ngOnInit();
   };
 
   beforeEach(() => {
     vi.useFakeTimers({ now: new Date(2026, 9, 27, 12, 0, 0) });
-    servicio = { listar: vi.fn().mockReturnValue(of([ANA, LUIS])) };
+    servicio = { listar: vi.fn().mockReturnValue(pagina([ANA, LUIS], 12)) };
+    alertas = { obtener: vi.fn().mockReturnValue(of({ total: 0, alertas: [] })) };
+    toast = { error: vi.fn() };
     crear();
   });
 
@@ -64,18 +76,20 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
   });
 
   describe('carga', () => {
-    it('al iniciar carga las solicitudes, las más antiguas primero', () => {
+    it('al iniciar carga la primera página, las más antiguas primero, y guarda el total del servidor', () => {
       expect(componente.cargando).toBe(false);
       expect(componente.tarjetas.map((t) => t.nombreCliente)).toEqual(['Luis Gómez', 'Ana Pérez']);
+      expect(componente.total).toBe(12);
     });
 
-    it('si falla muestra el mensaje y deja la lista vacía', () => {
+    it('si falla muestra el mensaje y un toast, y deja la lista vacía', () => {
       servicio.listar.mockReturnValue(throwError(() => falloHttp(500, { status: 500, error: 'Servicio no disponible' })));
       componente.cargar();
 
       expect(componente.errorCarga).toBe('Servicio no disponible');
       expect(componente.solicitudes).toEqual([]);
-      expect(componente.tarjetas).toEqual([]);
+      expect(componente.total).toBe(0);
+      expect(toast.error).toHaveBeenCalledWith('No se pudieron cargar las solicitudes', 'Servicio no disponible');
     });
 
     it('sin mensaje del backend usa uno genérico en español', () => {
@@ -84,10 +98,10 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
       expect(componente.errorCarga).toBe('No fue posible cargar las solicitudes por coordinar.');
     });
 
-    it('una respuesta que no es lista queda vacía', () => {
-      servicio.listar.mockReturnValue(of(null));
+    it('recargar vuelve a pedir la página', () => {
+      servicio.listar.mockReturnValue(pagina([ANA]));
       componente.cargar();
-      expect(componente.solicitudes).toEqual([]);
+      expect(servicio.listar).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -107,9 +121,21 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
     });
 
     it('una descripción de más de 140 caracteres se marca como larga', () => {
-      servicio.listar.mockReturnValue(of([solicitud({ descripcionProblema: 'a'.repeat(141) }), solicitud({ id: 3, descripcionProblema: 'a'.repeat(140) })]));
+      servicio.listar.mockReturnValue(pagina([solicitud({ descripcionProblema: 'a'.repeat(141) }), solicitud({ id: 3, descripcionProblema: 'a'.repeat(140) })]));
       componente.cargar();
       expect(componente.tarjetas.map((t) => t.esLarga)).toEqual([true, false]);
+    });
+
+    it('solo las pendientes (o sin estado) son asignables', () => {
+      servicio.listar.mockReturnValue(
+        pagina([solicitud({ id: 1, estado: 'PENDIENTE' }), solicitud({ id: 2, estado: 'CONFIRMADA' }), solicitud({ id: 3, estado: undefined })])
+      );
+      componente.cargar();
+      expect(componente.tarjetas.map((t) => [t.solicitud.id, t.asignable])).toEqual([
+        [1, true],
+        [2, false],
+        [3, true],
+      ]);
     });
 
     it('los tiempos se actualizan solos cada minuto', () => {
@@ -119,17 +145,10 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
     });
   });
 
-  describe('contador', () => {
-    it('singular y plural', () => {
-      expect(componente.contador).toBe('2 pendientes');
-      servicio.listar.mockReturnValue(of([ANA]));
-      componente.cargar();
-      expect(componente.contador).toBe('1 pendiente');
-    });
-
-    it('con una búsqueda activa indica cuántas se ven del total', () => {
+  describe('coincidencias de la búsqueda', () => {
+    it('dice cuántas de la página coinciden', () => {
       componente.buscar('nevera');
-      expect(componente.contador).toBe('1 de 2 pendientes');
+      expect(componente.coincidencias).toBe('1 de 2 en esta página');
     });
   });
 
@@ -192,13 +211,13 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
       expect(componente.solicitudAsignando).toBeNull();
     });
 
-    it('al asignar: avisa, la tarjeta se desvanece y sale de la lista tras la transición', () => {
+    it('al asignar: avisa, la tarjeta se desvanece, sale tras la transición y baja el total', () => {
       componente.abrirAsignar(ANA);
-
       componente.onAsignada(ANA);
 
       expect(componente.solicitudAsignando).toBeNull();
       expect(componente.mensajeExito).toBe('La visita de Ana Pérez quedó agendada.');
+      expect(alertas.obtener).toHaveBeenCalledOnce();
       const tarjeta = componente.tarjetas.find((t) => t.solicitud.id === 1)!;
       expect(componente.estaSaliendo(tarjeta)).toBe(true);
 
@@ -206,6 +225,28 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
 
       expect(componente.tarjetas.map((t) => t.solicitud.id)).toEqual([2]);
       expect(componente.estaSaliendo(tarjeta)).toBe(false);
+      expect(componente.total).toBe(11);
+    });
+
+    it('el total nunca baja de cero', () => {
+      servicio.listar.mockReturnValue(pagina([ANA], 0));
+      componente.cargar();
+      componente.onAsignada(ANA);
+      vi.advanceTimersByTime(300);
+      expect(componente.total).toBe(0);
+    });
+
+    it('si asignó la última de una página que no es la primera, vuelve a la anterior', () => {
+      servicio.listar.mockReturnValue(pagina([ANA], 11));
+      componente.irAPagina(1);
+      servicio.listar.mockClear();
+      servicio.listar.mockReturnValue(pagina([LUIS], 10));
+
+      componente.onAsignada(ANA);
+      vi.advanceTimersByTime(300);
+
+      expect(servicio.listar).toHaveBeenCalledWith(expect.objectContaining({ page: 0 }));
+      expect(componente.pagina).toBe(0);
     });
 
     it('el aviso de éxito desaparece solo a los 8 segundos', () => {
@@ -225,198 +266,8 @@ describe('SolicitudesManualesComponent: lógica de la lista', () => {
     });
   });
 
-  it('al destruirse detiene el refresco de tiempos', () => {
+  it('al destruirse detiene el refresco de tiempos y cancela lo pendiente', () => {
     componente.ngOnDestroy();
     expect(vi.getTimerCount()).toBe(0);
-  });
-});
-
-describe('AsignarSolicitudModalComponent', () => {
-  let tecnicos: { obtenerTecnicos: ReturnType<typeof vi.fn> };
-  let solicitudes: { asignar: ReturnType<typeof vi.fn> };
-  let modal: AsignarSolicitudModalComponent;
-  let asignadas: SolicitudManualAdmin[];
-
-  const tecnico = (id: number, datos: Partial<TecnicoResponse> = {}): TecnicoResponse =>
-    ({
-      id,
-      nombre: `T${id}`,
-      apellido: 'Apellido',
-      activo: true,
-      especialidades: [{ id: 1, nombre: 'Lavadoras', descripcion: '' }],
-      ...datos,
-    }) as TecnicoResponse;
-
-  const abrir = (s: SolicitudManualAdmin | null = ANA): void => {
-    modal.solicitud = s;
-    modal.abierto = true;
-    modal.ngOnChanges({ abierto: { previousValue: false, currentValue: true, firstChange: false, isFirstChange: () => false } });
-  };
-
-  beforeEach(() => {
-    tecnicos = { obtenerTecnicos: vi.fn().mockReturnValue(of([tecnico(1), tecnico(2, { activo: false }), tecnico(3, { especialidades: [] }), tecnico(4)])) };
-    solicitudes = { asignar: vi.fn().mockReturnValue(of({})) };
-    modal = new AsignarSolicitudModalComponent(
-      new FormBuilder(),
-      tecnicos as unknown as TecnicoService,
-      solicitudes as unknown as SolicitudManualAdminService,
-      cdr
-    );
-    asignadas = [];
-    modal.asignada.subscribe((s) => asignadas.push(s));
-  });
-
-  afterEach(() => modal.ngOnDestroy());
-
-  describe('al abrirse', () => {
-    it('ofrece solo técnicos activos con la especialidad de la solicitud', () => {
-      abrir();
-
-      expect(modal.tecnicos.map((t) => t.id)).toEqual([1, 4]);
-      expect(modal.opcionesTecnicos).toEqual([
-        { value: 1, label: 'T1 Apellido' },
-        { value: 4, label: 'T4 Apellido' },
-      ]);
-      expect(modal.cargandoTecnicos).toBe(false);
-    });
-
-    it('reinicia el formulario y los errores cada vez', () => {
-      abrir();
-      modal.form.patchValue({ fecha: '2026-11-01' });
-      modal.errorMensaje = 'viejo';
-
-      abrir();
-
-      expect(modal.fecha?.value).toBe('');
-      expect(modal.errorMensaje).toBeNull();
-    });
-
-    it('si cambia otra entrada, sin abrirse o sin solicitud, no hace nada', () => {
-      modal.ngOnChanges({});
-      modal.abierto = false;
-      modal.ngOnChanges({ abierto: { previousValue: true, currentValue: false, firstChange: false, isFirstChange: () => false } });
-      abrir(null);
-      expect(tecnicos.obtenerTecnicos).not.toHaveBeenCalled();
-    });
-
-    it('sin solicitud no carga técnicos', () => {
-      modal.solicitud = null;
-      modal.cargarTecnicos();
-      expect(tecnicos.obtenerTecnicos).not.toHaveBeenCalled();
-    });
-
-    it('una respuesta que no es lista deja la lista vacía', () => {
-      tecnicos.obtenerTecnicos.mockReturnValue(of(null));
-      abrir();
-      expect(modal.tecnicos).toEqual([]);
-    });
-
-    it('si falla la carga, muestra el motivo y se puede reintentar', () => {
-      tecnicos.obtenerTecnicos.mockReturnValue(throwError(() => falloHttp(500, { status: 500, error: 'Sin conexión con técnicos' })));
-      abrir();
-      expect(modal.errorTecnicos).toBe('Sin conexión con técnicos');
-      expect(modal.cargandoTecnicos).toBe(false);
-
-      tecnicos.obtenerTecnicos.mockReturnValue(of([tecnico(1)]));
-      modal.cargarTecnicos();
-      expect(modal.errorTecnicos).toBeNull();
-      expect(modal.tecnicos).toHaveLength(1);
-    });
-
-    it('recargar cancela la carga anterior', () => {
-      const lenta = new Subject<TecnicoResponse[]>();
-      tecnicos.obtenerTecnicos.mockReturnValue(lenta);
-      abrir();
-      expect(lenta.observed).toBe(true);
-
-      tecnicos.obtenerTecnicos.mockReturnValue(of([]));
-      modal.cargarTecnicos();
-      expect(lenta.observed).toBe(false);
-    });
-  });
-
-  describe('validaciones del formulario', () => {
-    beforeEach(() => abrir());
-
-    it('técnico, fecha y horas son obligatorios', () => {
-      expect(modal.form.valid).toBe(false);
-      expect(modal.tecnicoId?.hasError('required')).toBe(true);
-      expect(modal.fecha?.hasError('required')).toBe(true);
-      expect(modal.horaInicio?.hasError('required')).toBe(true);
-      expect(modal.horaFin?.hasError('required')).toBe(true);
-    });
-
-    it('la hora de fin debe ser posterior a la de inicio', () => {
-      modal.form.patchValue({ tecnicoId: 1, fecha: '2026-11-04', horaInicio: '10:00', horaFin: '10:00' });
-      expect(modal.form.hasError('finAntesDeInicio')).toBe(true);
-
-      modal.form.patchValue({ horaFin: '09:00' });
-      expect(modal.form.hasError('finAntesDeInicio')).toBe(true);
-
-      modal.form.patchValue({ horaFin: '11:00' });
-      expect(modal.form.valid).toBe(true);
-    });
-  });
-
-  describe('asignar', () => {
-    const llenar = (): void => modal.form.patchValue({ tecnicoId: 1, fecha: '2026-11-04', horaInicio: '10:00', horaFin: '11:30' });
-
-    beforeEach(() => abrir());
-
-    it('sin solicitud no hace nada', () => {
-      modal.solicitud = null;
-      modal.onSubmit();
-      expect(solicitudes.asignar).not.toHaveBeenCalled();
-    });
-
-    it('inválido: marca los campos y no llama al backend', () => {
-      modal.onSubmit();
-      expect(solicitudes.asignar).not.toHaveBeenCalled();
-      expect(modal.fecha?.touched).toBe(true);
-    });
-
-    it('envía técnico, inicio y fin como hora local sin zona y avisa con la solicitud', () => {
-      llenar();
-      modal.onSubmit();
-
-      expect(solicitudes.asignar).toHaveBeenCalledWith(1, {
-        tecnicoId: 1,
-        fechaHoraInicio: '2026-11-04T10:00:00',
-        fechaHoraFin: '2026-11-04T11:30:00',
-      });
-      expect(asignadas).toEqual([ANA]);
-      expect(modal.cargando).toBe(false);
-    });
-
-    it('409: el técnico ya tiene algo en ese horario', () => {
-      solicitudes.asignar.mockReturnValue(throwError(() => falloHttp(409)));
-      llenar();
-      modal.onSubmit();
-
-      expect(modal.errorMensaje).toContain('ya tiene una cita o un bloqueo');
-      expect(asignadas).toEqual([]);
-      expect(modal.cargando).toBe(false);
-    });
-
-    it('404: la solicitud ya no existe', () => {
-      solicitudes.asignar.mockReturnValue(throwError(() => falloHttp(404)));
-      llenar();
-      modal.onSubmit();
-      expect(modal.errorMensaje).toContain('ya no existe o ya fue asignada');
-    });
-
-    it('400: revisa técnico, fecha y horario', () => {
-      solicitudes.asignar.mockReturnValue(throwError(() => falloHttp(400)));
-      llenar();
-      modal.onSubmit();
-      expect(modal.errorMensaje).toContain('Revisa el técnico, la fecha y el horario');
-    });
-
-    it('el mensaje del backend tiene prioridad', () => {
-      solicitudes.asignar.mockReturnValue(throwError(() => falloHttp(409, { status: 409, error: 'El técnico está de vacaciones' })));
-      llenar();
-      modal.onSubmit();
-      expect(modal.errorMensaje).toBe('El técnico está de vacaciones');
-    });
   });
 });

@@ -1,0 +1,247 @@
+<div class="pagina-admin">
+  <h1 class="titulo-admin">Dashboard</h1>
+  <p class="mt-1 fs-cuerpo text-white/50">El estado del negocio de un vistazo: citas, ingresos, calificaciones y usuarios.</p>
+
+  <!-- Rango de fechas -->
+  <div role="group" aria-label="Rango de fechas" class="mt-6 flex flex-wrap gap-2">
+    @for (opcion of presets; track opcion.id) {
+      <button
+        type="button"
+        (click)="seleccionar(opcion.id)"
+        [attr.aria-pressed]="preset === opcion.id"
+        class="rounded-full border px-4 py-1.5 fs-cuerpo font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D98E4A]"
+        [class]="preset === opcion.id ? 'border-[#D98E4A] bg-[#D98E4A]/15 text-white' : 'border-white/15 text-white/70 hover:border-white/30 hover:text-white'"
+      >
+        {{ opcion.etiqueta }}
+      </button>
+    }
+  </div>
+
+  @if (preset === 'personalizado') {
+    <form [formGroup]="personalizado" (submit)="$event.preventDefault(); aplicarPersonalizado()" class="mt-4 flex flex-wrap items-end gap-3" aria-label="Rango personalizado">
+      <div>
+        <label for="dash-desde" class="block fs-cuerpo font-medium text-white">Desde</label>
+        <input id="dash-desde" type="date" formControlName="desde" [attr.aria-invalid]="errorRango ? true : null" aria-describedby="dash-error-rango" class="campo mt-2" />
+      </div>
+      <div>
+        <label for="dash-hasta" class="block fs-cuerpo font-medium text-white">Hasta</label>
+        <input id="dash-hasta" type="date" formControlName="hasta" [attr.aria-invalid]="errorRango ? true : null" aria-describedby="dash-error-rango" class="campo mt-2" />
+      </div>
+      <button type="submit" [disabled]="cargando" class="boton-admin disabled:cursor-not-allowed disabled:opacity-60">Aplicar</button>
+    </form>
+  }
+
+  @if (errorRango) {
+    <p id="dash-error-rango" role="alert" class="mt-3 fs-secundario text-rose-300">{{ errorRango }}</p>
+  }
+
+  @if (vista) {
+    <p class="mt-4 fs-cuerpo text-white/70" aria-live="polite">{{ vista.rangoTexto }} <span class="text-white/50">({{ vista.dias }} días)</span></p>
+  }
+
+  <div class="mt-4" [attr.aria-busy]="cargando">
+    @if (cargando) {
+      <!-- Esqueleto con las mismas tarjetas -->
+      <app-magic-bento role="status" aria-label="Cargando métricas">
+        @for (e of esqueletos; track $index) {
+          <app-magic-bento-card [colSpan]="e.col" [rowSpan]="e.fila" [luz]="false">
+            <div class="animate-pulse motion-reduce:animate-none" aria-hidden="true">
+              <div class="h-3 w-24 rounded bg-white/10"></div>
+              <div class="mt-4 h-9 w-32 rounded bg-white/10"></div>
+              <div class="mt-5 h-3 w-full rounded bg-white/10"></div>
+              <div class="mt-2 h-3 w-4/5 rounded bg-white/10"></div>
+            </div>
+          </app-magic-bento-card>
+        }
+      </app-magic-bento>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (vista; as v) {
+      @if (v.sinActividad) {
+        <p role="status" class="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 fs-cuerpo text-white/70">
+          No hubo actividad en este rango de fechas. Prueba con otro; las tarjetas de estado actual siguen al día.
+        </p>
+      }
+
+      <app-magic-bento>
+        <!-- Citas -->
+        <app-magic-bento-card [colSpan]="2" [rowSpan]="2" enlace="/admin/citas">
+          <div class="flex items-start justify-between gap-2">
+            <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Citas</h2>
+            <span class="fs-secundario text-[#D98E4A]" aria-hidden="true">Ver citas →</span>
+          </div>
+          <p class="mt-2 text-5xl font-semibold tabular-nums">{{ cantidad(v.citas.total) }}</p>
+          <p class="fs-secundario text-white/60">citas en el rango</p>
+          <ul class="mt-5 space-y-2.5">
+            @for (barra of v.citas.barras; track barra.etiqueta) {
+              <li>
+                <div class="flex items-baseline justify-between gap-2 fs-cuerpo">
+                  <span class="text-white/80">{{ barra.etiqueta }}</span>
+                  <span class="font-medium tabular-nums text-white">{{ cantidad(barra.cantidad) }}</span>
+                </div>
+                <div class="mt-1 h-2 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+                  <div class="h-full rounded-full" [class]="barra.clase" [style.width.%]="barra.ancho"></div>
+                </div>
+              </li>
+            }
+          </ul>
+        </app-magic-bento-card>
+
+        <!-- Ingresos -->
+        <app-magic-bento-card [colSpan]="2" enlace="/admin/pagos">
+          <div class="flex items-start justify-between gap-2">
+            <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Ingresos</h2>
+            <span class="fs-secundario text-[#D98E4A]" aria-hidden="true">Historial →</span>
+          </div>
+          <p class="mt-2 break-words text-4xl font-semibold tabular-nums">{{ v.ingresos.total }}</p>
+          <p class="fs-secundario text-white/60">{{ cantidad(v.ingresos.cantidadPagos) }} {{ v.ingresos.cantidadPagos === 1 ? 'pago' : 'pagos' }} en el rango</p>
+          <dl class="mt-3 space-y-1.5 fs-cuerpo">
+            @for (metodo of v.ingresos.metodos; track metodo.etiqueta) {
+              <div class="flex items-baseline justify-between gap-2">
+                <dt class="text-white/80">{{ metodo.etiqueta }} <span class="text-white/50">({{ cantidad(metodo.cantidad) }})</span></dt>
+                <dd class="font-medium tabular-nums text-white">{{ metodo.monto }}</dd>
+              </div>
+            }
+          </dl>
+        </app-magic-bento-card>
+
+        <!-- Tasa de cancelación -->
+        <app-magic-bento-card>
+          <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Tasa de cancelación</h2>
+          <div class="mt-3 flex items-center gap-3">
+            <svg viewBox="0 0 100 100" class="h-20 w-20 shrink-0 -rotate-90" role="img" [attr.aria-label]="'Tasa de cancelación: ' + v.tasa.texto">
+              <circle cx="50" cy="50" [attr.r]="radioAnillo" fill="none" stroke-width="10" style="stroke: rgb(255 255 255 / 0.1)" />
+              <circle
+                cx="50"
+                cy="50"
+                [attr.r]="radioAnillo"
+                fill="none"
+                stroke-width="10"
+                stroke-linecap="round"
+                style="stroke: var(--color-acento)"
+                [attr.stroke-dasharray]="v.tasa.trazo"
+              />
+            </svg>
+            <p class="text-2xl font-semibold tabular-nums">{{ v.tasa.texto }}</p>
+          </div>
+          <p class="mt-2 fs-secundario text-white/60">de las citas del rango</p>
+        </app-magic-bento-card>
+
+        <!-- Por cobrar -->
+        <app-magic-bento-card>
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Por cobrar</h2>
+            <span class="rounded-full border border-white/20 px-2 fs-secundario text-white/80">Estado actual</span>
+          </div>
+          <p class="mt-2 text-4xl font-semibold tabular-nums">{{ cantidad(v.porCobrar.cantidad) }}</p>
+          <p class="fs-secundario text-white/60">{{ v.porCobrar.cantidad === 1 ? 'pago pendiente' : 'pagos pendientes' }}</p>
+          <p class="mt-1 break-words text-lg font-semibold tabular-nums">{{ v.porCobrar.monto }}</p>
+          <p class="mt-1 fs-secundario text-white/50">No cambia con el rango de fechas</p>
+        </app-magic-bento-card>
+
+        <!-- Especialidades -->
+        <app-magic-bento-card [colSpan]="2" [rowSpan]="2">
+          <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Especialidades</h2>
+          <p class="fs-secundario text-white/60">Citas del rango, y cuántas se finalizaron</p>
+          @if (v.especialidades.length === 0) {
+            <p class="mt-4 fs-cuerpo text-white/60">Todavía no hay especialidades.</p>
+          } @else {
+            <ul class="mt-4 space-y-3">
+              @for (fila of v.especialidades; track fila.nombre) {
+                <li [class.opacity-50]="fila.atenuada">
+                  <div class="flex items-baseline justify-between gap-2 fs-cuerpo">
+                    <span class="min-w-0 break-words text-white/90">{{ fila.nombre }}</span>
+                    <span class="shrink-0 tabular-nums text-white">{{ cantidad(fila.totalCitas) }} <span class="text-white/50">· {{ cantidad(fila.finalizadas) }} fin.</span></span>
+                  </div>
+                  <div class="relative mt-1 h-2 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+                    <div class="absolute inset-y-0 left-0 rounded-full bg-white/30" [style.width.%]="fila.anchoTotal"></div>
+                    <div class="absolute inset-y-0 left-0 rounded-full bg-violet-300" [style.width.%]="fila.anchoFinalizadas"></div>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </app-magic-bento-card>
+
+        <!-- Calificaciones -->
+        <app-magic-bento-card [colSpan]="2">
+          <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Calificaciones</h2>
+          <div class="mt-2 grid gap-4 sm:grid-cols-2">
+            <div>
+              <p class="text-4xl font-semibold tabular-nums">{{ promedio(v.calificaciones.promedio) }}</p>
+              <svg viewBox="0 0 120 24" class="mt-1 h-5 w-[6.25rem]" role="img" [attr.aria-label]="v.calificaciones.promedio === null ? 'Sin calificaciones' : 'Promedio de ' + promedio(v.calificaciones.promedio) + ' de 5 estrellas'">
+                <defs>
+                  @for (relleno of v.calificaciones.estrellas; track $index) {
+                    <linearGradient [attr.id]="'dash-estrella-' + $index">
+                      <stop [attr.offset]="relleno * 100 + '%'" style="stop-color: var(--color-acento)" />
+                      <stop [attr.offset]="relleno * 100 + '%'" style="stop-color: rgb(255 255 255 / 0.2)" />
+                    </linearGradient>
+                  }
+                </defs>
+                @for (relleno of v.calificaciones.estrellas; track $index) {
+                  <path [attr.d]="trazoEstrella" [attr.transform]="'translate(' + $index * 24 + ')'" [attr.fill]="'url(#dash-estrella-' + $index + ')'" />
+                }
+              </svg>
+              <p class="mt-1 fs-secundario text-white/60">{{ cantidad(v.calificaciones.total) }} {{ v.calificaciones.total === 1 ? 'calificación' : 'calificaciones' }}</p>
+            </div>
+            <div>
+              <p class="fs-secundario text-white/60">Mejores técnicos</p>
+              @if (v.calificaciones.ranking.length === 0) {
+                <p class="mt-1 fs-cuerpo text-white/60">Aún no hay calificaciones por técnico.</p>
+              } @else {
+                <ol class="mt-1 space-y-1 fs-cuerpo">
+                  @for (tecnico of v.calificaciones.ranking; track tecnico.nombre; let i = $index) {
+                    <li class="flex items-baseline justify-between gap-2">
+                      <span class="min-w-0 break-words text-white/90">{{ i + 1 }}. {{ tecnico.nombre }}</span>
+                      <span class="shrink-0 tabular-nums text-white">{{ promedio(tecnico.promedio) }} <span class="text-white/50">({{ cantidad(tecnico.cantidad) }})</span></span>
+                    </li>
+                  }
+                </ol>
+              }
+            </div>
+          </div>
+        </app-magic-bento-card>
+
+        <!-- Solicitudes especiales -->
+        <app-magic-bento-card enlace="/admin/solicitudes-manuales">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Por coordinar</h2>
+            <span class="rounded-full border border-white/20 px-2 fs-secundario text-white/80">Estado actual</span>
+          </div>
+          <p class="mt-2 text-4xl font-semibold tabular-nums">{{ cantidad(v.solicitudes.total) }}</p>
+          <p class="fs-secundario text-white/60">{{ v.solicitudes.total === 1 ? 'solicitud pendiente' : 'solicitudes pendientes' }}</p>
+          <dl class="mt-2 space-y-1 fs-secundario">
+            @for (fila of v.solicitudes.filas; track fila.etiqueta) {
+              <div class="flex items-baseline justify-between gap-2">
+                <dt class="min-w-0 break-words text-white/70">{{ fila.etiqueta }}</dt>
+                <dd class="shrink-0 tabular-nums text-white">{{ cantidad(fila.cantidad) }}</dd>
+              </div>
+            }
+          </dl>
+          <p class="mt-1 fs-secundario text-white/50">No cambia con el rango de fechas</p>
+        </app-magic-bento-card>
+
+        <!-- Usuarios activos -->
+        <app-magic-bento-card enlace="/admin/usuarios">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Usuarios activos</h2>
+            <span class="rounded-full border border-white/20 px-2 fs-secundario text-white/80">Estado actual</span>
+          </div>
+          <p class="mt-2 text-4xl font-semibold tabular-nums">{{ cantidad(v.usuarios.total) }}</p>
+          <dl class="mt-2 space-y-1 fs-secundario">
+            @for (fila of v.usuarios.filas; track fila.etiqueta) {
+              <div class="flex items-baseline justify-between gap-2">
+                <dt class="min-w-0 break-words text-white/70">{{ fila.etiqueta }}</dt>
+                <dd class="shrink-0 tabular-nums text-white">{{ cantidad(fila.cantidad) }}</dd>
+              </div>
+            }
+          </dl>
+          <p class="mt-1 fs-secundario text-white/50">No cambia con el rango de fechas</p>
+        </app-magic-bento-card>
+      </app-magic-bento>
+    }
+  </div>
+</div>

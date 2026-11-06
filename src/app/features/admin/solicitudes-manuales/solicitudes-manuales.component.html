@@ -1,7 +1,7 @@
 <div class="pagina-admin">
   <h1 class="titulo-admin">Solicitudes por coordinar</h1>
   <p class="mt-1 fs-cuerpo text-white/50">
-    Clientes cuya dirección quedó fuera de la cobertura automática. Contáctalos y asigna un técnico y un horario.
+    Solicitudes que requieren coordinación manual: dirección fuera de cobertura o sin técnicos para la especialidad. Contacta al cliente y asigna un técnico y un horario.
   </p>
 
   @if (mensajeExito) {
@@ -11,8 +11,48 @@
     </div>
   }
 
+  <!-- Filtros que consulta el servidor -->
+  <div class="mt-6 grid gap-3 sm:grid-cols-3" role="group" aria-label="Filtros de solicitudes">
+    <div>
+      <label for="solicitudes-motivo" class="block fs-cuerpo font-medium text-white">Motivo</label>
+      <app-select
+        inputId="solicitudes-motivo"
+        [ngModel]="motivo"
+        (ngModelChange)="cambiarMotivo($event)"
+        [options]="opcionesMotivo"
+        class="mt-2 block"
+      ></app-select>
+    </div>
+    <div>
+      <label for="solicitudes-especialidad" class="block fs-cuerpo font-medium text-white">Especialidad</label>
+      <app-select
+        inputId="solicitudes-especialidad"
+        [ngModel]="especialidad"
+        (ngModelChange)="cambiarEspecialidad($event)"
+        [options]="opcionesEspecialidad"
+        class="mt-2 block"
+      ></app-select>
+      @if (errorEspecialidades) {
+        <p class="mt-1.5 fs-secundario text-amber-200">
+          No pudimos cargar las especialidades.
+          <button type="button" (click)="cargarEspecialidades()" class="font-medium underline">Reintentar</button>
+        </p>
+      }
+    </div>
+    <div>
+      <label for="solicitudes-estado" class="block fs-cuerpo font-medium text-white">Estado</label>
+      <app-select
+        inputId="solicitudes-estado"
+        [ngModel]="estado"
+        (ngModelChange)="cambiarEstado($event)"
+        [options]="opcionesEstado"
+        class="mt-2 block"
+      ></app-select>
+    </div>
+  </div>
+
   @if (!errorCarga) {
-    <!-- Buscar, ordenar y contar -->
+    <!-- Buscar y ordenar lo que trae esta página -->
     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
       <div class="min-w-0 flex-1">
         <label for="solicitudes-busqueda" class="block fs-cuerpo font-medium text-white">Buscar</label>
@@ -38,8 +78,8 @@
         ></app-select>
       </div>
     </div>
-    @if (!cargando) {
-      <p class="mt-3 fs-cuerpo text-white/60" aria-live="polite">{{ contador }}</p>
+    @if (!cargando && busqueda.trim()) {
+      <p class="mt-3 fs-cuerpo text-white/60" aria-live="polite">{{ coincidencias }}</p>
     }
   }
 
@@ -71,9 +111,9 @@
           <circle cx="12" cy="12" r="9" />
           <path d="M8 12.5l2.7 2.7L16 9.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <p class="fs-titulo font-semibold text-white">No hay solicitudes por coordinar</p>
+        <p class="fs-titulo font-semibold text-white">No hay solicitudes con estos filtros</p>
         <p class="max-w-sm fs-cuerpo text-white/60">
-          Cuando un cliente pida una visita fuera de la cobertura automática, aparecerá aquí para que la coordines.
+          Cambia el motivo, la especialidad o el estado. Las nuevas solicitudes sin técnico aparecerán aquí como pendientes.
         </p>
       </div>
     } @else if (tarjetas.length === 0) {
@@ -97,6 +137,9 @@
                 <div class="mt-1.5 flex flex-wrap items-center gap-2">
                   <span class="chip-admin inline-block">{{ t.solicitud.especialidadNombre }}</span>
                   <app-insignia-motivo [motivo]="t.solicitud.motivo"></app-insignia-motivo>
+                  @if (!t.asignable && t.solicitud.estado) {
+                    <app-insignia-estado [estado]="t.solicitud.estado"></app-insignia-estado>
+                  }
                 </div>
               </div>
               <span class="shrink-0 fs-secundario text-white/60">{{ t.tiempo }}</span>
@@ -163,18 +206,29 @@
                 </a>
               }
               <a [routerLink]="['/admin/citas', t.solicitud.id]" class="boton-fila-admin">Ver detalle</a>
-              <button
-                type="button"
-                (click)="abrirAsignar(t.solicitud)"
-                [attr.aria-label]="'Asignar técnico a ' + t.nombreCliente"
-                class="boton-admin w-full justify-center sm:ml-auto sm:w-auto"
-              >
-                Asignar técnico
-              </button>
+              @if (t.asignable) {
+                <button
+                  type="button"
+                  (click)="abrirAsignar(t.solicitud)"
+                  [attr.aria-label]="'Asignar técnico a ' + t.nombreCliente"
+                  class="boton-admin w-full justify-center sm:ml-auto sm:w-auto"
+                >
+                  Asignar técnico
+                </button>
+              }
             </div>
           </li>
         }
       </ul>
+      <app-paginacion
+        [pagina]="pagina"
+        [tamano]="tamano"
+        [total]="total"
+        [cantidad]="solicitudes.length"
+        singular="solicitud"
+        plural="solicitudes"
+        (cambio)="irAPagina($event)"
+      ></app-paginacion>
     }
   </div>
 </div>
@@ -184,4 +238,5 @@
   [solicitud]="solicitudAsignando"
   (cerrar)="cerrarAsignar()"
   (asignada)="onAsignada($event)"
+  (desactualizada)="cargar()"
 ></app-asignar-solicitud-modal>

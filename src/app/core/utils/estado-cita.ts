@@ -22,6 +22,20 @@ const CLASES_ESTADO: Record<EstadoCita, string> = {
   CANCELADA: 'border-rose-300/40 bg-rose-300/10 text-rose-200',
 };
 
+/** Color de la barra de cada estado en el panel de métricas: el mismo tono que su insignia. */
+const CLASES_BARRA_ESTADO: Record<EstadoCita, string> = {
+  PENDIENTE: 'bg-white/50',
+  CONFIRMADA: 'bg-emerald-300',
+  EN_CAMINO: 'bg-sky-300',
+  EN_PROCESO: 'bg-amber-300',
+  FINALIZADA: 'bg-violet-300',
+  CANCELADA: 'bg-rose-300',
+};
+
+export function claseBarraEstado(estado: EstadoCita): string {
+  return CLASES_BARRA_ESTADO[estado] ?? CLASES_BARRA_ESTADO.PENDIENTE;
+}
+
 /** Colores de la insignia de cada estado (clases de Tailwind). */
 export function claseInsigniaEstado(estado: EstadoCita): string {
   return CLASES_ESTADO[estado] ?? CLASES_ESTADO.PENDIENTE;

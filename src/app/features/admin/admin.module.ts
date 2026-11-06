@@ -23,6 +23,9 @@ import { CitasAdminComponent } from './citas/citas-admin.component';
 import { DetalleCitaAdminComponent } from './detalle-cita/detalle-cita-admin.component';
 import { FotoUsuarioModalComponent } from './usuarios/foto-usuario-modal/foto-usuario-modal.component';
 import { LogsComponent } from './logs/logs.component';
+import { CoberturaPestanasComponent } from './cobertura/cobertura-pestanas.component';
+import { ReglasFranjasComponent } from './reglas-franjas/reglas-franjas.component';
+import { AlertasAdminComponent } from './alertas/alertas-admin.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +48,9 @@ import { LogsComponent } from './logs/logs.component';
     DetalleCitaAdminComponent,
     CitasAdminComponent,
     FotoUsuarioModalComponent,
+    CoberturaPestanasComponent,
+    ReglasFranjasComponent,
+    AlertasAdminComponent,
   ],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, AdminRoutingModule],
 })

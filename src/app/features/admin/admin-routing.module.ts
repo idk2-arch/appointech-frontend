@@ -11,6 +11,8 @@ import { CitasAdminComponent } from './citas/citas-admin.component';
 import { DetalleCitaAdminComponent } from './detalle-cita/detalle-cita-admin.component';
 import { MiPerfilComponent } from '../../shared/mi-perfil/mi-perfil.component';
 import { LogsComponent } from './logs/logs.component';
+import { ReglasFranjasComponent } from './reglas-franjas/reglas-franjas.component';
+import { AlertasAdminComponent } from './alertas/alertas-admin.component';
 
 const routes: Routes = [
   {
@@ -25,6 +27,8 @@ const routes: Routes = [
       { path: 'citas', component: CitasAdminComponent },
       { path: 'citas/:id', component: DetalleCitaAdminComponent },
       { path: 'cobertura', component: CoberturaComponent },
+      { path: 'cobertura/franjas', component: ReglasFranjasComponent },
+      { path: 'alertas', component: AlertasAdminComponent },
       { path: 'logs', component: LogsComponent },
       { path: 'perfil', component: MiPerfilComponent },
     ],

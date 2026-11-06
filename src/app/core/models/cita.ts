@@ -6,6 +6,9 @@ export type EstadoCita =
   | 'FINALIZADA'
   | 'CANCELADA';
 
+/** Por qué una solicitud no entra al agendamiento automático y la coordina un administrador. */
+export type MotivoSolicitudEspecial = 'SIN_TECNICOS_ESPECIALIDAD' | 'FUERA_DE_COBERTURA';
+
 /** Respuesta de POST /solicitudes (estado PENDIENTE, sin técnico ni horario). */
 export interface SolicitudServicio {
   id: number;
@@ -16,6 +19,9 @@ export interface SolicitudServicio {
   fechaHoraInicio: string | null;
   fechaHoraFin: string | null;
   estado: EstadoCita;
+  /** Verdadero si la solicitud no tiene franjas que elegir: un administrador la coordina. Igual en CitaResponse. */
+  agendamientoManual?: boolean;
+  motivoSolicitudEspecial?: MotivoSolicitudEspecial | null;
 }
 
 /** Respuesta de POST /citas/confirmar: la misma solicitud ya agendada. */

@@ -1,0 +1,83 @@
+<div class="pagina-admin">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="min-w-0">
+      <h1 class="titulo-admin">Alertas</h1>
+      <p class="mt-1 fs-cuerpo text-white/50">
+        Solicitudes que quedaron sin técnico y esperan que un administrador contacte al cliente. Las más antiguas van primero.
+      </p>
+    </div>
+    <button type="button" (click)="cargar()" [disabled]="cargando" class="boton-fila-admin disabled:cursor-not-allowed disabled:opacity-60">
+      {{ cargando ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </div>
+
+  @if (!cargando && !errorCarga) {
+    <p class="mt-4 fs-cuerpo text-white/60" aria-live="polite">{{ contador }}</p>
+  }
+
+  <div class="mt-4">
+    @if (cargando) {
+      <div class="grid gap-4 lg:grid-cols-2" role="status" aria-label="Cargando alertas">
+        @for (n of esqueletos; track n) {
+          <div class="animate-pulse rounded-2xl border border-white/10 bg-white/[0.02] p-5 motion-reduce:animate-none">
+            <div class="h-4 w-40 rounded bg-white/10"></div>
+            <div class="mt-4 h-3 w-full rounded bg-white/10"></div>
+            <div class="mt-2 h-3 w-4/5 rounded bg-white/10"></div>
+            <div class="mt-4 h-3 w-3/5 rounded bg-white/10"></div>
+          </div>
+        }
+      </div>
+    } @else if (errorCarga) {
+      <div class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (alertas.length === 0) {
+      <div class="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <svg viewBox="0 0 24 24" class="h-10 w-10 text-emerald-300/80" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M8 12.5l2.7 2.7L16 9.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <p class="fs-titulo font-semibold text-white">No hay alertas</p>
+        <p class="max-w-sm fs-cuerpo text-white/60">Todas las solicitudes tienen técnico o ya están coordinadas.</p>
+        <a routerLink="/admin/solicitudes-manuales" class="boton-fila-admin mt-2">Ver solicitudes por coordinar</a>
+      </div>
+    } @else {
+      <ul class="grid gap-4 lg:grid-cols-2">
+        @for (alerta of alertas; track alerta.solicitudId) {
+          <li appSpotlight class="flex min-w-0 flex-col rounded-2xl bg-white/[0.03] p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h2 class="break-words fs-cuerpo font-semibold text-white">{{ cliente(alerta) }}</h2>
+                <span class="chip-admin mt-1.5 inline-block">{{ alerta.especialidadNombre }}</span>
+              </div>
+              <span class="shrink-0 text-right fs-secundario text-white/60">
+                <span class="first-letter:uppercase">{{ alerta.creadaEn | fechaLocal: 'fechaCorta' }}</span>,
+                {{ alerta.creadaEn | fechaLocal: 'hora' }}
+              </span>
+            </div>
+
+            <p class="mt-3 fs-cuerpo text-white/80">{{ alerta.mensaje }}</p>
+
+            <p class="mt-3 flex items-start gap-2 fs-cuerpo text-white/70">
+              <svg viewBox="0 0 24 24" class="mt-0.5 h-4 w-4 shrink-0 text-white/50" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" stroke-linejoin="round" />
+                <circle cx="12" cy="10" r="2.3" />
+              </svg>
+              <span class="min-w-0 break-words">{{ alerta.direccionServicio }}</span>
+            </p>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
+              @if (alerta.telefono) {
+                <a [href]="enlaceTelefono(alerta.telefono)" class="boton-fila-admin">Llamar al {{ alerta.telefono }}</a>
+              } @else {
+                <span class="fs-secundario text-white/60">Sin teléfono registrado</span>
+              }
+              <a routerLink="/admin/solicitudes-manuales" class="boton-fila-admin sm:ml-auto">Ir a solicitudes por coordinar</a>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

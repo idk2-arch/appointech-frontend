@@ -236,6 +236,25 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
     expect(flujo.borradorDetalle).toBeNull();
   });
 
+  it('si la solicitud nace para agendamiento manual salta las franjas y muestra la pantalla del administrador', () => {
+    const manual = { ...SOLICITUD, agendamientoManual: true, motivoSolicitudEspecial: 'SIN_TECNICOS_ESPECIALIDAD' } as SolicitudServicio;
+    flujo.onSolicitudCreada({ ...evento(), solicitud: manual });
+
+    expect(flujo.paso).toBe('manual');
+    expect(flujo.motivoManual).toBe('SIN_TECNICOS_ESPECIALIDAD');
+    expect(flujo.indicePaso).toBe(flujo.pasos.length);
+    expect(flujo.solicitud).toBe(manual);
+  });
+
+  it('con agendamientoManual en false (o ausente) el flujo normal no cambia', () => {
+    flujo.onSolicitudCreada({ ...evento(), solicitud: { ...SOLICITUD, agendamientoManual: false, motivoSolicitudEspecial: null } });
+    expect(flujo.paso).toBe('franja');
+    expect(flujo.motivoManual).toBeNull();
+
+    flujo.onSolicitudCreada(evento());
+    expect(flujo.paso).toBe('franja');
+  });
+
   it('elegir una franja pasa a confirmar y limpia el aviso de franjas', () => {
     flujo.avisoFranjas = 'viejo';
     flujo.onFranjaSeleccionada(FRANJA);

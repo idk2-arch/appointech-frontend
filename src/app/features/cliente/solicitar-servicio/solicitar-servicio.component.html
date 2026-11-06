@@ -1,5 +1,5 @@
 <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-  @if (paso !== 'confirmada') {
+  @if (paso !== 'confirmada' && paso !== 'manual') {
     <h1 class="text-2xl font-semibold tracking-tight text-white sm:text-3xl">Solicitar servicio técnico</h1>
     <p class="mt-2 text-sm text-white/60">
       Cuéntanos qué necesitas y agenda la visita de un técnico a domicilio.
@@ -97,6 +97,17 @@
             (franjaNoDisponible)="onFranjaNoDisponible($event)"
             (volver)="volverAFranjas()"
           ></app-confirmar-cita>
+        }
+      }
+
+      @case ('manual') {
+        @if (solicitud) {
+          <app-solicitud-manual-creada
+            [motivo]="motivoManual"
+            [especialidadNombre]="especialidad?.nombre ?? null"
+            [direccion]="solicitud.direccionServicio"
+            (volverInicio)="solicitarOtroServicio()"
+          ></app-solicitud-manual-creada>
         }
       }
 

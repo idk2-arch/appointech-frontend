@@ -82,6 +82,19 @@ describe('SolicitudesManualesComponent', () => {
     expect(raiz().textContent).toContain('2 pendientes');
   });
 
+  it('muestra el motivo de cada solicitud con una insignia legible y nada en las filas antiguas', async () => {
+    await crear([
+      solicitud({ id: 1, clienteNombre: 'Ana', motivo: 'SIN_TECNICOS_ESPECIALIDAD' }),
+      solicitud({ id: 2, clienteNombre: 'Luis', motivo: 'FUERA_DE_COBERTURA' }),
+      solicitud({ id: 3, clienteNombre: 'Eva', motivo: null }),
+    ]);
+
+    const motivos = Array.from(raiz().querySelectorAll('li')).map((li) =>
+      (li.querySelector('app-insignia-motivo')?.textContent ?? '').replace(/[◆\s]+/g, ' ').trim()
+    );
+    expect(motivos.sort()).toEqual(['', 'Fuera de cobertura', 'Sin técnicos para la especialidad']);
+  });
+
   it('resalta la que espera más de 24 horas', async () => {
     await crear([ANA, LUIS]);
 

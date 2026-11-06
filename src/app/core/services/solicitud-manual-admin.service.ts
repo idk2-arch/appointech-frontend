@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../config/api.config';
-import type { Cita } from '../models/cita';
+import type { Cita, MotivoSolicitudEspecial } from '../models/cita';
 
 /** Fechas en LocalDateTime sin zona (hora local de Colombia). */
 export interface SolicitudManualAdmin {
@@ -19,6 +19,8 @@ export interface SolicitudManualAdmin {
   latitud: number | null;
   longitud: number | null;
   creadaEn: string;
+  /** Null en las filas anteriores a RF28. */
+  motivo?: MotivoSolicitudEspecial | null;
 }
 
 export interface AsignarSolicitudManualRequest {

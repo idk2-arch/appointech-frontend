@@ -202,6 +202,9 @@
         <span class="sidebar-menu__text">
           <span class="sidebar-menu__label">{{ item.label }}</span>
         </span>
+        @if (item.badge) {
+          <span class="sidebar-menu__badge">{{ item.badge }}<span class="sr-only"> pendientes</span></span>
+        }
       </a>
     }
   }

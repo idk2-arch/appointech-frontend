@@ -43,6 +43,7 @@ import { ComprobanteComponent } from './comprobante/comprobante.component';
 import { PanelPagoComponent } from './panel-pago/panel-pago.component';
 import { EstadoPagoCitaComponent } from './estado-pago-cita/estado-pago-cita.component';
 import { ToastModule } from './toast/toast.module';
+import { InsigniaMotivoComponent } from './insignia-motivo/insignia-motivo.component';
 import { SpotlightDirective } from './spotlight/spotlight.directive';
 import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandible.component';
 
@@ -88,6 +89,7 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     ComprobanteComponent,
     PanelPagoComponent,
     EstadoPagoCitaComponent,
+    InsigniaMotivoComponent,
     SpotlightDirective,
     TarjetaExpandibleComponent,
   ],
@@ -134,6 +136,7 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     ComprobanteComponent,
     PanelPagoComponent,
     EstadoPagoCitaComponent,
+    InsigniaMotivoComponent,
     SpotlightDirective,
     TarjetaExpandibleComponent,
   ],

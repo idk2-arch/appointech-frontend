@@ -1,0 +1,53 @@
+<div class="mx-auto max-w-lg">
+  <section appSpotlight class="rounded-2xl bg-amber-300/[0.07] p-5 sm:p-6" aria-labelledby="manual-titulo">
+    <div class="flex items-start gap-3">
+      <svg viewBox="0 0 24 24" class="mt-0.5 h-6 w-6 shrink-0 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <div class="min-w-0">
+        <h2 id="manual-titulo" class="fs-titulo font-semibold text-emerald-200">Recibimos tu solicitud</h2>
+        <p class="mt-1 fs-cuerpo text-white/80" role="status">{{ mensajeMotivo }}</p>
+        <p class="mt-2 fs-cuerpo text-white/80">Un administrador te contactará para coordinar la visita. No necesitas hacer nada más.</p>
+      </div>
+    </div>
+
+    <dl class="mt-5 space-y-3 border-t border-white/10 pt-4 fs-cuerpo">
+      @if (especialidadNombre) {
+        <div>
+          <dt class="fs-secundario text-white/60">Servicio</dt>
+          <dd class="text-white">{{ especialidadNombre }}</dd>
+        </div>
+      }
+      @if (direccion) {
+        <div>
+          <dt class="fs-secundario text-white/60">Dirección</dt>
+          <dd class="break-words text-white">{{ direccion }}</dd>
+        </div>
+      }
+      <div>
+        <dt class="fs-secundario text-white/60">Teléfono con el que te contactarán</dt>
+        <dd class="text-white">
+          @if (cargandoTelefono) {
+            <span role="status" class="text-white/60">Consultando…</span>
+          } @else if (telefono) {
+            {{ telefono }}
+          } @else {
+            <span class="text-white/80">
+              No tenemos un teléfono registrado.
+              <a routerLink="/cliente/perfil" class="font-medium text-[#D98E4A] underline underline-offset-4">Agrégalo en tu perfil</a>
+              para que podamos llamarte.
+            </span>
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <button
+    type="button"
+    (click)="volverInicio.emit()"
+    class="mt-6 w-full rounded-xl bg-white py-4 text-lg font-semibold text-slate-900 transition hover:bg-white/90"
+  >
+    Volver al inicio
+  </button>
+</div>

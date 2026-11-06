@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { finalize, Subscription } from 'rxjs';
 
-import { Cita, SolicitudServicio } from '../../../core/models/cita';
+import { Cita, MotivoSolicitudEspecial, SolicitudServicio } from '../../../core/models/cita';
 import { FranjaDisponible } from '../../../core/models/disponibilidad';
 import { FotoElectrodomesticoService } from '../../../core/services/foto-electrodomestico.service';
 import { EspecialidadResponse } from '../../../core/services/tecnico.service';
@@ -9,7 +9,7 @@ import { hoyIso } from '../../../core/utils/fecha-local';
 import { AvisosPagoService } from '../../../shared/toast/avisos-pago.service';
 import { BorradorDetalle, SolicitudCreada } from './detalle-solicitud/detalle-solicitud.component';
 
-type Paso = 'especialidad' | 'detalle' | 'franja' | 'confirmar' | 'confirmada';
+type Paso = 'especialidad' | 'detalle' | 'franja' | 'confirmar' | 'confirmada' | 'manual';
 
 @Component({
   selector: 'app-solicitar-servicio',
@@ -54,6 +54,10 @@ export class SolicitarServicioComponent implements OnDestroy {
     this.subida?.unsubscribe();
   }
 
+  get motivoManual(): MotivoSolicitudEspecial | null {
+    return this.solicitud?.motivoSolicitudEspecial ?? null;
+  }
+
   get indicePaso(): number {
     const indice = this.pasos.findIndex((p) => p.id === this.paso);
     return indice === -1 ? this.pasos.length : indice;
@@ -73,7 +77,8 @@ export class SolicitarServicioComponent implements OnDestroy {
     this.borradorDetalle = null;
     this.citaId = evento.solicitud.id;
     this.subirFotos(evento.fotos);
-    this.irA('franja');
+    // Sin técnicos para la especialidad (o fuera de cobertura) no hay franjas que elegir: la coordina un administrador.
+    this.irA(evento.solicitud.agendamientoManual === true ? 'manual' : 'franja');
   }
 
   onFranjaSeleccionada(franja: FranjaDisponible): void {

@@ -22,6 +22,8 @@ export interface SidebarMenuItem {
   routerLink?: string | string[];
   disabled?: boolean;
   disabledTitle?: string;
+  /** Número pendiente que se dibuja junto al texto (p. ej. alertas); nada si es 0 o null. */
+  badge?: number | null;
 }
 
 /**

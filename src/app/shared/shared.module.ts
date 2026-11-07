@@ -43,6 +43,9 @@ import { ComprobanteComponent } from './comprobante/comprobante.component';
 import { PanelPagoComponent } from './panel-pago/panel-pago.component';
 import { EstadoPagoCitaComponent } from './estado-pago-cita/estado-pago-cita.component';
 import { ProfileCardComponent } from './profile-card/profile-card.component';
+import { AlEntrarDirective } from './al-entrar/al-entrar.directive';
+import { StepComponent } from './stepper/step.component';
+import { StepperComponent } from './stepper/stepper.component';
 import { NotificacionesComponent } from './notificaciones/notificaciones.component';
 import { PeekRatingComponent } from './peek-rating/peek-rating.component';
 import { ToastModule } from './toast/toast.module';
@@ -100,6 +103,9 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     PaginacionComponent,
     PeekRatingComponent,
     NotificacionesComponent,
+    StepperComponent,
+    StepComponent,
+    AlEntrarDirective,
     ProfileCardComponent,
     AparecerDirective,
     MagicBentoComponent,
@@ -154,6 +160,9 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     PaginacionComponent,
     PeekRatingComponent,
     NotificacionesComponent,
+    StepperComponent,
+    StepComponent,
+    AlEntrarDirective,
     ProfileCardComponent,
     AparecerDirective,
     MagicBentoComponent,

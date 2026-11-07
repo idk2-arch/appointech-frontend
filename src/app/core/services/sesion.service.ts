@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+
+import type { Perfil } from '../models/perfil';
 
 /**
  * Datos de la persona con sesión iniciada que la interfaz necesita mostrar (su foto y su nombre).
@@ -19,6 +21,20 @@ export class SesionService {
     return this.foto.value;
   }
 
+  /**
+   * Último perfil conocido de esta sesión, solo en memoria: trae documento y dirección, así que nunca se
+   * guarda en el almacenamiento del navegador y se borra al cerrar sesión. Sirve para pintar Mi perfil al instante.
+   */
+  private perfil: Perfil | null = null;
+
+  get perfilActual(): Perfil | null {
+    return this.perfil;
+  }
+
+  establecerPerfil(perfil: Perfil | null): void {
+    this.perfil = perfil;
+  }
+
   get nombreActual(): string | null {
     return this.nombre.value;
   }
@@ -31,7 +47,13 @@ export class SesionService {
     this.nombre.next(this.guardar(this.NOMBRE_KEY, nombre));
   }
 
+  private readonly limpiado = new Subject<void>();
+  /** Avisa cuando se cierra la sesión: lo guardado en memoria de esa persona debe olvidarse. */
+  readonly limpiado$ = this.limpiado.asObservable();
+
   limpiar(): void {
+    this.perfil = null;
+    this.limpiado.next();
     this.establecerFoto(null);
     this.establecerNombre(null);
   }

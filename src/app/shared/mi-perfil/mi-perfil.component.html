@@ -1,7 +1,7 @@
-<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6" [attr.aria-busy]="cargando ? 'true' : null">
   <div appAparecer="simple">
-  <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi perfil</h1>
-  <p class="mt-1 fs-cuerpo text-white/70">Tu foto y tus datos de contacto. La foto aparece en el menú y en las citas.</p>
+    <h1 class="fs-titulo font-semibold tracking-tight text-white">Mi perfil</h1>
+    <p class="mt-1 fs-cuerpo text-white/70">Tu foto y tus datos de contacto. La foto aparece en el menú y en las citas.</p>
   </div>
 
   @if (mensajeExito) {
@@ -11,62 +11,92 @@
     </div>
   }
 
+  <!-- La estructura (tarjeta a la izquierda, datos a la derecha) es la misma con y sin datos: nada se reacomoda al cargar. -->
   <div class="mt-6 grid items-start gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
-  <div class="flex min-w-0 justify-center lg:sticky lg:top-6">
-    @if (perfil) {
-      <app-profile-card
-        [avatarUrl]="urlFoto(fotoUrl$ | async)"
-        [iconUrl]="patron"
-        [name]="nombreTarjeta"
-        [title]="rolTarjeta"
-        [handle]="perfil.correo"
-        handlePrefix=""
-        status="Activo"
-        theme="dark"
-        backdropColor="#0f1a36"
-      ></app-profile-card>
-    }
-  </div>
-
-  <div class="min-w-0">
-  <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="perfil-foto">
-    <h2 id="perfil-foto" class="fs-cuerpo font-semibold text-white">Foto de perfil</h2>
-    <div class="mt-4">
-      <app-carga-foto
-        [fotoUrl]="fotoUrl$ | async"
-        nombre="tu perfil"
-        [enviando]="enviando"
-        [errorMensaje]="errorMensaje"
-        (guardar)="guardar($event)"
-        (quitar)="quitar()"
-      ></app-carga-foto>
+    <div class="flex min-w-0 justify-center lg:sticky lg:top-6">
+      @if (perfil) {
+        <app-profile-card
+          [avatarUrl]="urlFoto(fotoUrl$ | async)"
+          [iconUrl]="patron"
+          [name]="nombreTarjeta"
+          [title]="rolTarjeta"
+          [handle]="perfil.correo"
+          handlePrefix=""
+          status="Activo"
+          theme="dark"
+          backdropColor="#0f1a36"
+        ></app-profile-card>
+      } @else {
+        <!-- Esqueleto de la tarjeta: mismas medidas (340 px, recuadro 4/5 y pie), sin textos ni datos. -->
+        <div
+          data-esqueleto="tarjeta"
+          aria-hidden="true"
+          [class.animate-pulse]="!errorCarga"
+          class="w-[340px] max-w-full rounded-[26px] border border-white/10 bg-white/[0.04] p-[10px] motion-reduce:animate-none"
+        >
+          <div class="aspect-[4/5] rounded-2xl bg-white/[0.06]"></div>
+          <div class="flex items-center gap-3 px-5 pt-4 pb-3">
+            <div class="min-w-0 flex-1 space-y-2">
+              <div class="h-3.5 w-3/4 rounded bg-white/[0.08]"></div>
+              <div class="h-3 w-1/3 rounded bg-white/[0.06]"></div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
-  </section>
 
-  <div class="mt-6">
-    @if (cargando) {
-      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-12 fs-cuerpo text-white/70">
-        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
-          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
-        </svg>
-        Cargando tus datos…
+    <div class="min-w-0">
+      <section class="rounded-2xl border border-white/10 bg-white/[0.03] p-5" aria-labelledby="perfil-foto">
+        <h2 id="perfil-foto" class="fs-cuerpo font-semibold text-white">Foto de perfil</h2>
+        <div class="mt-4">
+          <app-carga-foto
+            [fotoUrl]="fotoUrl$ | async"
+            nombre="tu perfil"
+            [enviando]="enviando"
+            [errorMensaje]="errorMensaje"
+            (guardar)="guardar($event)"
+            (quitar)="quitar()"
+          ></app-carga-foto>
+        </div>
+      </section>
+
+      <div class="mt-6">
+        @if (perfil) {
+          <app-perfil-datos
+            [perfil]="perfil"
+            [rol]="rol"
+            [guardando]="guardandoDatos"
+            [errorMensaje]="errorDatos"
+            (guardar)="guardarDatos($event)"
+          ></app-perfil-datos>
+        } @else if (errorCarga) {
+          <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-12 text-center">
+            <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
+            <button type="button" (click)="cargarPerfil()" class="boton-fila-admin">Reintentar</button>
+          </div>
+        } @else {
+          <!-- Esqueleto del panel de datos: mismo marco y filas que "Mis datos". -->
+          <div
+            data-esqueleto="datos"
+            role="status"
+            aria-label="Cargando tus datos"
+            class="animate-pulse rounded-2xl border border-white/10 bg-white/[0.03] p-5 motion-reduce:animate-none"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="h-4 w-28 rounded bg-white/[0.08]"></div>
+              <div class="h-9 w-20 rounded-xl bg-white/[0.06]"></div>
+            </div>
+            <div class="mt-5 grid gap-4 sm:grid-cols-2">
+              @for (fila of esqueletoFilas; track fila) {
+                <div class="space-y-2">
+                  <div class="h-3 w-20 rounded bg-white/[0.06]"></div>
+                  <div class="h-4 w-3/4 rounded bg-white/[0.08]"></div>
+                </div>
+              }
+            </div>
+          </div>
+        }
       </div>
-    } @else if (errorCarga) {
-      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-12 text-center">
-        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga }}</p>
-        <button type="button" (click)="cargarPerfil()" class="boton-fila-admin">Reintentar</button>
-      </div>
-    } @else if (perfil) {
-      <app-perfil-datos
-        [perfil]="perfil"
-        [rol]="rol"
-        [guardando]="guardandoDatos"
-        [errorMensaje]="errorDatos"
-        (guardar)="guardarDatos($event)"
-      ></app-perfil-datos>
-    }
-  </div>
-  </div>
+    </div>
   </div>
 </div>

@@ -74,7 +74,8 @@ export class DriftWallComponent implements AfterViewInit, OnDestroy {
   @ViewChildren('trackEl') private trackRefs!: QueryList<ElementRef<HTMLDivElement>>;
 
   columnData: DriftWallColumn[] = [];
-  reduced = false;
+  /** Se lee al crearse (no en ngAfterViewInit): así la primera pasada de detección de cambios ya lo ve. */
+  reduced = prefersReducedMotion();
 
   private offsets: number[] = [];
   private velocities: number[] = [];
@@ -86,6 +87,10 @@ export class DriftWallComponent implements AfterViewInit, OnDestroy {
   private pointerDamped = { x: 0, y: 0 };
 
   private ro: ResizeObserver | null = null;
+  private io: IntersectionObserver | null = null;
+  /** El muro solo trabaja si se ve (no oculto por CSS ni fuera de pantalla) y la pestaña está a la vista. */
+  private visible = false;
+  private construido = false;
   private reducedMotionQuery: MediaQueryList | null = null;
   private onReducedMotionChange = (e: MediaQueryListEvent) => {
     this.reduced = e.matches;
@@ -93,6 +98,10 @@ export class DriftWallComponent implements AfterViewInit, OnDestroy {
   };
   private onPointerMove = (e: PointerEvent) => {};
   private onPointerLeave = () => {};
+  private readonly alCambiarVisibilidad = (): void => {
+    if (document.hidden) this.detener();
+    else this.arrancar();
+  };
 
   constructor(
     private zone: NgZone,
@@ -104,12 +113,9 @@ export class DriftWallComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.reduced = prefersReducedMotion();
     const container = this.containerRef.nativeElement;
 
     this.zone.runOutsideAngular(() => {
-      this.rebuildColumns();
-
       this.reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
       this.reducedMotionQuery.addEventListener('change', this.onReducedMotionChange);
 
@@ -127,51 +133,88 @@ export class DriftWallComponent implements AfterViewInit, OnDestroy {
       container.addEventListener('pointermove', this.onPointerMove);
       container.addEventListener('pointerleave', this.onPointerLeave);
 
-      this.ro = new ResizeObserver(() => this.rebuildColumns());
+      // Oculto (p. ej. en pantallas estrechas) no mide ni reconstruye nada.
+      this.ro = new ResizeObserver(() => {
+        if (this.visible) this.rebuildColumns();
+      });
       this.ro.observe(container);
 
-      const loop = (ts: number) => {
-        if (this.lastTs === null) this.lastTs = ts;
-        const dt = Math.min(0.05, Math.max(0, ts - this.lastTs) / 1000);
-        this.lastTs = ts;
-
-        const maxTilt = this.parallax * 8;
-        const targetX = this.pointerTarget.x * maxTilt;
-        const targetY = -this.pointerTarget.y * maxTilt;
-        const damp = 1 - Math.exp(-dt / 0.12);
-        this.pointerDamped.x += (targetX - this.pointerDamped.x) * damp;
-        this.pointerDamped.y += (targetY - this.pointerDamped.y) * damp;
-        this.applyPlaneTransform(this.pointerDamped.x, this.pointerDamped.y);
-
-        if (!this.reduced) {
-          const trackEls = this.trackRefs.toArray();
-          for (let c = 0; c < trackEls.length; c++) {
-            const meta = this.columnData[c];
-            if (!meta) continue;
-            const target = this.baseVelocities[c] ?? 0;
-            const ease = 1 - Math.exp(-dt / 0.28);
-            this.velocities[c] = (this.velocities[c] ?? 0) + (target - (this.velocities[c] ?? 0)) * ease;
-            let next = (this.offsets[c] ?? 0) + this.velocities[c] * dt;
-            next = ((next % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
-            this.offsets[c] = next;
-            trackEls[c].nativeElement.style.transform = `translate3d(0, ${-next}px, 0)`;
-          }
-        }
-
-        this.raf = requestAnimationFrame(loop);
-      };
-      this.raf = requestAnimationFrame(loop);
+      document.addEventListener('visibilitychange', this.alCambiarVisibilidad);
+      if (typeof IntersectionObserver === 'undefined') {
+        this.alVerse(true);
+        return;
+      }
+      this.io = new IntersectionObserver(([entrada]) => this.alVerse(entrada.isIntersecting), { threshold: 0 });
+      this.io.observe(container);
     });
   }
 
   ngOnDestroy(): void {
-    if (this.raf) cancelAnimationFrame(this.raf);
+    this.detener();
+    this.io?.disconnect();
     this.ro?.disconnect();
+    document.removeEventListener('visibilitychange', this.alCambiarVisibilidad);
     this.reducedMotionQuery?.removeEventListener('change', this.onReducedMotionChange);
     const container = this.containerRef?.nativeElement;
     container?.removeEventListener('pointermove', this.onPointerMove);
     container?.removeEventListener('pointerleave', this.onPointerLeave);
   }
+
+  /** La primera vez que se ve arma las columnas; después solo arranca o detiene el movimiento. */
+  private alVerse(visible: boolean): void {
+    this.visible = visible;
+    if (!visible) {
+      this.detener();
+      return;
+    }
+    if (!this.construido) {
+      this.construido = true;
+      this.rebuildColumns();
+    }
+    this.arrancar();
+  }
+
+  private arrancar(): void {
+    if (this.raf || !this.visible || document.hidden) return;
+    this.lastTs = null;
+    this.raf = requestAnimationFrame(this.cuadro);
+  }
+
+  private detener(): void {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = 0;
+  }
+
+  private readonly cuadro = (ts: number): void => {
+    if (this.lastTs === null) this.lastTs = ts;
+    const dt = Math.min(0.05, Math.max(0, ts - this.lastTs) / 1000);
+    this.lastTs = ts;
+
+    const maxTilt = this.parallax * 8;
+    const targetX = this.pointerTarget.x * maxTilt;
+    const targetY = -this.pointerTarget.y * maxTilt;
+    const damp = 1 - Math.exp(-dt / 0.12);
+    this.pointerDamped.x += (targetX - this.pointerDamped.x) * damp;
+    this.pointerDamped.y += (targetY - this.pointerDamped.y) * damp;
+    this.applyPlaneTransform(this.pointerDamped.x, this.pointerDamped.y);
+
+    if (!this.reduced) {
+      const trackEls = this.trackRefs.toArray();
+      for (let c = 0; c < trackEls.length; c++) {
+        const meta = this.columnData[c];
+        if (!meta) continue;
+        const target = this.baseVelocities[c] ?? 0;
+        const ease = 1 - Math.exp(-dt / 0.28);
+        this.velocities[c] = (this.velocities[c] ?? 0) + (target - (this.velocities[c] ?? 0)) * ease;
+        let next = (this.offsets[c] ?? 0) + this.velocities[c] * dt;
+        next = ((next % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
+        this.offsets[c] = next;
+        trackEls[c].nativeElement.style.transform = `translate3d(0, ${-next}px, 0)`;
+      }
+    }
+
+    this.raf = requestAnimationFrame(this.cuadro);
+  };
 
   private rebuildColumns(): void {
     const container = this.containerRef.nativeElement;

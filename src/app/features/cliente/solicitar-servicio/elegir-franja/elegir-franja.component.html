@@ -1,19 +1,19 @@
-<!-- Resumen de la solicitud ya creada -->
+<!-- Resumen de lo que describió el cliente (todavía no se guardó nada) -->
 <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
   <div class="flex items-center gap-2 text-xs text-white/50">
     <span class="inline-flex items-center gap-1.5 font-medium text-amber-300/90">
       <span class="h-1.5 w-1.5 rounded-full bg-amber-300/90"></span>
-      Solicitud #{{ solicitud.id }} pendiente
+      Tu solicitud
     </span>
     <span aria-hidden="true">·</span>
     <span class="truncate">{{ especialidad.nombre }}</span>
   </div>
-  <p class="mt-2 line-clamp-2 text-sm text-white">{{ solicitud.descripcionProblema }}</p>
-  <p class="mt-1 truncate text-xs text-white/50">{{ solicitud.direccionServicio }}</p>
+  <p class="mt-2 line-clamp-2 text-sm text-white">{{ datos.descripcionProblema }}</p>
+  <p class="mt-1 truncate text-xs text-white/50">{{ datos.direccionServicio }}</p>
 </div>
 
-<h2 class="mt-8 text-lg font-semibold tracking-tight text-white">Elige fecha y horario</h2>
-<p class="mt-1 text-sm text-white/50">
+<h2 class="mt-8 text-xl font-semibold tracking-tight text-white">Elige fecha y horario</h2>
+<p class="mt-1 text-base text-white/60">
   Te asignamos el técnico disponible más cercano para cada horario.
   @if (tecnicos && tecnicos.length > 0) {
     <span class="text-white/40">
@@ -123,21 +123,8 @@
       </button>
     </div>
   } @else if (franjas.length === 0) {
-    @if (motivoSinFranjas === 'FUERA_DE_COBERTURA') {
+    @if (esManual) {
       <div class="rounded-2xl border border-amber-300/30 bg-amber-300/[0.07] p-4 sm:p-5">
-        @if (solicitudManualEnviada) {
-          <div role="status" class="flex items-start gap-3">
-            <svg viewBox="0 0 24 24" class="mt-0.5 h-6 w-6 shrink-0 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <div class="min-w-0">
-              <p class="fs-titulo font-semibold text-emerald-200">Enviamos tu solicitud</p>
-              <p class="mt-1 fs-cuerpo text-white/80">
-                Un administrador te contactará para coordinar la visita. No necesitas hacer nada más.
-              </p>
-            </div>
-          </div>
-        } @else {
           <!-- Encabezado -->
           <div class="flex items-start gap-3">
             <svg viewBox="0 0 24 24" class="mt-0.5 h-5 w-5 shrink-0 text-amber-300" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -145,7 +132,7 @@
               <circle cx="12" cy="10" r="2.3" />
             </svg>
             <div class="min-w-0">
-              <p class="fs-titulo font-semibold text-amber-100">Tu dirección está fuera de nuestra zona de cobertura automática</p>
+              <p class="fs-titulo font-semibold text-amber-100">{{ motivoSinFranjas === 'SIN_TECNICOS_ESPECIALIDAD' ? mensajeSinFranjas : 'Tu dirección está fuera de nuestra zona de cobertura automática' }}</p>
               <p class="mt-1 fs-cuerpo text-white/70">Puedes hablar con el administrador o dejar tu solicitud para que la coordine.</p>
             </div>
           </div>
@@ -205,7 +192,6 @@
               </button>
             </section>
           </div>
-        }
       </div>
     } @else {
       <div class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-14 text-center">

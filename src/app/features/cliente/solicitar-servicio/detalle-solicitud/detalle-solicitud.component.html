@@ -7,9 +7,8 @@
   <button
     type="button"
     (click)="volver.emit()"
-    [disabled]="cargando"
     class="inline-flex items-center gap-2 rounded-full border border-[#D98E4A]/40 bg-[#D98E4A]/10 py-2 pr-2 pl-4 text-sm font-medium text-[#D98E4A]
-           transition hover:border-[#D98E4A]/70 disabled:cursor-not-allowed disabled:opacity-60"
+           transition hover:border-[#D98E4A]/70"
     title="Cambiar especialidad"
   >
     {{ especialidad.nombre }}
@@ -45,7 +44,7 @@
         Describe brevemente el problema.
       </p>
     }
-    <app-dictado-voz [deshabilitado]="cargando" (dictado)="agregarDictado($event)"></app-dictado-voz>
+    <app-dictado-voz (dictado)="agregarDictado($event)"></app-dictado-voz>
     <div class="flex flex-wrap items-start gap-x-3">
       <app-sugerir-prediagnostico [descripcion]="descripcionProblema?.value" [especialidad]="especialidad.nombre"></app-sugerir-prediagnostico>
       <app-redactar-tecnico
@@ -99,7 +98,7 @@
     <p class="fs-cuerpo font-medium text-white">Fotos del electrodoméstico (opcional)</p>
     <p class="mt-1 fs-secundario text-white/60">Ayudan al técnico a llegar preparado. Hasta 3 fotos.</p>
     <div class="mt-3">
-      <app-selector-fotos [fotos]="fotos" [deshabilitado]="cargando" (fotosCambio)="alCambiarFotos($event)"></app-selector-fotos>
+      <app-selector-fotos [fotos]="fotos" (fotosCambio)="alCambiarFotos($event)"></app-selector-fotos>
     </div>
   </div>
 
@@ -110,51 +109,27 @@
       [direccion]="direccionServicio?.value ?? ''"
       [latitud]="puntoMapa?.latitud ?? null"
       [longitud]="puntoMapa?.longitud ?? null"
-      [deshabilitado]="cargando"
       [errorDireccion]="errorDireccion"
       (direccionCambio)="onDireccionCambio($event)"
       (ubicacionCambio)="onUbicacionCambio($event)"
     ></app-selector-direccion>
-
-    <div aria-live="polite">
-      @if (errorUbicacionServidor) {
-        <p role="alert" class="mt-3 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-base text-rose-200">
-          {{ errorUbicacionServidor }}
-        </p>
-      }
-    </div>
   </div>
 
-  @if (errorMensaje) {
-    <div role="alert" class="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
-      {{ errorMensaje }}
-    </div>
-  }
-
-  <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
+  <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
     <button
       type="button"
       (click)="volver.emit()"
-      [disabled]="cargando"
-      class="rounded-xl px-5 py-3.5 text-base font-medium text-white/70 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+      class="rounded-xl px-5 py-3.5 text-base font-medium text-white/70 transition hover:text-white"
     >
       Atrás
     </button>
     <button
       type="submit"
-      [disabled]="!puedeContinuar || cargando"
+      [disabled]="!puedeContinuar"
       class="flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-4 text-base font-semibold
              text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
-      @if (cargando) {
-        <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
-          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
-        </svg>
-        Enviando…
-      } @else {
-        Confirmar y ver horarios
-      }
+      Ver horarios disponibles
     </button>
   </div>
 </form>

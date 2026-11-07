@@ -1,7 +1,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { of, Subject, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Perfil } from '../../core/models/perfil';
@@ -46,13 +46,13 @@ describe('MiPerfilComponent', () => {
     fixture.detectChanges();
   };
 
-  async function crear(rol: string, perfil: Perfil = PERFILES[rol]): Promise<void> {
+  async function crear(rol: string, perfil: Perfil = PERFILES[rol], opciones: { enMemoria?: Perfil; respuesta?: Observable<Perfil> } = {}): Promise<void> {
     localStorage.clear();
     fotos = {
       subirPropia: vi.fn().mockReturnValue(of({ fotoUrl: '/api/fotos/nueva' })),
       quitarPropia: vi.fn().mockReturnValue(of(undefined)),
     };
-    perfiles = { obtener: vi.fn().mockReturnValue(of(perfil)), actualizar: vi.fn() };
+    perfiles = { obtener: vi.fn().mockReturnValue(opciones.respuesta ?? of(perfil)), actualizar: vi.fn() };
     await TestBed.configureTestingModule({
       imports: [SharedModule],
       providers: [
@@ -62,6 +62,7 @@ describe('MiPerfilComponent', () => {
       ],
     }).compileComponents();
     sesion = TestBed.inject(SesionService);
+    if (opciones.enMemoria) sesion.establecerPerfil(opciones.enMemoria);
     fixture = TestBed.createComponent(MiPerfilComponent);
     componente = fixture.componentInstance;
     fixture.detectChanges();
@@ -120,44 +121,89 @@ describe('MiPerfilComponent', () => {
   });
 
   describe('carga del perfil', () => {
-    it('mientras carga muestra el estado de carga', async () => {
+    it('mientras carga muestra el esqueleto con la estructura nueva (tarjeta 4/5 y panel de datos), sin tarjeta ni datos', async () => {
       const respuesta = new Subject<Perfil>();
-      await crear('CLIENTE');
-      perfiles.obtener.mockReturnValue(respuesta);
+      await crear('CLIENTE', BASE, { respuesta });
 
-      componente.cargarPerfil();
-      refrescar();
-
-      expect(raiz().querySelector('[role="status"]')?.textContent).toContain('Cargando tus datos');
+      expect(raiz().firstElementChild?.getAttribute('aria-busy')).toBe('true');
+      const tarjeta = raiz().querySelector('[data-esqueleto="tarjeta"]')!;
+      expect(tarjeta.querySelector('[class*="aspect-"]')?.className).toContain('aspect-[4/5]');
+      expect(tarjeta.getAttribute('aria-hidden')).toBe('true');
+      expect(tarjeta.className).toContain('animate-pulse');
+      expect(tarjeta.className).toContain('motion-reduce:animate-none');
+      expect(raiz().querySelector('[data-esqueleto="datos"]')?.getAttribute('aria-label')).toBe('Cargando tus datos');
+      expect(raiz().querySelector('app-profile-card')).toBeNull();
       expect(raiz().querySelector('app-perfil-datos')).toBeNull();
+      // La foto y el encabezado están desde el primer cuadro, y no hay datos inventados.
+      expect(raiz().querySelector('app-carga-foto')).not.toBeNull();
+      expect(raiz().querySelector('[appaparecer="simple"] h1')?.textContent).toBe('Mi perfil');
+      expect(texto()).not.toContain('Cargando tus datos…');
+      expect(texto()).not.toContain('ana@correo.co');
 
       respuesta.next(BASE);
       respuesta.complete();
       refrescar();
+      expect(raiz().querySelector('[data-esqueleto]')).toBeNull();
+      expect(raiz().querySelector('app-profile-card')).not.toBeNull();
+      expect(raiz().querySelector('app-perfil-datos')).not.toBeNull();
+      expect(raiz().firstElementChild?.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('con el perfil en memoria de la sesión pinta al instante y lo refresca en segundo plano', async () => {
+      const respuesta = new Subject<Perfil>();
+      await crear('CLIENTE', BASE, { enMemoria: { ...BASE, nombre: 'Antes' }, respuesta });
+
+      expect(raiz().querySelector('[data-esqueleto]')).toBeNull();
+      expect(raiz().firstElementChild?.getAttribute('aria-busy')).toBeNull();
+      expect(raiz().querySelector('app-profile-card .profile-card__name')?.textContent).toBe('Antes Pérez');
+      expect(raiz().querySelector('app-perfil-datos')).not.toBeNull();
+      expect(perfiles.obtener).toHaveBeenCalledTimes(1);
+
+      respuesta.next({ ...BASE, nombre: 'Después' });
+      respuesta.complete();
+      refrescar();
+      expect(raiz().querySelector('app-profile-card .profile-card__name')?.textContent).toBe('Después Pérez');
+      expect(sesion.perfilActual?.nombre).toBe('Después');
+    });
+
+    it('si el refresco en segundo plano falla, conserva el perfil que ya se ve', async () => {
+      await crear('CLIENTE', BASE, { enMemoria: BASE, respuesta: throwError(() => new HttpErrorResponse({ status: 0 })) });
+      expect(raiz().querySelector('[role="alert"]')).toBeNull();
+      expect(raiz().querySelector('app-profile-card')).not.toBeNull();
       expect(raiz().querySelector('app-perfil-datos')).not.toBeNull();
     });
 
-    it('si falla muestra el mensaje y permite reintentar; la foto sigue disponible', async () => {
+    it('el perfil de la sesión vive solo en memoria: no se guarda en el almacenamiento del navegador y se borra al salir', async () => {
       await crear('CLIENTE');
-      perfiles.obtener.mockReturnValue(
-        throwError(() => new HttpErrorResponse({ status: 500, error: { status: 500, error: 'Servicio no disponible' } }))
-      );
-      componente.cargarPerfil();
-      fixture.detectChanges();
+      expect(sesion.perfilActual).toEqual(BASE);
+      expect(JSON.stringify({ ...localStorage })).not.toContain('ana@correo.co');
+      expect(JSON.stringify({ ...sessionStorage })).not.toContain('ana@correo.co');
+
+      sesion.limpiar();
+      expect(sesion.perfilActual).toBeNull();
+    });
+
+    it('si falla sin nada en memoria muestra el error en el panel de datos, deja la estructura y la foto, y permite reintentar', async () => {
+      await crear('CLIENTE', BASE, {
+        respuesta: throwError(() => new HttpErrorResponse({ status: 500, error: { status: 500, error: 'Servicio no disponible' } })),
+      });
 
       expect(raiz().querySelector('[role="alert"]')?.textContent).toContain('Servicio no disponible');
       expect(raiz().querySelector('app-carga-foto')).not.toBeNull();
+      expect(raiz().querySelector('[data-esqueleto="datos"]')).toBeNull();
+      const tarjeta = raiz().querySelector('[data-esqueleto="tarjeta"]')!;
+      expect(tarjeta.className).not.toContain('animate-pulse');
+      expect(raiz().firstElementChild?.getAttribute('aria-busy')).toBeNull();
 
       perfiles.obtener.mockReturnValue(of(BASE));
       boton('Reintentar').click();
       fixture.detectChanges();
       expect(raiz().querySelector('app-perfil-datos')).not.toBeNull();
+      expect(raiz().querySelector('app-profile-card')).not.toBeNull();
     });
 
     it('sin mensaje del servidor usa uno claro en español', async () => {
-      await crear('CLIENTE');
-      perfiles.obtener.mockReturnValue(throwError(() => new Error('x')));
-      componente.cargarPerfil();
+      await crear('CLIENTE', BASE, { respuesta: throwError(() => new Error('x')) });
       fixture.detectChanges();
       expect(raiz().querySelector('[role="alert"]')?.textContent).toContain('No fue posible cargar tu perfil.');
     });
@@ -184,16 +230,6 @@ describe('MiPerfilComponent', () => {
       refrescar();
       expect(raiz().querySelector('app-profile-card .profile-card__photo')?.getAttribute('src')).toContain('/api/fotos/abc');
       expect(raiz().querySelector('app-profile-card .profile-card__initials')).toBeNull();
-    });
-
-    it('mientras carga no hay tarjeta y el encabezado conserva su animación de aparecer', async () => {
-      await crear('CLIENTE');
-      perfiles.obtener.mockReturnValue(new Subject<Perfil>());
-      componente.cargarPerfil();
-      componente.perfil = null;
-      refrescar();
-      expect(raiz().querySelector('app-profile-card')).toBeNull();
-      expect(raiz().querySelector('[appaparecer="simple"] h1')).not.toBeNull();
     });
 
     it('el rol del perfil manda sobre el del token', async () => {

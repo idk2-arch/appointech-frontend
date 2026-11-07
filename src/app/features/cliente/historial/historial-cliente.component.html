@@ -46,7 +46,7 @@
     } @else {
       <ul appAparecer="lista" class="space-y-3">
         @for (cita of visibles(); track cita.id) {
-          <li class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+          <li appAlEntrar (alEntrar)="cita.estado === 'FINALIZADA' && solicitar(cita.id)" class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <p class="fs-cuerpo font-semibold text-white">{{ cita.especialidadNombre || 'Servicio' }}</p>
               <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { salirSinTerminarGuard } from '../../core/guards/salir-sin-terminar.guard';
 import { clienteGuard } from '../../core/guards/cliente.guard';
 import { ClienteShellComponent } from './cliente-shell/cliente-shell.component';
 import { SolicitarServicioComponent } from './solicitar-servicio/solicitar-servicio.component';
@@ -18,7 +19,7 @@ const routes: Routes = [
     canActivate: [clienteGuard],
     children: [
       { path: '', redirectTo: 'solicitar', pathMatch: 'full' },
-      { path: 'solicitar', component: SolicitarServicioComponent },
+      { path: 'solicitar', component: SolicitarServicioComponent, canDeactivate: [salirSinTerminarGuard] },
       { path: 'citas', component: MisCitasComponent },
       { path: 'historial', component: HistorialClienteComponent },
       { path: 'notificaciones', component: NotificacionesComponent },

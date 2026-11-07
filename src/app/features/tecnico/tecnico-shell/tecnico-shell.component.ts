@@ -1,5 +1,5 @@
-import { Component, computed, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Component, computed, OnDestroy, OnInit } from '@angular/core';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ConteoNotificacionesService } from '../../../core/services/conteo-notificaciones.service';

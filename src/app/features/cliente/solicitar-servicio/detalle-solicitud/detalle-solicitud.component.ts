@@ -1,25 +1,14 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-import { SolicitudServicio, UrgenciaCita } from '../../../../core/models/cita';
-import { SolicitudService } from '../../../../core/services/solicitud.service';
+import { CrearSolicitudRequest, UrgenciaCita } from '../../../../core/models/cita';
 import { EspecialidadResponse } from '../../../../core/services/tecnico.service';
 import {
   estaEnColombia,
   validadoresLatitud,
   validadoresLongitud,
 } from '../../../../core/utils/coordenadas';
-import { obtenerMensajeError } from '../../../../core/utils/manejo-errores';
 import { MAX_TEXTO_ELECTRODOMESTICO } from '../../../../core/utils/validadores-cita';
 import { PuntoMapa } from '../../../../shared/mapa-ubicacion/mapa-ubicacion.component';
 import { OpcionSelect } from '../../../../shared/select/select.component';
@@ -37,11 +26,12 @@ export interface BorradorDetalle {
   fotos?: string[];
 }
 
-export interface SolicitudCreada {
-  solicitud: SolicitudServicio;
-  latitud: number;
-  longitud: number;
-  /** Fotos del electrodoméstico por subir a la cita recién creada. */
+/**
+ * Lo que el formulario ya validó. Nada se envía al backend en este paso: la solicitud se crea una sola vez,
+ * al confirmar la cita en el último paso, y las fotos se suben entonces a la cita creada.
+ */
+export interface DetallesListos {
+  datos: CrearSolicitudRequest;
   fotos: string[];
 }
 
@@ -54,7 +44,7 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
   @Input({ required: true }) especialidad!: EspecialidadResponse;
   @Input() borrador: BorradorDetalle | null = null;
   @Output() borradorCambio = new EventEmitter<BorradorDetalle>();
-  @Output() creada = new EventEmitter<SolicitudCreada>();
+  @Output() listos = new EventEmitter<DetallesListos>();
   @Output() volver = new EventEmitter<void>();
 
   readonly maxTexto = MAX_TEXTO_ELECTRODOMESTICO;
@@ -65,22 +55,13 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
 
   form: FormGroup;
   fotos: string[] = [];
-  cargando = false;
-  errorMensaje: string | null = null;
 
   /** Ubicación elegida (dirección, GPS o pin); null hasta que se elija. Las coordenadas nunca se muestran. */
   puntoMapa: PuntoMapa | null = null;
 
-  /** Error del backend por coordenadas (400), mostrado junto al mapa. */
-  errorUbicacionServidor: string | null = null;
-
   private cambiosForm?: Subscription;
 
-  constructor(
-    private fb: FormBuilder,
-    private solicitudService: SolicitudService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor(private fb: FormBuilder) {
     // direccionServicio, latitud y longitud viajan en el POST con estos nombres exactos.
     // latitud/longitud no se muestran ni se escriben: las llena el selector de dirección.
     this.form = this.fb.group({
@@ -160,7 +141,6 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
 
   /** Dirección elegida de la lista, GPS o pin movido: se guardan dirección y coordenadas (ocultas). */
   onUbicacionCambio(ubicacion: UbicacionElegida): void {
-    this.errorUbicacionServidor = null;
     this.form.patchValue({ latitud: ubicacion.latitud, longitud: ubicacion.longitud });
     this.puntoMapa = { latitud: ubicacion.latitud, longitud: ubicacion.longitud };
     if (ubicacion.direccion !== null) {
@@ -188,50 +168,28 @@ export class DetalleSolicitudComponent implements OnInit, OnDestroy {
 
   // ---- Envío ----
 
+  /** Con todo válido, entrega los datos al asistente; no llama al backend. */
   onSubmit(): void {
     if (!this.puedeContinuar) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.cargando = true;
-    this.errorMensaje = null;
-    this.errorUbicacionServidor = null;
-
-    const latitud = Number(this.form.get('latitud')?.value);
-    const longitud = Number(this.form.get('longitud')?.value);
     const marca = String(this.marca?.value ?? '').trim();
     const modelo = String(this.modelo?.value ?? '').trim();
 
-    this.solicitudService
-      .crearSolicitud({
+    this.listos.emit({
+      datos: {
         especialidadId: this.especialidad.id,
         descripcionProblema: String(this.descripcionProblema?.value).trim(),
         direccionServicio: String(this.direccionServicio?.value).trim(),
-        latitud,
-        longitud,
+        latitud: Number(this.form.get('latitud')?.value),
+        longitud: Number(this.form.get('longitud')?.value),
         ...(marca && { marcaElectrodomestico: marca }),
         ...(modelo && { modeloElectrodomestico: modelo }),
         urgencia: this.form.get('urgencia')?.value as UrgenciaCita,
-      })
-      .subscribe({
-        next: (solicitud) => {
-          this.cargando = false;
-          this.creada.emit({ solicitud, latitud, longitud, fotos: this.fotos });
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.cargando = false;
-          const mensaje = obtenerMensajeError(err, 'No fue posible crear la solicitud. Intenta de nuevo.');
-          // 400 por coordenadas: el mensaje del backend va junto al mapa.
-          if (err instanceof HttpErrorResponse && err.status === 400 && /latitud|longitud|colombia/i.test(mensaje)) {
-            this.errorUbicacionServidor = mensaje;
-          } else {
-            this.errorMensaje = mensaje;
-          }
-          this.cdr.markForCheck();
-        },
-      });
+      },
+      fotos: this.fotos,
+    });
   }
-
 }

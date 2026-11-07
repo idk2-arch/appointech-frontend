@@ -2,7 +2,7 @@ import { ChangeDetectorRef, ElementRef, NgZone } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Los módulos se importan por sus componentes: así Angular compila las plantillas con su contexto.
@@ -11,6 +11,7 @@ import '../completar-perfil/completar-perfil.module';
 import '../en-construccion/en-construccion.module';
 import { AuthService } from '../../core/services/auth.service';
 import { CompletarPerfilComponent } from '../completar-perfil/completar-perfil.component';
+import { GoogleIdentityService } from '../../core/services/google-identity.service';
 import { EnConstruccionComponent } from '../en-construccion/en-construccion.component';
 import { GoogleLoginButtonComponent } from './google-login-button/google-login-button.component';
 import { LoginComponent } from './login/login.component';
@@ -327,101 +328,81 @@ describe('GoogleLoginButtonComponent', () => {
   let auth: Record<string, ReturnType<typeof vi.fn>>;
   let contenedor: HTMLDivElement;
   let componente: GoogleLoginButtonComponent;
-  let alCredencial: (respuesta: { credential: string }) => void;
-  const initialize = vi.fn();
-  const renderButton = vi.fn();
-  const global = globalThis as unknown as { google?: unknown };
+  let credencial$: Subject<string>;
+  const dibujarBoton = vi.fn();
 
   const crear = (): GoogleLoginButtonComponent => {
     auth = authFalso();
     contenedor = document.createElement('div');
+    credencial$ = new Subject<string>();
     const zona = { run: (fn: () => void) => fn() } as unknown as NgZone;
-    const c = new GoogleLoginButtonComponent(auth as unknown as AuthService, router, zona, cdr);
+    const google = { credencial$: credencial$.asObservable(), dibujarBoton } as unknown as GoogleIdentityService;
+    const c = new GoogleLoginButtonComponent(auth as unknown as AuthService, router, zona, cdr, google);
     (c as unknown as { googleBtnRef: ElementRef<HTMLDivElement> }).googleBtnRef = new ElementRef(contenedor);
     return c;
   };
 
-  const instalarGoogle = (): void => {
-    global.google = {
-      accounts: {
-        id: {
-          initialize: initialize.mockImplementation((opciones: { callback: typeof alCredencial }) => (alCredencial = opciones.callback)),
-          renderButton,
-        },
-      },
-    };
-  };
-
   beforeEach(() => {
     vi.useFakeTimers();
-    initialize.mockClear();
-    renderButton.mockClear();
+    dibujarBoton.mockReset().mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-    delete global.google;
-  });
+  afterEach(() => vi.useRealTimers());
 
-  it('si Google ya cargó, inicializa y dibuja el botón enseguida', () => {
-    instalarGoogle();
-    componente = crear();
-
-    componente.ngAfterViewInit();
-
-    expect(initialize).toHaveBeenCalledWith(expect.objectContaining({ client_id: expect.any(String) }));
-    expect(renderButton).toHaveBeenCalledWith(contenedor, expect.objectContaining({ locale: 'es', width: 384 }));
-  });
-
-  it('si Google tarda, espera y lo inicializa cuando aparece', () => {
+  it('no toca a Google antes del primer pintado: el botón se dibuja después, una sola vez', () => {
     componente = crear();
     componente.ngAfterViewInit();
-    expect(initialize).not.toHaveBeenCalled();
+    expect(dibujarBoton).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(300);
-    instalarGoogle();
-    vi.advanceTimersByTime(100);
+    vi.advanceTimersByTime(500);
 
-    expect(initialize).toHaveBeenCalledTimes(1);
+    expect(dibujarBoton).toHaveBeenCalledOnce();
+    expect(dibujarBoton).toHaveBeenCalledWith(contenedor, 384);
     vi.advanceTimersByTime(5000);
-    expect(initialize).toHaveBeenCalledTimes(1);
+    expect(dibujarBoton).toHaveBeenCalledOnce();
   });
 
-  it('si Google nunca carga, deja de intentar y avisa', () => {
+  it('si Google no carga, avisa con un mensaje en español', async () => {
+    dibujarBoton.mockRejectedValue(new Error('x'));
     componente = crear();
     componente.ngAfterViewInit();
 
-    vi.advanceTimersByTime(6000);
+    await vi.advanceTimersByTimeAsync(500);
 
     expect(componente.errorMensaje).toBe('No fue posible cargar el inicio de sesión con Google.');
-    expect(initialize).not.toHaveBeenCalled();
-    expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('al destruirse cancela la espera', () => {
+  it('si la pantalla ya se destruyó cuando Google falla, no toca nada', async () => {
+    dibujarBoton.mockRejectedValue(new Error('x'));
     componente = crear();
     componente.ngAfterViewInit();
-    expect(vi.getTimerCount()).toBe(1);
+    await vi.advanceTimersByTimeAsync(500);
+    componente.errorMensaje = null;
+    componente.ngOnDestroy();
+    dibujarBoton.mockClear();
 
+    vi.advanceTimersByTime(500);
+    expect(dibujarBoton).not.toHaveBeenCalled();
+    expect(componente.errorMensaje).toBeNull();
+  });
+
+  it('destruirse antes del primer pintado cancela el dibujo y no deja temporizadores', () => {
+    componente = crear();
+    componente.ngAfterViewInit();
     componente.ngOnDestroy();
 
-    expect(vi.getTimerCount()).toBe(0);
-  });
+    vi.advanceTimersByTime(1000);
 
-  it('destruirse sin haber esperado no falla', () => {
-    instalarGoogle();
-    componente = crear();
-    componente.ngAfterViewInit();
-    expect(() => componente.ngOnDestroy()).not.toThrow();
+    expect(dibujarBoton).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('al recibir la credencial inicia sesión con Google y redirige según el perfil', () => {
-    instalarGoogle();
     componente = crear();
     componente.ngAfterViewInit();
     auth['loginConGoogle'].mockReturnValue(of({ token: 't', perfilCompleto: false }));
 
-    alCredencial({ credential: 'id-token' });
+    credencial$.next('id-token');
 
     expect(auth['loginConGoogle']).toHaveBeenCalledWith('id-token');
     expect(auth['redirigirSegunRolYPerfil']).toHaveBeenCalledWith(router, false);
@@ -429,25 +410,33 @@ describe('GoogleLoginButtonComponent', () => {
   });
 
   it('si el backend rechaza la credencial, muestra su detalle', () => {
-    instalarGoogle();
     componente = crear();
     componente.ngAfterViewInit();
     auth['loginConGoogle'].mockReturnValue(throwError(() => falloHttp(401, { detail: 'Cuenta de Google no verificada' })));
 
-    alCredencial({ credential: 'id-token' });
+    credencial$.next('id-token');
 
     expect(componente.errorMensaje).toBe('Cuenta de Google no verificada');
     expect(auth['redirigirSegunRolYPerfil']).not.toHaveBeenCalled();
   });
 
   it('un error sin detalle usa un mensaje genérico en español', () => {
-    instalarGoogle();
     componente = crear();
     componente.ngAfterViewInit();
     auth['loginConGoogle'].mockReturnValue(throwError(() => falloHttp(500)));
 
-    alCredencial({ credential: 'id-token' });
+    credencial$.next('id-token');
 
     expect(componente.errorMensaje).toBe('No fue posible iniciar sesión con Google. Intenta de nuevo.');
+  });
+
+  it('al destruirse deja de escuchar las credenciales (sin fugas)', () => {
+    componente = crear();
+    componente.ngAfterViewInit();
+    expect(credencial$.observed).toBe(true);
+
+    componente.ngOnDestroy();
+
+    expect(credencial$.observed).toBe(false);
   });
 });

@@ -6,7 +6,16 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta name="theme-color" content="#0B1224" />
+  <!-- Fondo oscuro desde el primer cuadro: evita el destello blanco mientras carga la aplicación. -->
+  <style>
+    html,
+    body {
+      background: #0b1224;
+      color-scheme: dark;
+    }
+  </style>
+  <!-- El script de Google Identity Services se carga desde GoogleIdentityService, después del primer pintado. -->
 </head>
 <body>
   <app-root></app-root>

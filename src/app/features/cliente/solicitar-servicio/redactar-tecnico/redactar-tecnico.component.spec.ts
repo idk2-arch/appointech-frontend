@@ -1,4 +1,3 @@
-import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
 import { Subject, of, throwError } from 'rxjs';
@@ -6,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RedaccionTecnica } from '../../../../core/models/cita';
 import { PreDiagnosticoService } from '../../../../core/services/pre-diagnostico.service';
-import { SolicitudService } from '../../../../core/services/solicitud.service';
 import { ClienteModule } from '../../cliente.module';
 import { DetalleSolicitudComponent } from '../detalle-solicitud/detalle-solicitud.component';
 import {
@@ -243,11 +241,7 @@ describe('DetalleSolicitudComponent: texto que entra por la IA', () => {
   let componente: DetalleSolicitudComponent;
 
   beforeEach(() => {
-    componente = new DetalleSolicitudComponent(
-      new FormBuilder(),
-      { crearSolicitud: vi.fn() } as unknown as SolicitudService,
-      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
-    );
+    componente = new DetalleSolicitudComponent(new FormBuilder());
   });
 
   it('reemplaza la descripción y deja el campo válido, modificado y tocado', () => {

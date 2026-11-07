@@ -1,6 +1,5 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, finalize, from, map, mergeMap, of, Subscription } from 'rxjs';
+import { catchError, finalize, map, mergeMap, of, Subject, Subscription } from 'rxjs';
 
 import type { CitaResumen } from '../../../core/models/cita';
 import type { Calificacion, CalificarServicioRequest } from '../../../core/models/calificacion';
@@ -70,6 +69,8 @@ export class HistorialClienteComponent implements OnInit {
   private consulta?: Subscription;
   private readonly consultasCalificacion = new Subscription();
   private readonly pedidas = new Set<number>();
+  /** Citas cuya tarjeta se acerca a la pantalla: se consultan de a pocas a la vez, sin repetir las ya pedidas. */
+  private readonly cola = new Subject<number>();
 
   constructor() {
     inject(DestroyRef).onDestroy(() => {
@@ -79,6 +80,20 @@ export class HistorialClienteComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.consultasCalificacion.add(
+      this.cola
+        .pipe(
+          mergeMap(
+            (id) =>
+              this.calificacionService.obtener(id).pipe(
+                map((calificacion): [number, EntradaCalificacion] => [id, { estado: 'lista', calificacion }]),
+                catchError((err) => of<[number, EntradaCalificacion]>([id, this.entradaDeError(err)]))
+              ),
+            CONSULTAS_SIMULTANEAS
+          )
+        )
+        .subscribe(([id, entrada]) => this.poner(id, entrada))
+    );
     this.cargar();
   }
 
@@ -93,7 +108,6 @@ export class HistorialClienteComponent implements OnInit {
       .subscribe({
         next: (citas) => {
           this.citas.set(Array.isArray(citas) ? citas : []);
-          this.pedirVisibles();
         },
         error: (err) => {
           this.citas.set([]);
@@ -105,12 +119,10 @@ export class HistorialClienteComponent implements OnInit {
   cambiarVista(vista: VistaHistorial): void {
     this.vista.set(vista);
     this.mostradas.set(TAMANO_TANDA);
-    this.pedirVisibles();
   }
 
   verMas(): void {
     this.mostradas.update((n) => n + TAMANO_TANDA);
-    this.pedirVisibles();
   }
 
   entrada(citaId: number): EntradaCalificacion | undefined {
@@ -122,9 +134,18 @@ export class HistorialClienteComponent implements OnInit {
     return this.vencidasPorServidor().has(cita.id) || plazoCalificacionVencido(cita.fechaHoraFin || cita.fechaHoraInicio);
   }
 
+  /** La tarjeta está por verse: se pide su calificación (una sola vez por cita). */
+  solicitar(citaId: number): void {
+    if (this.pedidas.has(citaId)) return;
+    this.pedidas.add(citaId);
+    this.poner(citaId, { estado: 'cargando' });
+    this.cola.next(citaId);
+  }
+
   reintentar(citaId: number): void {
     this.pedidas.delete(citaId);
-    this.pedir([citaId]);
+    this.calificacionService.olvidar(citaId);
+    this.solicitar(citaId);
   }
 
   abrirCalificar(cita: CitaResumen): void {
@@ -172,38 +193,8 @@ export class HistorialClienteComponent implements OnInit {
     }
   }
 
-  private pedirVisibles(): void {
-    if (this.vista() === 'FINALIZADA') this.pedir(this.visibles().map((c) => c.id));
-  }
-
-  /** Consulta la calificación de las citas que aún no se han pedido, de a pocas a la vez. */
-  private pedir(ids: number[]): void {
-    const nuevas = ids.filter((id) => !this.pedidas.has(id));
-    if (nuevas.length === 0) return;
-    for (const id of nuevas) {
-      this.pedidas.add(id);
-      this.poner(id, { estado: 'cargando' });
-    }
-
-    this.consultasCalificacion.add(
-      from(nuevas)
-        .pipe(
-          mergeMap(
-            (id) =>
-              this.calificacionService.obtener(id).pipe(
-                map((calificacion): [number, EntradaCalificacion] => [id, { estado: 'lista', calificacion }]),
-                catchError((err) => of<[number, EntradaCalificacion]>([id, this.entradaDeError(err)]))
-              ),
-            CONSULTAS_SIMULTANEAS
-          )
-        )
-        .subscribe(([id, entrada]) => this.poner(id, entrada))
-    );
-  }
-
-  /** 404 es lo normal cuando aún no se calificó. */
+  /** El 404 (aún sin calificar) ya lo resuelve el servicio como "sin calificar"; aquí llega lo demás. */
   private entradaDeError(err: unknown): EntradaCalificacion {
-    if (err instanceof HttpErrorResponse && err.status === 404) return { estado: 'lista', calificacion: null };
     return { estado: 'error', mensaje: obtenerMensajeError(err, 'No pudimos consultar tu calificación.') };
   }
 

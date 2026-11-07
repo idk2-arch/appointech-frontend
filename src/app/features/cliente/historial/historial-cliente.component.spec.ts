@@ -38,7 +38,8 @@ const calificacion = (citaId: number, puntuacion = 5, comentario: string | null 
   fecha: '2026-11-05T10:00:00',
 });
 
-const noEncontrada = () => throwError(() => new HttpErrorResponse({ status: 404 }));
+/** El servicio ya entrega el 404 (aún sin calificar) como null. */
+const noEncontrada = () => of(null);
 const conflicto = (detail: string) => throwError(() => new HttpErrorResponse({ status: 409, error: { detail } }));
 
 describe('HistorialClienteComponent', () => {
@@ -53,7 +54,7 @@ describe('HistorialClienteComponent', () => {
       imports: [ClienteModule, RouterModule.forRoot([])],
       providers: [
         { provide: CitaClienteService, useValue: { listar: vi.fn().mockReturnValue(citas) } },
-        { provide: CalificacionService, useValue: { obtener, calificar } },
+        { provide: CalificacionService, useValue: { obtener, calificar, olvidar: vi.fn() } },
         { provide: ToastService, useValue: { exito, error } },
       ],
     }).compileComponents();
@@ -194,16 +195,17 @@ describe('HistorialClienteComponent', () => {
     });
 
     it('nunca hay más de las consultas simultáneas permitidas', async () => {
-      const pendientes: Subject<Calificacion>[] = [];
+      const pendientes: Subject<Calificacion | null>[] = [];
       obtener.mockReset().mockImplementation(() => {
-        const s = new Subject<Calificacion>();
+        const s = new Subject<Calificacion | null>();
         pendientes.push(s);
         return s;
       });
       await crear(of(Array.from({ length: 8 }, (_, i) => cita(i + 1, 'FINALIZADA'))));
 
       expect(obtener).toHaveBeenCalledTimes(CONSULTAS_SIMULTANEAS);
-      pendientes[0].error(new HttpErrorResponse({ status: 404 }));
+      pendientes[0].next(null);
+      pendientes[0].complete();
       expect(obtener).toHaveBeenCalledTimes(CONSULTAS_SIMULTANEAS + 1);
     });
   });
@@ -345,6 +347,77 @@ describe('HistorialClienteComponent', () => {
       await crear(of([]));
       fixture.componentInstance.calificar({ puntuacion: 3 });
       expect(calificar).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('calificaciones bajo demanda', () => {
+    let registros: { cb: (e: { isIntersecting: boolean }[]) => void; el: Element }[];
+
+    beforeEach(() => {
+      registros = [];
+      vi.stubGlobal(
+        'IntersectionObserver',
+        class {
+          constructor(private cb: (e: { isIntersecting: boolean }[]) => void) {}
+          observe = (el: Element): void => {
+            registros.push({ cb: this.cb, el });
+          };
+          disconnect = vi.fn();
+        }
+      );
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    const tarjeta = (i: number) => registros.filter((r) => r.el.tagName === 'LI')[i] as (typeof registros)[number] | undefined;
+
+    it('no pide ninguna hasta que su tarjeta se acerca a la pantalla, y solo las de las tarjetas que se ven', async () => {
+      await crear(of([cita(1, 'FINALIZADA'), cita(2, 'FINALIZADA'), cita(3, 'FINALIZADA')]));
+      expect(obtener).not.toHaveBeenCalled();
+
+      tarjeta(0)!.cb([{ isIntersecting: false }]);
+      await refrescar();
+      expect(obtener).not.toHaveBeenCalled();
+
+      tarjeta(1)!.cb([{ isIntersecting: true }]);
+      await refrescar();
+      expect(obtener).toHaveBeenCalledTimes(1);
+      expect(obtener).toHaveBeenCalledWith(2);
+    });
+
+    it('nunca pide dos veces la misma cita, aunque la tarjeta avise otra vez o se recree la lista', async () => {
+      await crear(of([cita(1, 'FINALIZADA')]));
+      tarjeta(0)!.cb([{ isIntersecting: true }]);
+      tarjeta(0)!.cb([{ isIntersecting: true }]);
+      await refrescar();
+      expect(obtener).toHaveBeenCalledTimes(1);
+
+      // Cambiar de pestaña y volver recrea las tarjetas: lo ya pedido no se repite.
+      boton('Canceladas')!.click();
+      await refrescar();
+      boton('Finalizadas')!.click();
+      await refrescar();
+      registros.filter((r) => r.el.tagName === 'LI').forEach((r) => r.cb([{ isIntersecting: true }]));
+      await refrescar();
+      expect(obtener).toHaveBeenCalledTimes(1);
+    });
+
+    it('las canceladas no piden calificación', async () => {
+      await crear(of([cita(1, 'CANCELADA')]));
+      boton('Canceladas')!.click();
+      await refrescar();
+      registros.filter((r) => r.el.tagName === 'LI').forEach((r) => r.cb([{ isIntersecting: true }]));
+      await refrescar();
+      expect(obtener).not.toHaveBeenCalled();
+    });
+
+    it('un 404 ("sin calificar") no es un error: ofrece Calificar y no avisa nada', async () => {
+      obtener.mockReset().mockReturnValue(of(null));
+      await crear(of([cita(1, 'FINALIZADA', '2026-11-10T14:00:00')]));
+      tarjeta(0)!.cb([{ isIntersecting: true }]);
+      await refrescar();
+      expect(boton('Calificar')).toBeDefined();
+      expect(raiz().querySelector('[role="alert"]')).toBeNull();
+      expect(error).not.toHaveBeenCalled();
     });
   });
 

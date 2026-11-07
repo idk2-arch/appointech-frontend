@@ -57,7 +57,8 @@ describe('GradientWavesComponent', () => {
 
   function crear(entradas: Record<string, unknown> = {}): void {
     fixture = TestBed.createComponent(GradientWavesComponent);
-    for (const [clave, valor] of Object.entries(entradas)) fixture.componentRef.setInput(clave, valor);
+    // Por defecto sin diferir: la mayoría de las pruebas miran lo que pasa ya iniciado el fondo.
+    for (const [clave, valor] of Object.entries({ diferirInicio: false, maxFps: 0, ...entradas })) fixture.componentRef.setInput(clave, valor);
     fixture.detectChanges();
   }
 
@@ -101,6 +102,64 @@ describe('GradientWavesComponent', () => {
     vi.useRealTimers();
   });
 
+  describe('rendimiento', () => {
+    it('no crea el contexto WebGL ni compila el shader antes del primer pintado: espera dos cuadros y a que el navegador esté libre', () => {
+      crear({ diferirInicio: true });
+      expect(ogl.renderers).toHaveLength(0);
+      expect(contenedor().querySelector('canvas')).toBeNull();
+
+      vi.advanceTimersByTime(16);
+      expect(ogl.renderers).toHaveLength(0);
+      vi.advanceTimersByTime(16);
+      expect(ogl.renderers).toHaveLength(0);
+
+      vi.advanceTimersByTime(60);
+      expect(ogl.renderers).toHaveLength(1);
+      expect(contenedor().querySelector('canvas')).not.toBeNull();
+    });
+
+    it('si se destruye antes de iniciar, nunca crea el contexto', () => {
+      crear({ diferirInicio: true });
+      fixture.destroy();
+      vi.advanceTimersByTime(500);
+      expect(ogl.renderers).toHaveLength(0);
+    });
+
+    it('con requestIdleCallback espera a que el navegador esté libre', () => {
+      let pendiente: (() => void) | undefined;
+      vi.stubGlobal('requestIdleCallback', (cb: () => void) => {
+        pendiente = cb;
+        return 7;
+      });
+      vi.stubGlobal('cancelIdleCallback', vi.fn());
+      crear({ diferirInicio: true });
+      vi.advanceTimersByTime(100);
+      expect(ogl.renderers).toHaveLength(0);
+
+      pendiente?.();
+      expect(ogl.renderers).toHaveLength(1);
+    });
+
+    it('limita los cuadros por segundo al tope indicado (30 por defecto) en vez de dibujar en cada cuadro del monitor', () => {
+      crear({ maxFps: 30 });
+      const r = renderer();
+      r.render.mockClear();
+      vi.advanceTimersByTime(1000);
+      const con30 = r.render.mock.calls.length;
+
+      ogl.renderers.length = 0;
+      fixture.destroy();
+      crear({ maxFps: 0 });
+      const sinTope = renderer();
+      sinTope.render.mockClear();
+      vi.advanceTimersByTime(1000);
+
+      expect(con30).toBeGreaterThan(15);
+      expect(con30).toBeLessThanOrEqual(35);
+      expect(sinTope.render.mock.calls.length).toBeGreaterThan(con30);
+    });
+  });
+
   describe('arranque', () => {
     it('crea el renderizador WebGL2 y pone su canvas a llenar el contenedor', () => {
       crear();
@@ -113,13 +172,13 @@ describe('GradientWavesComponent', () => {
       expect(canvas.style.display).toBe('block');
     });
 
-    it('limita la densidad de píxeles a 2', () => {
+    it('limita la densidad de píxeles a 1,5 (el shader es costoso por píxel)', () => {
       vi.stubGlobal('devicePixelRatio', 3);
       crear();
-      expect(renderer().opciones['dpr']).toBe(2);
+      expect(renderer().opciones['dpr']).toBe(1.5);
     });
 
-    it('usa la densidad del dispositivo si es menor que 2, y 1 si no se conoce', () => {
+    it('usa la densidad del dispositivo si es menor que el tope, y 1 si no se conoce', () => {
       vi.stubGlobal('devicePixelRatio', 1.5);
       crear();
       expect(renderer().opciones['dpr']).toBe(1.5);

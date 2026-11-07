@@ -20,3 +20,30 @@ html, body {
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+/*
+ * Fundido corto (140 ms, solo opacidad) al llegar a una pantalla pública, p. ej. al cerrar sesión. No captura la
+ * pantalla anterior ni espera nada: la limpieza de la sesión y la navegación ocurren de inmediato.
+ */
+app-login,
+app-registro,
+app-completar-perfil,
+app-en-construccion {
+  display: block;
+  animation: entrada-pantalla 140ms ease-out;
+}
+
+@keyframes entrada-pantalla {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  app-login,
+  app-registro,
+  app-completar-perfil,
+  app-en-construccion {
+    animation: none;
+  }
+}

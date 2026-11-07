@@ -1,0 +1,132 @@
+<div
+  #raiz
+  class="stepper"
+  [class.stepper--framed]="frame"
+  [class.stepper--vertical]="riel"
+  [class.stepper--horizontal]="!riel"
+  [attr.data-completed]="completado ? '' : null"
+>
+  <div class="stepper__header stepper__header--{{ tipo }}">
+    @switch (tipo) {
+      @case ('dots') {
+        <div class="stepper__dots">
+          @for (p of pasos(); track $index; let i = $index) {
+            <button
+              type="button"
+              class="stepper__dot"
+              [attr.data-status]="estado(i + 1)"
+              [attr.aria-label]="etiquetaPaso(i)"
+              [attr.aria-current]="i + 1 === actual ? 'step' : null"
+              [disabled]="!alcanzable(i + 1)"
+              (click)="ir(i + 1)"
+            >
+              <span class="stepper__dot-mark" [attr.data-status]="estado(i + 1)"></span>
+            </button>
+          }
+        </div>
+      }
+      @case ('bars') {
+        <div class="stepper__bars">
+          @for (p of pasos(); track $index; let i = $index) {
+            <button
+              type="button"
+              class="stepper__bar"
+              [attr.data-status]="estado(i + 1)"
+              [attr.aria-label]="etiquetaPaso(i)"
+              [attr.aria-current]="i + 1 === actual ? 'step' : null"
+              [disabled]="!alcanzable(i + 1)"
+              (click)="ir(i + 1)"
+            >
+              <span class="stepper__bar-track">
+                <span class="stepper__bar-fill" [attr.data-filled]="completado || i + 1 <= actual ? '' : null"></span>
+              </span>
+            </button>
+          }
+        </div>
+      }
+      @default {
+        <div class="stepper__track" [attr.data-layout]="riel ? 'rail' : 'row'">
+          <span class="stepper__glider" aria-hidden="true"></span>
+          @for (p of pasos(); track $index; let i = $index) {
+            <button
+              type="button"
+              class="stepper__segment"
+              [attr.data-status]="estado(i + 1)"
+              [attr.aria-label]="etiquetaPaso(i)"
+              [attr.aria-current]="i + 1 === actual ? 'step' : null"
+              [disabled]="!alcanzable(i + 1)"
+              (click)="ir(i + 1)"
+            >
+              <span class="stepper__badge" [attr.data-status]="estado(i + 1)">
+                @if (estado(i + 1) === 'complete') {
+                  <svg class="stepper__check" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+                  </svg>
+                } @else if (p.icon) {
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path [attr.d]="p.icon"></path>
+                  </svg>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </span>
+              @if (p.title && !(apretado() && !riel)) {
+                <span class="stepper__text">
+                  <span class="stepper__title" [attr.data-status]="estado(i + 1)">{{ p.title }}</span>
+                  @if (riel && p.description) {
+                    <span class="stepper__description">{{ p.description }}</span>
+                  }
+                </span>
+              }
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <div class="stepper__body">
+    <div #visor class="stepper__viewport" aria-live="polite">
+      @for (p of paneles(); track p.id) {
+        <div
+          class="stepper__pane"
+          [class.stepper__pane--leaving]="p.saliente"
+          [attr.data-pane]="p.id"
+          [attr.aria-hidden]="p.saliente ? true : null"
+          [attr.tabindex]="p.saliente ? null : -1"
+        >
+          <ng-container *ngTemplateOutlet="plantilla(p.step)"></ng-container>
+        </div>
+      }
+    </div>
+
+    @if (showFooter) {
+      <div class="stepper__footer-wrap" [attr.data-hidden]="completado ? '' : null" [attr.aria-hidden]="completado ? true : null">
+        <div class="stepper__footer-clip">
+          <div class="stepper__footer">
+            <button type="button" class="stepper__button stepper__button--back" [attr.data-hidden]="actual <= 1 ? '' : null" [disabled]="completado" (click)="ir(actual - 1)">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+              <span>{{ backButtonText }}</span>
+            </button>
+            <button type="button" class="stepper__button stepper__button--next" [disabled]="completado || nextDisabled || nextLoading" (click)="ir(actual + 1)">
+              <span>{{ ultimo ? completeButtonText : nextButtonText }}</span>
+              @if (nextLoading) {
+                <svg class="stepper__spinner" viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+                  <circle opacity="0.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                  <path opacity="0.9" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+                </svg>
+              } @else if (ultimo) {
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  @if (frame) {
+    <span class="stepper__rim" aria-hidden="true"></span>
+  }
+</div>

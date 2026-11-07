@@ -1,3 +1,4 @@
+import { despuesDelPrimerPintado } from '../../core/utils/primer-pintado';
 import {
   Component,
   ElementRef,
@@ -187,6 +188,10 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
   @Input() brightness = 1.0;
   @Input() opacity = 1.0;
   @Input() mouseInteraction = true;
+  /** Tope de cuadros por segundo: es un fondo lento y no necesita los 60 del monitor (0 = sin tope). */
+  @Input() maxFps = 30;
+  /** Espera al primer pintado (y a que el navegador esté libre) para crear el contexto WebGL y compilar el shader. */
+  @Input() diferirInicio = true;
   // Con parallax real (traslación de cámara), 4.0 se nota con claridad.
   // Si quieres algo más sutil, prueba 2.0-3.0; para un efecto exagerado, 6+.
   @Input() parallaxStrength = 4.0;
@@ -203,12 +208,22 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
   private onPointerMove = (e: PointerEvent) => {};
   private onPointerLeave = () => {};
   private onVisibility = () => {};
+  private cancelarInicio: (() => void) | null = null;
 
   private readonly ogl = inject(OGL);
 
   constructor(private zone: NgZone) {}
 
+  /**
+   * Crear el contexto WebGL2 y compilar el shader de raymarching es trabajo pesado y síncrono: hecho aquí mismo
+   * retrasaba el primer pintado. Se difiere hasta después del primer cuadro (el fondo aparece un instante después).
+   */
   ngAfterViewInit(): void {
+    if (this.diferirInicio) this.cancelarInicio = despuesDelPrimerPintado(() => this.iniciar());
+    else this.iniciar();
+  }
+
+  private iniciar(): void {
     const container = this.containerRef.nativeElement;
 
     let renderer: Renderer;
@@ -218,7 +233,8 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
         alpha: true,
         premultipliedAlpha: true,
         antialias: false,
-        dpr: Math.min(window.devicePixelRatio || 1, 2),
+        // El shader es costoso por píxel: por encima de 1,5 la ganancia visual es mínima y el costo se dispara.
+        dpr: Math.min(window.devicePixelRatio || 1, 1.5),
       });
     } catch {
       // Sin WebGL2 (navegador antiguo, equipo sin GPU, pruebas) el fondo animado simplemente no se muestra.
@@ -315,8 +331,14 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
       let isVisible = true;
       let isPageVisible = !document.hidden;
       const t0 = performance.now();
+      let ultimoCuadro = 0;
 
       const loop = (t: number) => {
+        if (this.maxFps > 0 && t - ultimoCuadro < 1000 / this.maxFps - 2) {
+          this.raf = requestAnimationFrame(loop);
+          return;
+        }
+        ultimoCuadro = t;
         program.uniforms.iTime.value = (t - t0) * 0.001;
         const tx = this.mouseInteraction ? targetMouse[0] : 0.5;
         const ty = this.mouseInteraction ? targetMouse[1] : 0.5;
@@ -358,6 +380,8 @@ export class GradientWavesComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.cancelarInicio?.();
+    this.cancelarInicio = null;
     if (this.raf !== 0) cancelAnimationFrame(this.raf);
     this.ro?.disconnect();
     this.io?.disconnect();

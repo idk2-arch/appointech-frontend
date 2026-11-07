@@ -23,6 +23,8 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
   readonly fotoUrl$ = this.sesion.fotoUrl$;
   /** Patrón de engranajes por el que se ve la lámina holográfica de la tarjeta. */
   readonly patron = PATRON_ENGRANAJES;
+  /** Filas del esqueleto del panel de datos mientras llega el perfil. */
+  readonly esqueletoFilas = [1, 2, 3, 4];
 
   perfil: Perfil | null = null;
   cargando = true;
@@ -64,7 +66,9 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
     return resolverUrlFoto(fotoUrl) ?? '';
   }
 
+  /** Con el perfil ya en memoria se pinta de inmediato y se refresca en segundo plano. */
   ngOnInit(): void {
+    this.perfil = this.sesion.perfilActual;
     this.cargarPerfil();
   }
 
@@ -76,7 +80,7 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
 
   cargarPerfil(): void {
     this.consulta?.unsubscribe();
-    this.cargando = true;
+    this.cargando = this.perfil === null;
     this.errorCarga = null;
 
     this.consulta = this.perfilService
@@ -92,7 +96,10 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
           this.perfil = perfil;
           this.sincronizarSesion(perfil);
         },
-        error: (err) => (this.errorCarga = obtenerMensajeError(err, 'No fue posible cargar tu perfil.')),
+        // Si ya hay un perfil a la vista, un fallo al refrescar no lo reemplaza por un error.
+        error: (err) => {
+          if (this.perfil === null) this.errorCarga = obtenerMensajeError(err, 'No fue posible cargar tu perfil.');
+        },
       });
   }
 
@@ -159,6 +166,7 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
 
   /** El menú lateral muestra el nombre y la foto de la sesión: se mantienen al día sin recargar la página. */
   private sincronizarSesion(perfil: Perfil): void {
+    this.sesion.establecerPerfil(perfil);
     this.sesion.establecerNombre(nombreCompleto(perfil.nombre, perfil.apellido));
     if (perfil.fotoUrl !== undefined) this.sesion.establecerFoto(perfil.fotoUrl);
   }

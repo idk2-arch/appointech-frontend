@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import { SolicitudServicio } from '../../../../core/models/cita';
+import { Cita, CrearSolicitudRequest } from '../../../../core/models/cita';
 import { FranjaDisponible, MotivoSinFranjas, TecnicoDisponible } from '../../../../core/models/disponibilidad';
 import { CitaService } from '../../../../core/services/cita.service';
 import { DisponibilidadService } from '../../../../core/services/disponibilidad.service';
@@ -28,13 +28,14 @@ const DIAS_RAPIDOS = 7;
 })
 export class ElegirFranjaComponent implements OnInit, OnDestroy {
   @Input({ required: true }) especialidad!: EspecialidadResponse;
-  @Input({ required: true }) solicitud!: SolicitudServicio;
-  @Input({ required: true }) latitud!: number;
-  @Input({ required: true }) longitud!: number;
+  /** Lo que el cliente describió: aún no se guardó nada en el backend. */
+  @Input({ required: true }) datos!: CrearSolicitudRequest;
   @Input() fecha = hoyIso();
   @Input() aviso: string | null = null;
   @Output() fechaCambio = new EventEmitter<string>();
   @Output() seleccionar = new EventEmitter<FranjaDisponible>();
+  /** Se dejó la solicitud para coordinación manual (sin técnicos o fuera de cobertura): ya existe y un administrador la coordina. */
+  @Output() manualEnviada = new EventEmitter<{ cita: Cita; motivo: MotivoSinFranjas | null }>();
 
   readonly hoy = hoyIso();
   diasRapidos: string[] = [];
@@ -49,7 +50,6 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
   telefonoContacto = '';
   enviandoManual = false;
   errorManual: string | null = null;
-  solicitudManualEnviada = false;
 
   /** Informativo: técnicos activos con la especialidad (sin filtrar por cobertura). */
   tecnicos: TecnicoDisponible[] | null = null;
@@ -78,6 +78,11 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
 
   get mensajeSinFranjas(): string {
     return MENSAJES_SIN_FRANJAS[this.motivoSinFranjas ?? 'SIN_HORARIOS'];
+  }
+
+  /** Sin técnicos para la especialidad o fuera de cobertura no hay franjas que elegir: se ofrece la coordinación manual. */
+  get esManual(): boolean {
+    return this.motivoSinFranjas === 'FUERA_DE_COBERTURA' || this.motivoSinFranjas === 'SIN_TECNICOS_ESPECIALIDAD';
   }
 
   get fechaFueraDeRapidos(): boolean {
@@ -116,8 +121,8 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
       .obtenerFranjas({
         especialidadId: this.especialidad.id,
         fecha: this.fecha,
-        latitud: this.latitud,
-        longitud: this.longitud,
+        latitud: this.datos.latitud,
+        longitud: this.datos.longitud,
       })
       .subscribe({
         next: ({ franjas, motivoSinFranjas, telefonoContactoAdmin }) => {
@@ -147,16 +152,16 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
     this.citaService
       .solicitarAgendamientoManual({
         especialidadId: this.especialidad.id,
-        descripcionProblema: this.solicitud.descripcionProblema,
-        direccionServicio: this.solicitud.direccionServicio,
-        latitud: this.latitud,
-        longitud: this.longitud,
+        descripcionProblema: this.datos.descripcionProblema,
+        direccionServicio: this.datos.direccionServicio,
+        latitud: this.datos.latitud,
+        longitud: this.datos.longitud,
         ...(telefono && { telefonoContacto: telefono }),
       })
       .subscribe({
-        next: () => {
+        next: (cita) => {
           this.enviandoManual = false;
-          this.solicitudManualEnviada = true;
+          this.manualEnviada.emit({ cita, motivo: this.motivoSinFranjas });
           this.cdr.markForCheck();
         },
         error: (err) => {
@@ -172,8 +177,8 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
       telefonoAdmin,
       construirMensajeWhatsapp({
         especialidad: this.especialidad.nombre,
-        direccion: this.solicitud.direccionServicio,
-        descripcion: this.solicitud.descripcionProblema,
+        direccion: this.datos.direccionServicio,
+        descripcion: this.datos.descripcionProblema,
       })
     );
   }

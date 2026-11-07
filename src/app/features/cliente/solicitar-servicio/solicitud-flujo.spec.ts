@@ -1,16 +1,15 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Cita, SolicitudServicio } from '../../../core/models/cita';
+import { Cita, CrearSolicitudRequest, SolicitudServicio } from '../../../core/models/cita';
 import { FranjaDisponible } from '../../../core/models/disponibilidad';
 import { AvisosPagoService } from '../../../shared/toast/avisos-pago.service';
 import { FotoElectrodomesticoService } from '../../../core/services/foto-electrodomestico.service';
-import { SolicitudService } from '../../../core/services/solicitud.service';
+import { CitaClienteService } from '../../../core/services/cita-cliente.service';
 import { EspecialidadResponse } from '../../../core/services/tecnico.service';
-import { DetalleSolicitudComponent, SolicitudCreada } from './detalle-solicitud/detalle-solicitud.component';
+import { DetalleSolicitudComponent, DetallesListos } from './detalle-solicitud/detalle-solicitud.component';
 import { SolicitarServicioComponent } from './solicitar-servicio.component';
 import '../cliente.module';
 
@@ -28,17 +27,15 @@ const SOLICITUD: SolicitudServicio = {
 const FRANJA: FranjaDisponible = { tecnicoId: 3, inicio: '2026-11-04T14:00:00', fin: '2026-11-04T15:00:00', distanciaKm: 2 };
 const CITA = { ...SOLICITUD, tecnicoId: 3, fechaHoraInicio: FRANJA.inicio, fechaHoraFin: FRANJA.fin, estado: 'CONFIRMADA' } as Cita;
 const cdr = { markForCheck: vi.fn() } as unknown as ChangeDetectorRef;
-const falloHttp = (status: number, error?: unknown): HttpErrorResponse => new HttpErrorResponse({ status, error });
+const DATOS: CrearSolicitudRequest = { especialidadId: 1, descripcionProblema: 'No centrifuga', direccionServicio: 'Calle 6', latitud: 4.3, longitud: -74.3 };
 
 const avisos = { anunciarCitaConfirmada: vi.fn() };
 
 describe('DetalleSolicitudComponent: descripción, ubicación y errores', () => {
-  let crearSolicitud: ReturnType<typeof vi.fn>;
   let componente: DetalleSolicitudComponent;
 
   beforeEach(() => {
-    crearSolicitud = vi.fn().mockReturnValue(of(SOLICITUD));
-    componente = new DetalleSolicitudComponent(new FormBuilder(), { crearSolicitud } as unknown as SolicitudService, cdr);
+    componente = new DetalleSolicitudComponent(new FormBuilder());
     componente.especialidad = ESPECIALIDAD;
     componente.ngOnInit();
   });
@@ -61,14 +58,12 @@ describe('DetalleSolicitudComponent: descripción, ubicación y errores', () => 
 
   describe('ubicación', () => {
     it('elegir un lugar guarda dirección y coordenadas y habilita el mapa', () => {
-      componente.errorUbicacionServidor = 'viejo';
 
       componente.onUbicacionCambio({ direccion: 'Carrera 7 # 1-1', latitud: 4.3, longitud: -74.3 });
 
       expect(componente.direccionServicio?.value).toBe('Carrera 7 # 1-1');
       expect(componente.form.get('latitud')?.value).toBe(4.3);
       expect(componente.puntoMapa).toEqual({ latitud: 4.3, longitud: -74.3 });
-      expect(componente.errorUbicacionServidor).toBeNull();
     });
 
     it('mover el pin (sin dirección nueva) conserva la dirección escrita', () => {
@@ -108,64 +103,39 @@ describe('DetalleSolicitudComponent: descripción, ubicación y errores', () => 
   });
 
   describe('envío', () => {
+    let listos: DetallesListos[];
+
     beforeEach(() => {
+      listos = [];
+      componente.listos.subscribe((l) => listos.push(l));
       componente.form.patchValue({ descripcionProblema: ' No centrifuga ', direccionServicio: ' Calle 6 ' });
       componente.onUbicacionCambio({ direccion: null, latitud: 4.3, longitud: -74.3 });
     });
 
-    it('inválido: marca todo y no llama al backend', () => {
+    it('inválido: marca todo y no entrega nada', () => {
       componente.form.patchValue({ descripcionProblema: '' });
       componente.onSubmit();
-      expect(crearSolicitud).not.toHaveBeenCalled();
+      expect(listos).toHaveLength(0);
       expect(componente.descripcionProblema?.touched).toBe(true);
     });
 
-    it('envía los textos recortados y las coordenadas como números', () => {
+    it('entrega los textos recortados y las coordenadas como números, sin llamar al backend', () => {
       componente.onSubmit();
-      expect(crearSolicitud.mock.calls[0][0]).toMatchObject({
+      expect(listos).toHaveLength(1);
+      expect(listos[0].datos).toMatchObject({
         especialidadId: 1,
         descripcionProblema: 'No centrifuga',
         direccionServicio: 'Calle 6',
         latitud: 4.3,
         longitud: -74.3,
       });
-    });
-
-    it('un 400 por coordenadas va junto al mapa', () => {
-      crearSolicitud.mockReturnValue(throwError(() => falloHttp(400, { status: 400, error: 'La longitud debe estar en Colombia' })));
-      componente.onSubmit();
-
-      expect(componente.errorUbicacionServidor).toBe('La longitud debe estar en Colombia');
-      expect(componente.errorMensaje).toBeNull();
-      expect(componente.cargando).toBe(false);
-    });
-
-    it('un 400 por otro motivo va en el mensaje general', () => {
-      crearSolicitud.mockReturnValue(throwError(() => falloHttp(400, { status: 400, error: 'La descripción es muy corta' })));
-      componente.onSubmit();
-
-      expect(componente.errorMensaje).toBe('La descripción es muy corta');
-      expect(componente.errorUbicacionServidor).toBeNull();
-    });
-
-    it('un error sin mensaje: texto genérico en español', () => {
-      crearSolicitud.mockReturnValue(throwError(() => falloHttp(500)));
-      componente.onSubmit();
-      expect(componente.errorMensaje).toBe('No fue posible crear la solicitud. Intenta de nuevo.');
-    });
-
-    it('un nuevo intento limpia los errores anteriores', () => {
-      componente.errorMensaje = 'viejo';
-      componente.errorUbicacionServidor = 'viejo';
-      componente.onSubmit();
-      expect(componente.errorMensaje).toBeNull();
-      expect(componente.errorUbicacionServidor).toBeNull();
+      expect(listos[0].fotos).toEqual([]);
     });
   });
 
   describe('borrador al volver al formulario', () => {
     it('recupera el punto del mapa guardado', () => {
-      const otro = new DetalleSolicitudComponent(new FormBuilder(), { crearSolicitud } as unknown as SolicitudService, cdr);
+      const otro = new DetalleSolicitudComponent(new FormBuilder());
       otro.especialidad = ESPECIALIDAD;
       otro.borrador = { descripcionProblema: 'x', direccionServicio: 'y', latitud: 4.3, longitud: -74.3 };
 
@@ -177,7 +147,7 @@ describe('DetalleSolicitudComponent: descripción, ubicación y errores', () => 
     });
 
     it('un borrador sin coordenadas no inventa un punto', () => {
-      const otro = new DetalleSolicitudComponent(new FormBuilder(), { crearSolicitud } as unknown as SolicitudService, cdr);
+      const otro = new DetalleSolicitudComponent(new FormBuilder());
       otro.especialidad = ESPECIALIDAD;
       otro.borrador = { descripcionProblema: 'x', direccionServicio: 'y', latitud: null, longitud: null };
 
@@ -198,11 +168,13 @@ describe('DetalleSolicitudComponent: descripción, ubicación y errores', () => 
 
 describe('SolicitarServicioComponent: navegación entre pasos', () => {
   let flujo: SolicitarServicioComponent;
+  const cancelarCliente = { cancelar: vi.fn() };
 
   beforeEach(() => {
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     vi.useFakeTimers({ now: new Date(2026, 9, 27, 12, 0, 0), toFake: ['Date'] });
-    flujo = new SolicitarServicioComponent({ subirVarias: vi.fn().mockReturnValue(of({})) } as unknown as FotoElectrodomesticoService, cdr, avisos as unknown as AvisosPagoService);
+    flujo = new SolicitarServicioComponent({ subirVarias: vi.fn().mockReturnValue(of({})) } as unknown as FotoElectrodomesticoService, cdr, avisos as unknown as AvisosPagoService, cancelarCliente as unknown as CitaClienteService);
   });
 
   afterEach(() => {
@@ -211,7 +183,7 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
     vi.restoreAllMocks();
   });
 
-  const evento = (): SolicitudCreada => ({ solicitud: SOLICITUD, latitud: 4.3, longitud: -74.3, fotos: [] });
+  const evento = (): DetallesListos => ({ datos: DATOS, fotos: [] });
 
   it('empieza en la especialidad, en el primer paso', () => {
     expect(flujo.paso).toBe('especialidad');
@@ -226,19 +198,20 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
     expect(flujo.indicePaso).toBe(1);
   });
 
-  it('al crearse la solicitud pasa a los horarios y ya no se puede editar el borrador', () => {
+  it('con los detalles listos pasa a los horarios sin guardar nada y conserva el borrador para poder volver', () => {
     flujo.borradorDetalle = { descripcionProblema: 'x', direccionServicio: 'y', latitud: 1, longitud: 2 };
-    flujo.onSolicitudCreada(evento());
+    flujo.onDetallesListos(evento());
 
     expect(flujo.paso).toBe('franja');
-    expect(flujo.solicitud).toBe(SOLICITUD);
-    expect(flujo.latitud).toBe(4.3);
-    expect(flujo.borradorDetalle).toBeNull();
+    expect(flujo.datos).toBe(DATOS);
+    expect(flujo.solicitud).toBeNull();
+    expect(flujo.borradorDetalle).not.toBeNull();
   });
 
-  it('si la solicitud nace para agendamiento manual salta las franjas y muestra la pantalla del administrador', () => {
+  it('si el backend marca la solicitud (al confirmar) para agendamiento manual, salta a la pantalla del administrador', () => {
     const manual = { ...SOLICITUD, agendamientoManual: true, motivoSolicitudEspecial: 'SIN_TECNICOS_ESPECIALIDAD' } as SolicitudServicio;
-    flujo.onSolicitudCreada({ ...evento(), solicitud: manual });
+    flujo.onDetallesListos(evento());
+    flujo.onSolicitudManual(manual);
 
     expect(flujo.paso).toBe('manual');
     expect(flujo.motivoManual).toBe('SIN_TECNICOS_ESPECIALIDAD');
@@ -246,13 +219,25 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
     expect(flujo.solicitud).toBe(manual);
   });
 
-  it('con agendamientoManual en false (o ausente) el flujo normal no cambia', () => {
-    flujo.onSolicitudCreada({ ...evento(), solicitud: { ...SOLICITUD, agendamientoManual: false, motivoSolicitudEspecial: null } });
-    expect(flujo.paso).toBe('franja');
-    expect(flujo.motivoManual).toBeNull();
+  it('al dejar la solicitud para coordinación manual desde los horarios muestra la pantalla "Recibimos tu solicitud"', () => {
+    flujo.onDetallesListos(evento());
+    flujo.onManualEnviada({ cita: { ...CITA, motivoSolicitudEspecial: null } as Cita, motivo: 'FUERA_DE_COBERTURA' });
 
-    flujo.onSolicitudCreada(evento());
-    expect(flujo.paso).toBe('franja');
+    expect(flujo.paso).toBe('manual');
+    expect(flujo.motivoManual).toBe('FUERA_DE_COBERTURA');
+  });
+
+  it('el motivo del backend manda sobre el que se vio al consultar horarios, y "sin horarios" no es un motivo especial', () => {
+    flujo.onManualEnviada({ cita: { ...CITA, motivoSolicitudEspecial: 'SIN_TECNICOS_ESPECIALIDAD' } as Cita, motivo: 'FUERA_DE_COBERTURA' });
+    expect(flujo.motivoManual).toBe('SIN_TECNICOS_ESPECIALIDAD');
+
+    flujo.onManualEnviada({ cita: { ...CITA, motivoSolicitudEspecial: null } as Cita, motivo: 'SIN_HORARIOS' });
+    expect(flujo.motivoManual).toBeNull();
+  });
+
+  it('la solicitud creada al confirmar se recuerda para reutilizarla si hay que elegir otro horario', () => {
+    flujo.onSolicitudCreada(SOLICITUD);
+    expect(flujo.solicitud).toBe(SOLICITUD);
   });
 
   it('elegir una franja pasa a confirmar y limpia el aviso de franjas', () => {
@@ -297,7 +282,8 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
 
   it('pedir otro servicio reinicia todo el flujo', () => {
     flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
-    flujo.onSolicitudCreada(evento());
+    flujo.onDetallesListos(evento());
+    flujo.onSolicitudCreada(SOLICITUD);
     flujo.onFranjaSeleccionada(FRANJA);
     flujo.onCitaConfirmada(CITA);
 
@@ -307,8 +293,9 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
       paso: 'especialidad',
       especialidad: null,
       solicitud: null,
-      latitud: null,
-      longitud: null,
+      datos: null,
+      detalleMontado: false,
+      franjaMostrada: null,
       franja: null,
       cita: null,
       avisoFranjas: null,
@@ -316,8 +303,191 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
     });
   });
 
-  it('cada cambio de paso sube al inicio de la página', () => {
+  it('un cambio de paso con la página desplazada sube al inicio, al instante (sin desplazamiento suave que choque con la animación)', () => {
+    Object.defineProperty(window, 'scrollY', { value: 240, configurable: true });
     flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0 });
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
+  });
+
+  it('con la página ya arriba no hace falta desplazar', () => {
+    flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  describe('salida con datos sin confirmar', () => {
+    const borrador = (extra: Partial<NonNullable<SolicitarServicioComponent['borradorDetalle']>> = {}) => ({
+      descripcionProblema: '',
+      direccionServicio: '',
+      latitud: null,
+      longitud: null,
+      ...extra,
+    });
+    const preguntar = (alRecibir: (r: boolean) => void): void => {
+      (flujo.confirmarSalida() as Observable<boolean>).subscribe(alRecibir);
+    };
+
+    beforeEach(() => cancelarCliente.cancelar.mockReset().mockReturnValue(of({})));
+
+    it('sin nada ingresado deja salir sin preguntar, aunque ya se haya elegido la especialidad', () => {
+      expect(flujo.haySinTerminar).toBe(false);
+      expect(flujo.confirmarSalida()).toBe(true);
+      flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
+      flujo.borradorDetalle = borrador({ descripcionProblema: '   ', direccionServicio: ' ' });
+      expect(flujo.haySinTerminar).toBe(false);
+      expect(flujo.mostrarSalida).toBe(false);
+    });
+
+    it.each([
+      ['una descripción', { descripcionProblema: 'No centrifuga' }],
+      ['una dirección', { direccionServicio: 'Calle 6' }],
+      ['la marca', { marcaElectrodomestico: 'LG' }],
+      ['el modelo', { modeloElectrodomestico: 'WW90' }],
+      ['fotos', { fotos: ['A'] }],
+      ['una ubicación elegida', { latitud: 4.3, longitud: -74.3 }],
+    ])('con %s ingresada hay algo que proteger', (_nombre, extra) => {
+      flujo.borradorDetalle = borrador(extra);
+      expect(flujo.haySinTerminar).toBe(true);
+    });
+
+    it('con detalles listos, un horario elegido o una solicitud creada también hay algo que proteger', () => {
+      flujo.onDetallesListos(evento());
+      expect(flujo.haySinTerminar).toBe(true);
+      flujo.solicitarOtroServicio();
+      flujo.onFranjaSeleccionada(FRANJA);
+      expect(flujo.haySinTerminar).toBe(true);
+      flujo.solicitarOtroServicio();
+      flujo.onSolicitudCreada(SOLICITUD);
+      expect(flujo.haySinTerminar).toBe(true);
+    });
+
+    it('con la cita confirmada o la solicitud entregada a un administrador ya no avisa', () => {
+      flujo.onDetallesListos(evento());
+      flujo.onCitaConfirmada(CITA);
+      expect(flujo.haySinTerminar).toBe(false);
+      expect(flujo.confirmarSalida()).toBe(true);
+
+      flujo.solicitarOtroServicio();
+      flujo.onDetallesListos(evento());
+      flujo.onManualEnviada({ cita: CITA, motivo: 'FUERA_DE_COBERTURA' });
+      expect(flujo.haySinTerminar).toBe(false);
+    });
+
+    it('con datos sin confirmar pregunta y "Cancelar" (quedarse) no descarta nada', () => {
+      flujo.onDetallesListos(evento());
+      flujo.onSolicitudCreada(SOLICITUD);
+      let respuesta: boolean | undefined;
+      preguntar((r) => (respuesta = r));
+      expect(flujo.mostrarSalida).toBe(true);
+
+      flujo.quedarse();
+
+      expect(respuesta).toBe(false);
+      expect(flujo.mostrarSalida).toBe(false);
+      expect(cancelarCliente.cancelar).not.toHaveBeenCalled();
+    });
+
+    it('"Salir" deja salir y, si había una solicitud creada sin confirmar, intenta cancelarla', () => {
+      flujo.onDetallesListos(evento());
+      flujo.onSolicitudCreada(SOLICITUD);
+      let respuesta: boolean | undefined;
+      preguntar((r) => (respuesta = r));
+
+      flujo.salir();
+
+      expect(respuesta).toBe(true);
+      expect(cancelarCliente.cancelar).toHaveBeenCalledWith(7);
+    });
+
+    it('"Salir" sin solicitud creada no llama a ningún endpoint, y si cancelar falla igual deja salir', () => {
+      flujo.onDetallesListos(evento());
+      let respuesta: boolean | undefined;
+      preguntar((r) => (respuesta = r));
+      flujo.salir();
+      expect(respuesta).toBe(true);
+      expect(cancelarCliente.cancelar).not.toHaveBeenCalled();
+
+      flujo.onSolicitudCreada(SOLICITUD);
+      cancelarCliente.cancelar.mockReturnValue(throwError(() => new Error('x')));
+      preguntar((r) => (respuesta = r));
+      expect(() => flujo.salir()).not.toThrow();
+      expect(respuesta).toBe(true);
+    });
+
+    it('una pregunta nueva reemplaza a la anterior y destruir la pantalla no deja la navegación colgada', () => {
+      flujo.onDetallesListos(evento());
+      const primera: boolean[] = [];
+      preguntar((r) => primera.push(r));
+      preguntar(() => undefined);
+      expect(primera).toEqual([false]);
+
+      const ultima: boolean[] = [];
+      preguntar((r) => ultima.push(r));
+      flujo.ngOnDestroy();
+      expect(ultima).toEqual([true]);
+    });
+
+    it('al recargar o cerrar la pestaña con datos sin confirmar el navegador pregunta; sin datos, no', () => {
+      const evt = (): BeforeUnloadEvent => ({ preventDefault: vi.fn() }) as unknown as BeforeUnloadEvent;
+      const sin = evt();
+      flujo.avisarAlCerrar(sin);
+      expect(sin.preventDefault).not.toHaveBeenCalled();
+
+      flujo.onDetallesListos(evento());
+      const con = evt();
+      flujo.avisarAlCerrar(con);
+      expect(con.preventDefault).toHaveBeenCalled();
+    });
+  });
+
+  describe('indicadores del asistente', () => {
+    it('antes de guardar nada se puede volver a los detalles y a la especialidad desde los horarios', () => {
+      flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
+      flujo.onDetallesListos(evento());
+      expect(flujo.paso).toBe('franja');
+
+      flujo.onCambioPaso(2);
+      expect(flujo.paso).toBe('detalle');
+      expect(flujo.franja).toBeNull();
+      expect(flujo.datos).toBe(DATOS);
+
+      flujo.onCambioPaso(1);
+      expect(flujo.paso).toBe('especialidad');
+    });
+
+    it('con una solicitud ya creada, esos pasos quedan bloqueados', () => {
+      flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
+      flujo.onDetallesListos(evento());
+      flujo.onSolicitudCreada(SOLICITUD);
+      flujo.onCambioPaso(1);
+      flujo.onCambioPaso(2);
+      expect(flujo.paso).toBe('franja');
+    });
+
+    it('el contenido del paso que sale se conserva hasta que el asistente termina de animar', () => {
+      flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
+      flujo.onDetallesListos(evento());
+      flujo.onFranjaSeleccionada(FRANJA);
+      expect(flujo.pasoSaliente).toBe('franja');
+      expect(flujo.franjaMostrada).toBe(FRANJA);
+
+      flujo.volverAFranjas();
+      expect(flujo.pasoSaliente).toBe('confirmar');
+      expect(flujo.franja).toBeNull();
+      expect(flujo.franjaMostrada).toBe(FRANJA);
+
+      flujo.onTransicionTerminada();
+      expect(flujo.pasoSaliente).toBeNull();
+      expect(flujo.franjaMostrada).toBeNull();
+    });
+
+    it('los detalles quedan montados una vez visitados (no se recrea el mapa) hasta pedir otro servicio', () => {
+      expect(flujo.detalleMontado).toBe(false);
+      flujo.onEspecialidadSeleccionada(ESPECIALIDAD);
+      flujo.onDetallesListos(evento());
+      expect(flujo.detalleMontado).toBe(true);
+      flujo.solicitarOtroServicio();
+      expect(flujo.detalleMontado).toBe(false);
+    });
   });
 });

@@ -23,7 +23,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           err.status === 401 || (err.status === 403 && !authService.estaAutenticado());
         if (sesionInvalida) {
           authService.cerrarSesion();
-          void router.navigate(['/login']);
+          router.navigate(['/login']).catch(() => undefined);
         }
       }
       return throwError(() => err);

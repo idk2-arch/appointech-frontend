@@ -1,14 +1,10 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../../core/services/auth.service';
-import { GOOGLE_CLIENT_ID } from '../../../core/config/api.config';
-
-declare const google: any;
-
-interface GoogleCredentialResponse {
-  credential: string;
-}
+import { GoogleIdentityService } from '../../../core/services/google-identity.service';
+import { despuesDelPrimerPintado } from '../../../core/utils/primer-pintado';
 
 @Component({
   selector: 'app-google-login-button',
@@ -20,81 +16,50 @@ export class GoogleLoginButtonComponent implements AfterViewInit, OnDestroy {
 
   errorMensaje: string | null = null;
 
-  private pollHandle: ReturnType<typeof setInterval> | null = null;
-  private intentos = 0;
-  private readonly MAX_INTENTOS = 50;
+  private credenciales?: Subscription;
+  private cancelarEspera: (() => void) | null = null;
+  private destruido = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private google: GoogleIdentityService
   ) {}
 
+  /**
+   * El botón se dibuja una sola vez, después del primer pintado: el script de Google no compite con el arranque y el
+   * formulario se puede usar desde el primer cuadro. El espacio del botón ya está reservado en la plantilla.
+   */
   ngAfterViewInit(): void {
-    this.esperarGoogle();
+    this.credenciales = this.google.credencial$.subscribe((credencial) => this.zone.run(() => this.onCredencial(credencial)));
+    this.cancelarEspera = despuesDelPrimerPintado(() => this.dibujar());
   }
 
   ngOnDestroy(): void {
-    if (this.pollHandle) {
-      clearInterval(this.pollHandle);
-    }
+    this.destruido = true;
+    this.cancelarEspera?.();
+    this.credenciales?.unsubscribe();
   }
 
-  private esperarGoogle(): void {
-    if (this.googleDisponible()) {
-      this.inicializarBoton();
-      return;
-    }
-
-    this.pollHandle = setInterval(() => {
-      this.intentos++;
-
-      if (this.googleDisponible()) {
-        this.detenerEspera();
-        this.inicializarBoton();
-      } else if (this.intentos >= this.MAX_INTENTOS) {
-        this.detenerEspera();
+  private dibujar(): void {
+    const contenedor = this.googleBtnRef.nativeElement;
+    const ancho = contenedor.offsetWidth || 384;
+    this.google.dibujarBoton(contenedor, ancho).then(
+      () => undefined,
+      () => {
+        if (this.destruido) return;
         this.errorMensaje = 'No fue posible cargar el inicio de sesión con Google.';
         this.cdr.markForCheck();
       }
-    }, 100);
+    );
   }
 
-  private googleDisponible(): boolean {
-    return typeof google !== 'undefined' && !!google?.accounts?.id;
-  }
-
-  private detenerEspera(): void {
-    if (this.pollHandle) {
-      clearInterval(this.pollHandle);
-      this.pollHandle = null;
-    }
-  }
-
-  private inicializarBoton(): void {
-    const contenedor = this.googleBtnRef.nativeElement;
-    const ancho = contenedor.offsetWidth || 384;
-
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: (respuesta: GoogleCredentialResponse) => this.zone.run(() => this.onCredencial(respuesta)),
-    });
-
-    google.accounts.id.renderButton(contenedor, {
-      theme: 'filled_black',
-      size: 'large',
-      text: 'signin_with',
-      locale: 'es',
-      shape: 'rectangular',
-      width: ancho,
-    });
-  }
-
-  private onCredencial(respuesta: GoogleCredentialResponse): void {
+  private onCredencial(credencial: string): void {
     this.errorMensaje = null;
 
-    this.authService.loginConGoogle(respuesta.credential).subscribe({
+    this.authService.loginConGoogle(credencial).subscribe({
       next: (response) => {
         this.cdr.markForCheck();
         this.authService.redirigirSegunRolYPerfil(this.router, response.perfilCompleto);

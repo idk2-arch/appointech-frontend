@@ -20,7 +20,7 @@
             <div class="drift-wall__tile">
               <span class="drift-wall__inner">
                 @if (tile.item.image) {
-                  <img [src]="tile.item.image" [alt]="tile.item.title ?? ''" loading="lazy" decoding="async" draggable="false" />
+                  <img [src]="tile.item.image" [alt]="tile.item.title ?? ''" loading="lazy" decoding="async" fetchpriority="low" draggable="false" />
                 }
                 <span class="drift-wall__overlay"></span>
               </span>

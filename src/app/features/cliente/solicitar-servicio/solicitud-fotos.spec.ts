@@ -3,39 +3,35 @@ import { FormBuilder } from '@angular/forms';
 import { Subject, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SolicitudServicio } from '../../../core/models/cita';
+import { Cita, CrearSolicitudRequest } from '../../../core/models/cita';
 import { FotoElectrodomesticoService, ResultadoSubidaFotos } from '../../../core/services/foto-electrodomestico.service';
-import { SolicitudService } from '../../../core/services/solicitud.service';
+import { CitaClienteService } from '../../../core/services/cita-cliente.service';
 import { EspecialidadResponse } from '../../../core/services/tecnico.service';
 import { AvisosPagoService } from '../../../shared/toast/avisos-pago.service';
-import { DetalleSolicitudComponent, SolicitudCreada } from './detalle-solicitud/detalle-solicitud.component';
+import { DetalleSolicitudComponent, DetallesListos } from './detalle-solicitud/detalle-solicitud.component';
 import { SolicitarServicioComponent } from './solicitar-servicio.component';
 
-const SOLICITUD: SolicitudServicio = {
-  id: 7,
-  tecnicoId: null,
+const DATOS: CrearSolicitudRequest = {
   especialidadId: 1,
   descripcionProblema: 'No centrifuga',
   direccionServicio: 'Calle 6 # 12-34',
-  fechaHoraInicio: null,
-  fechaHoraFin: null,
-  estado: 'PENDIENTE',
+  latitud: 4.3,
+  longitud: -74.3,
 };
+const CITA = { id: 7, tecnicoId: 3, especialidadId: 1, descripcionProblema: 'No centrifuga', direccionServicio: 'Calle 6 # 12-34', fechaHoraInicio: '2026-11-04T14:00:00', fechaHoraFin: '2026-11-04T15:00:00', estado: 'CONFIRMADA' } as Cita;
 
 const ESPECIALIDAD: EspecialidadResponse = { id: 1, nombre: 'Lavadoras', descripcion: '' };
 const cdr = { markForCheck: vi.fn() } as unknown as ChangeDetectorRef;
 
 describe('Formulario de solicitud: electrodoméstico y fotos', () => {
-  let crearSolicitud: ReturnType<typeof vi.fn>;
   let componente: DetalleSolicitudComponent;
-  let creadas: SolicitudCreada[];
+  let listos: DetallesListos[];
 
   beforeEach(() => {
-    crearSolicitud = vi.fn().mockReturnValue(of(SOLICITUD));
-    componente = new DetalleSolicitudComponent(new FormBuilder(), { crearSolicitud } as unknown as SolicitudService, cdr);
+    componente = new DetalleSolicitudComponent(new FormBuilder());
     componente.especialidad = ESPECIALIDAD;
-    creadas = [];
-    componente.creada.subscribe((c) => creadas.push(c));
+    listos = [];
+    componente.listos.subscribe((c) => listos.push(c));
     componente.ngOnInit();
     componente.form.patchValue({ descripcionProblema: 'No centrifuga', direccionServicio: 'Calle 6 # 12-34', latitud: 4.3, longitud: -74.3 });
     componente.puntoMapa = { latitud: 4.3, longitud: -74.3 };
@@ -48,10 +44,10 @@ describe('Formulario de solicitud: electrodoméstico y fotos', () => {
     expect(componente.puedeContinuar).toBe(true);
   });
 
-  it('la solicitud sin marca ni modelo no los envía', () => {
+  it('los datos sin marca ni modelo no los llevan', () => {
     componente.onSubmit();
 
-    const cuerpo = crearSolicitud.mock.calls[0][0];
+    const cuerpo = listos[0].datos;
     expect(cuerpo).toEqual({
       especialidadId: 1,
       descripcionProblema: 'No centrifuga',
@@ -69,7 +65,7 @@ describe('Formulario de solicitud: electrodoméstico y fotos', () => {
 
     componente.onSubmit();
 
-    expect(crearSolicitud.mock.calls[0][0]).toMatchObject({
+    expect(listos[0].datos).toMatchObject({
       marcaElectrodomestico: 'Samsung',
       modeloElectrodomestico: 'WW90',
       urgencia: 'URGENTE',
@@ -88,24 +84,23 @@ describe('Formulario de solicitud: electrodoméstico y fotos', () => {
     expect(componente.puedeContinuar).toBe(true);
   });
 
-  it('las fotos elegidas viajan en el aviso de solicitud creada (se suben cuando la cita ya existe)', () => {
+  it('las fotos elegidas viajan con los datos listos (se suben cuando la cita ya existe)', () => {
     componente.alCambiarFotos(['data:image/jpeg;base64,A', 'data:image/jpeg;base64,B']);
 
     componente.onSubmit();
 
-    expect(creadas[0].fotos).toEqual(['data:image/jpeg;base64,A', 'data:image/jpeg;base64,B']);
-    expect(creadas[0].solicitud.id).toBe(7);
+    expect(listos[0].fotos).toEqual(['data:image/jpeg;base64,A', 'data:image/jpeg;base64,B']);
   });
 
-  it('sin fotos, el aviso trae una lista vacía', () => {
+  it('sin fotos, trae una lista vacía', () => {
     componente.onSubmit();
-    expect(creadas[0].fotos).toEqual([]);
+    expect(listos[0].fotos).toEqual([]);
   });
 
-  it('las fotos no se envían con la solicitud: van aparte, tras crear la cita', () => {
+  it('las fotos no forman parte de los datos de la solicitud: van aparte, tras crear la cita', () => {
     componente.alCambiarFotos(['data:image/jpeg;base64,A']);
     componente.onSubmit();
-    expect(JSON.stringify(crearSolicitud.mock.calls[0][0])).not.toContain('base64');
+    expect(JSON.stringify(listos[0].datos)).not.toContain('base64');
   });
 
   it('el borrador incluye los campos nuevos y las fotos', () => {
@@ -119,7 +114,7 @@ describe('Formulario de solicitud: electrodoméstico y fotos', () => {
   });
 
   it('al volver al formulario recupera el borrador con sus fotos', () => {
-    const otro = new DetalleSolicitudComponent(new FormBuilder(), { crearSolicitud } as unknown as SolicitudService, cdr);
+    const otro = new DetalleSolicitudComponent(new FormBuilder());
     otro.especialidad = ESPECIALIDAD;
     otro.borrador = {
       descripcionProblema: 'x',
@@ -144,11 +139,15 @@ describe('Formulario de solicitud: electrodoméstico y fotos', () => {
   });
 });
 
-describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () => {
+describe('SolicitarServicioComponent: subida de fotos tras confirmar la cita', () => {
   let subirVarias: ReturnType<typeof vi.fn>;
   let flujo: SolicitarServicioComponent;
 
-  const evento = (fotos: string[]): SolicitudCreada => ({ solicitud: SOLICITUD, latitud: 4.3, longitud: -74.3, fotos });
+  /** Detalles listos con esas fotos y cita confirmada: es cuando recién existe la cita a la que se suben. */
+  const confirmarCon = (fotos: string[]): void => {
+    flujo.onDetallesListos({ datos: DATOS, fotos });
+    flujo.onCitaConfirmada(CITA);
+  };
   const resultado = (datos: Partial<ResultadoSubidaFotos>): ResultadoSubidaFotos => ({
     subidas: [],
     fallidas: [],
@@ -159,7 +158,7 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
   beforeEach(() => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     subirVarias = vi.fn().mockReturnValue(of(resultado({ subidas: [{ id: 1, url: '/f/1' }] })));
-    flujo = new SolicitarServicioComponent({ subirVarias } as unknown as FotoElectrodomesticoService, cdr, { anunciarCitaConfirmada: vi.fn() } as unknown as AvisosPagoService);
+    flujo = new SolicitarServicioComponent({ subirVarias } as unknown as FotoElectrodomesticoService, cdr, { anunciarCitaConfirmada: vi.fn() } as unknown as AvisosPagoService, { cancelar: vi.fn() } as unknown as CitaClienteService);
   });
 
   afterEach(() => {
@@ -167,26 +166,32 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
     vi.restoreAllMocks();
   });
 
-  it('sube las fotos a la cita recién creada y sigue al paso de horarios', () => {
-    flujo.onSolicitudCreada(evento(['A', 'B']));
+  it('antes de confirmar no sube nada: al pasar de los detalles a los horarios no hay cita a la que subir', () => {
+    flujo.onDetallesListos({ datos: DATOS, fotos: ['A', 'B'] });
+    expect(subirVarias).not.toHaveBeenCalled();
+    expect(flujo.paso).toBe('franja');
+  });
+
+  it('sube las fotos a la cita recién confirmada y muestra la pantalla final', () => {
+    confirmarCon(['A', 'B']);
 
     expect(subirVarias).toHaveBeenCalledWith(7, ['A', 'B']);
-    expect(flujo.paso).toBe('franja');
+    expect(flujo.paso).toBe('confirmada');
     expect(flujo.avisoFotos).toBeNull();
     expect(flujo.subiendoFotos).toBe(false);
   });
 
   it('sin fotos no sube nada', () => {
-    flujo.onSolicitudCreada(evento([]));
+    confirmarCon([]);
     expect(subirVarias).not.toHaveBeenCalled();
-    expect(flujo.paso).toBe('franja');
+    expect(flujo.paso).toBe('confirmada');
   });
 
   it('mientras sube, lo indica', () => {
     const subida = new Subject<ResultadoSubidaFotos>();
     subirVarias.mockReturnValue(subida);
 
-    flujo.onSolicitudCreada(evento(['A']));
+    confirmarCon(['A']);
     expect(flujo.subiendoFotos).toBe(true);
 
     subida.next(resultado({}));
@@ -197,10 +202,10 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
   it('si una foto falla, la cita queda creada y se avisa con el motivo y cómo seguir', () => {
     subirVarias.mockReturnValue(of(resultado({ fallidas: ['B'], mensajeError: 'La cita ya no admite fotos' })));
 
-    flujo.onSolicitudCreada(evento(['A', 'B']));
+    confirmarCon(['A', 'B']);
 
-    expect(flujo.paso).toBe('franja');
-    expect(flujo.solicitud).toEqual(SOLICITUD);
+    expect(flujo.paso).toBe('confirmada');
+    expect(flujo.cita).toEqual(CITA);
     expect(flujo.fotosPendientes).toEqual(['B']);
     expect(flujo.avisoFotos).toContain('Tu cita quedó creada');
     expect(flujo.avisoFotos).toContain('una foto');
@@ -210,13 +215,13 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
 
   it('con varias fallidas lo dice en plural', () => {
     subirVarias.mockReturnValue(of(resultado({ fallidas: ['A', 'B'], mensajeError: 'Error' })));
-    flujo.onSolicitudCreada(evento(['A', 'B']));
+    confirmarCon(['A', 'B']);
     expect(flujo.avisoFotos).toContain('2 fotos');
   });
 
   it('reintentar sube solo las que fallaron y limpia el aviso si ahora salen bien', () => {
     subirVarias.mockReturnValueOnce(of(resultado({ fallidas: ['B'], mensajeError: 'Error' })));
-    flujo.onSolicitudCreada(evento(['A', 'B']));
+    confirmarCon(['A', 'B']);
 
     flujo.reintentarFotos();
 
@@ -227,7 +232,7 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
 
   it('si el reintento vuelve a fallar, el aviso se mantiene', () => {
     subirVarias.mockReturnValue(of(resultado({ fallidas: ['B'], mensajeError: 'Error' })));
-    flujo.onSolicitudCreada(evento(['B']));
+    confirmarCon(['B']);
 
     flujo.reintentarFotos();
 
@@ -238,9 +243,9 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
   it('un error inesperado del servicio no deja al flujo trabado: avisa y deja reintentar', () => {
     subirVarias.mockReturnValue(throwError(() => new Error('boom')));
 
-    flujo.onSolicitudCreada(evento(['A', 'B']));
+    confirmarCon(['A', 'B']);
 
-    expect(flujo.paso).toBe('franja');
+    expect(flujo.paso).toBe('confirmada');
     expect(flujo.subiendoFotos).toBe(false);
     expect(flujo.fotosPendientes).toEqual(['A', 'B']);
     expect(flujo.avisoFotos).toContain('2 fotos');
@@ -248,7 +253,7 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
 
   it('pedir otro servicio reinicia el estado de las fotos', () => {
     subirVarias.mockReturnValue(of(resultado({ fallidas: ['B'], mensajeError: 'Error' })));
-    flujo.onSolicitudCreada(evento(['B']));
+    confirmarCon(['B']);
 
     flujo.solicitarOtroServicio();
 
@@ -262,7 +267,7 @@ describe('SolicitarServicioComponent: subida de fotos tras crear la cita', () =>
   it('al destruirse cancela la subida en curso', () => {
     const subida = new Subject<ResultadoSubidaFotos>();
     subirVarias.mockReturnValue(subida);
-    flujo.onSolicitudCreada(evento(['A']));
+    confirmarCon(['A']);
     expect(subida.observed).toBe(true);
 
     flujo.ngOnDestroy();

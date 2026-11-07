@@ -1,5 +1,5 @@
-<h2 class="text-lg font-semibold tracking-tight text-white">¿Qué necesitas reparar?</h2>
-<p class="mt-1 text-sm text-white/50">Elige la especialidad del servicio.</p>
+<h2 class="text-xl font-semibold tracking-tight text-white">¿Qué necesitas reparar?</h2>
+<p class="mt-1 text-base text-white/60">Elige la especialidad del servicio.</p>
 
 <div class="mt-6">
   @if (cargando) {
@@ -26,12 +26,12 @@
       Por ahora no hay especialidades disponibles. Vuelve más tarde.
     </div>
   } @else {
-    <div class="grid gap-3 sm:grid-cols-2">
+    <div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2">
       @for (especialidad of especialidades; track especialidad.id) {
         <button
           type="button"
           (click)="seleccionar.emit(especialidad)"
-          class="group flex items-start gap-4 rounded-2xl border p-4 text-left transition"
+          class="group flex h-full min-h-[5.5rem] items-start gap-4 rounded-2xl border p-4 text-left transition"
           [ngClass]="
             especialidad.id === seleccionadaId
               ? 'border-[#D98E4A]/60 bg-[#D98E4A]/10'
@@ -51,9 +51,9 @@
             </svg>
           </span>
           <span class="min-w-0 flex-1">
-            <span class="block text-sm font-semibold text-white">{{ especialidad.nombre }}</span>
+            <span class="block truncate text-base font-semibold text-white">{{ especialidad.nombre }}</span>
             @if (especialidad.descripcion) {
-              <span class="mt-0.5 block text-xs text-white/50">{{ especialidad.descripcion }}</span>
+              <span class="mt-0.5 line-clamp-2 text-sm text-white/60">{{ especialidad.descripcion }}</span>
             }
           </span>
           <svg viewBox="0 0 24 24" class="mt-2.5 h-4 w-4 shrink-0 text-white/30 transition group-hover:translate-x-0.5 group-hover:text-white/60" fill="none" stroke="currentColor" stroke-width="2">

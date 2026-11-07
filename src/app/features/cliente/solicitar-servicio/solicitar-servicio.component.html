@@ -1,44 +1,10 @@
-<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+<!-- Una sola columna centrada (máx. 960 px): el título y el asistente comparten el mismo borde izquierdo. -->
+<div class="mx-auto w-full max-w-[960px] px-4 py-8 sm:px-6 sm:py-10">
   @if (paso !== 'confirmada' && paso !== 'manual') {
     <h1 class="text-2xl font-semibold tracking-tight text-white sm:text-3xl">Solicitar servicio técnico</h1>
     <p class="mt-2 text-sm text-white/60">
       Cuéntanos qué necesitas y agenda la visita de un técnico a domicilio.
     </p>
-
-    <!-- Indicador de pasos -->
-    <ol class="mt-8 flex items-center gap-2" aria-label="Progreso de la solicitud">
-      @for (p of pasos; track p.id; let i = $index; let ultimo = $last) {
-        <li class="flex min-w-0 flex-1 items-center gap-2" [attr.aria-current]="i === indicePaso ? 'step' : null">
-          <span
-            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition"
-            [ngClass]="
-              i < indicePaso
-                ? 'border-[#D98E4A] bg-[#D98E4A] text-[#0B1224]'
-                : i === indicePaso
-                  ? 'border-[#D98E4A] bg-[#D98E4A]/10 text-[#D98E4A]'
-                  : 'border-white/15 bg-white/5 text-white/40'
-            "
-          >
-            @if (i < indicePaso) {
-              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.6">
-                <path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            } @else {
-              {{ i + 1 }}
-            }
-          </span>
-          <span
-            class="truncate text-xs font-medium"
-            [ngClass]="i === indicePaso ? 'text-white' : 'hidden text-white/40 sm:inline'"
-          >
-            {{ p.etiqueta }}
-          </span>
-          @if (!ultimo) {
-            <span class="h-px min-w-3 flex-1" [ngClass]="i < indicePaso ? 'bg-[#D98E4A]/60' : 'bg-white/10'"></span>
-          }
-        </li>
-      }
-    </ol>
   }
 
   @if (subiendoFotos) {
@@ -52,74 +18,99 @@
   }
 
   <div class="mt-8">
-    @switch (paso) {
-      @case ('especialidad') {
-        <app-elegir-especialidad
-          [seleccionadaId]="especialidad?.id ?? null"
-          (seleccionar)="onEspecialidadSeleccionada($event)"
-        ></app-elegir-especialidad>
+    @if (paso === 'manual') {
+      @if (datos) {
+        <app-solicitud-manual-creada
+          [motivo]="motivoManual"
+          [especialidadNombre]="especialidad?.nombre ?? null"
+          [direccion]="datos.direccionServicio"
+          (volverInicio)="solicitarOtroServicio()"
+        ></app-solicitud-manual-creada>
       }
+    } @else if (paso === 'confirmada') {
+      @if (cita) {
+        <app-cita-confirmada
+          [cita]="cita"
+          [especialidadNombre]="especialidad?.nombre ?? null"
+          (volverInicio)="solicitarOtroServicio()"
+        ></app-cita-confirmada>
+      }
+    } @else {
+      <!--
+        Asistente de cuatro pasos. Nada se guarda en el backend hasta el botón final: "Confirmar cita" crea la solicitud y
+        confirma la cita en un solo momento. Cada paso conserva sus botones y se habilita solo con datos válidos. Los
+        indicadores sirven para volver a lo que todavía se puede editar; seguir adelante lo hace cada paso.
+      -->
+      <app-stepper
+        [step]="indicePaso + 1"
+        [linear]="true"
+        [showFooter]="false"
+        indicator="numbers"
+        accentColor="#d98e4a"
+        width="100%"
+        contentMinHeight="min(30rem, 70dvh)"
+        (stepChange)="onCambioPaso($event)"
+        (transitionEnd)="onTransicionTerminada()"
+      >
+        <app-step [title]="pasos[0].etiqueta" [locked]="solicitud !== null">
+          <app-elegir-especialidad
+            [seleccionadaId]="especialidad?.id ?? null"
+            (seleccionar)="onEspecialidadSeleccionada($event)"
+          ></app-elegir-especialidad>
+        </app-step>
 
-      @case ('detalle') {
-        @if (especialidad) {
-          <app-detalle-solicitud
-            [especialidad]="especialidad"
-            [borrador]="borradorDetalle"
-            (borradorCambio)="borradorDetalle = $event"
-            (creada)="onSolicitudCreada($event)"
-            (volver)="volverAEspecialidad()"
-          ></app-detalle-solicitud>
-        }
-      }
+        <app-step [title]="pasos[1].etiqueta" [locked]="solicitud !== null">
+          @if (detalleMontado && especialidad) {
+            <app-detalle-solicitud
+              [especialidad]="especialidad"
+              [borrador]="borradorDetalle"
+              (borradorCambio)="borradorDetalle = $event"
+              (listos)="onDetallesListos($event)"
+              (volver)="volverAEspecialidad()"
+            ></app-detalle-solicitud>
+          }
+        </app-step>
 
-      @case ('franja') {
-        @if (solicitud && especialidad && latitud !== null && longitud !== null) {
-          <app-elegir-franja
-            [especialidad]="especialidad"
-            [solicitud]="solicitud"
-            [latitud]="latitud"
-            [longitud]="longitud"
-            [fecha]="fecha"
-            [aviso]="avisoFranjas"
-            (fechaCambio)="fecha = $event"
-            (seleccionar)="onFranjaSeleccionada($event)"
-          ></app-elegir-franja>
-        }
-      }
+        <app-step [title]="pasos[2].etiqueta" [locked]="paso !== 'confirmar'">
+          @if ((paso === 'franja' || pasoSaliente === 'franja') && datos && especialidad) {
+            <app-elegir-franja
+              [especialidad]="especialidad"
+              [datos]="datos"
+              [fecha]="fecha"
+              [aviso]="avisoFranjas"
+              (fechaCambio)="fecha = $event"
+              (seleccionar)="onFranjaSeleccionada($event)"
+              (manualEnviada)="onManualEnviada($event)"
+            ></app-elegir-franja>
+          }
+        </app-step>
 
-      @case ('confirmar') {
-        @if (solicitud && especialidad && franja) {
-          <app-confirmar-cita
-            [especialidad]="especialidad"
-            [solicitud]="solicitud"
-            [franja]="franja"
-            (confirmada)="onCitaConfirmada($event)"
-            (franjaNoDisponible)="onFranjaNoDisponible($event)"
-            (volver)="volverAFranjas()"
-          ></app-confirmar-cita>
-        }
-      }
-
-      @case ('manual') {
-        @if (solicitud) {
-          <app-solicitud-manual-creada
-            [motivo]="motivoManual"
-            [especialidadNombre]="especialidad?.nombre ?? null"
-            [direccion]="solicitud.direccionServicio"
-            (volverInicio)="solicitarOtroServicio()"
-          ></app-solicitud-manual-creada>
-        }
-      }
-
-      @case ('confirmada') {
-        @if (cita) {
-          <app-cita-confirmada
-            [cita]="cita"
-            [especialidadNombre]="especialidad?.nombre ?? null"
-            (volverInicio)="solicitarOtroServicio()"
-          ></app-cita-confirmada>
-        }
-      }
+        <app-step [title]="pasos[3].etiqueta" [locked]="true">
+          @if ((paso === 'confirmar' || pasoSaliente === 'confirmar') && datos && especialidad && franjaMostrada) {
+            <app-confirmar-cita
+              [especialidad]="especialidad"
+              [datos]="datos"
+              [solicitud]="solicitud"
+              [franja]="franjaMostrada"
+              (solicitudCreada)="onSolicitudCreada($event)"
+              (manualDetectada)="onSolicitudManual($event)"
+              (confirmada)="onCitaConfirmada($event)"
+              (franjaNoDisponible)="onFranjaNoDisponible($event)"
+              (volver)="volverAFranjas()"
+            ></app-confirmar-cita>
+          }
+        </app-step>
+      </app-stepper>
     }
   </div>
+
+  @if (mostrarSalida) {
+    <app-modal-formulario
+      titulo="¿Salir sin terminar?"
+      subtitulo="Tienes una solicitud sin terminar. Si sales ahora, se perderá lo que ingresaste."
+      textoEnviar="Salir"
+      (cerrar)="quedarse()"
+      (enviar)="salir()"
+    ></app-modal-formulario>
+  }
 </div>

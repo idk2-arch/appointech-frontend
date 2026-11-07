@@ -1,0 +1,121 @@
+<div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <div appAparecer="simple">
+    <h1 class="fs-titulo font-semibold tracking-tight text-white">Historial</h1>
+    <p class="mt-1 fs-cuerpo text-white/70">Tus servicios terminados y tus citas canceladas. Califica los que ya finalizaron.</p>
+  </div>
+
+  @if (!cargando() && !errorCarga() && citas().length > 0) {
+    <div role="group" aria-label="Ver historial de" class="mt-6 inline-flex gap-1 rounded-xl border border-white/10 bg-white/[0.02] p-1">
+      @for (v of vistas; track v.valor) {
+        <button
+          type="button"
+          [attr.aria-pressed]="vista() === v.valor"
+          (click)="cambiarVista(v.valor)"
+          [class]="vista() === v.valor ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'"
+          class="rounded-lg px-4 py-2 fs-cuerpo font-medium transition"
+        >
+          {{ v.etiqueta }} ({{ cantidades()[v.valor] }})
+        </button>
+      }
+    </div>
+  }
+
+  <div class="mt-6">
+    @if (cargando()) {
+      <div role="status" class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 fs-cuerpo text-white/70">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z"></path>
+        </svg>
+        Cargando tu historial…
+      </div>
+    } @else if (errorCarga()) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p role="alert" class="fs-cuerpo text-rose-300">{{ errorCarga() }}</p>
+        <button type="button" (click)="cargar()" class="boton-fila-admin">Reintentar</button>
+      </div>
+    } @else if (citas().length === 0) {
+      <div class="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center">
+        <p class="fs-cuerpo text-white/70">Aún no tienes servicios en tu historial.</p>
+        <a routerLink="/cliente/solicitar" class="boton-admin boton-admin--cobre">Solicitar un servicio</a>
+      </div>
+    } @else if (delaVista().length === 0) {
+      <div class="rounded-2xl border border-white/10 bg-white/[0.02] px-6 py-16 text-center fs-cuerpo text-white/70">
+        {{ vista() === 'FINALIZADA' ? 'Aún no tienes servicios finalizados.' : 'No tienes citas canceladas.' }}
+      </div>
+    } @else {
+      <ul appAparecer="lista" class="space-y-3">
+        @for (cita of visibles(); track cita.id) {
+          <li class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p class="fs-cuerpo font-semibold text-white">{{ cita.especialidadNombre || 'Servicio' }}</p>
+              <app-insignia-estado [estado]="cita.estado"></app-insignia-estado>
+            </div>
+            <p class="mt-2 fs-cuerpo text-[#D98E4A]">
+              @if (cita.fechaHoraInicio) {
+                <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fechaCorta' }}</span>,
+                {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}
+              } @else {
+                Sin fecha
+              }
+            </p>
+            <p class="mt-2 flex items-center gap-2 fs-cuerpo text-white/70">
+              <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita | nombreTecnico" tamano="sm"></app-avatar>
+              <span class="min-w-0 break-words">Técnico: {{ (cita | nombreTecnico) || 'Sin asignar' }}</span>
+            </p>
+
+            @if (cita.estado === 'FINALIZADA') {
+              <div class="mt-4 border-t border-white/10 pt-4" aria-live="polite">
+                @switch (entrada(cita.id)?.estado) {
+                  @case ('lista') {
+                    @if (entrada(cita.id); as e) {
+                      @if (e.estado === 'lista' && e.calificacion; as calificacion) {
+                        <div class="flex flex-wrap items-center gap-2">
+                          <app-peek-rating [value]="calificacion.puntuacion" [readOnly]="true" [size]="22" activeColor="#d98e4a" idleColor="rgba(255,255,255,0.18)"></app-peek-rating>
+                          <span class="fs-secundario text-white/60">Tu calificación</span>
+                        </div>
+                        @if (calificacion.comentario) {
+                          <p class="mt-2 break-words fs-cuerpo text-white/80">“{{ calificacion.comentario }}”</p>
+                        }
+                      } @else if (plazoVencido(cita)) {
+                        <p class="fs-secundario text-white/60">El plazo para calificar venció</p>
+                      } @else {
+                        <button type="button" (click)="abrirCalificar(cita)" class="boton-admin boton-admin--cobre">Calificar</button>
+                      }
+                    }
+                  }
+                  @case ('error') {
+                    <div class="flex flex-wrap items-center gap-3">
+                      <p role="alert" class="fs-secundario text-rose-300">No pudimos consultar tu calificación.</p>
+                      <button type="button" (click)="reintentar(cita.id)" class="boton-fila-admin">Reintentar</button>
+                    </div>
+                  }
+                  @default {
+                    <span class="block h-9 w-28 animate-pulse rounded-xl bg-white/10 motion-reduce:animate-none" role="status" aria-label="Cargando calificación"></span>
+                  }
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+
+      @if (faltan() > 0) {
+        <div class="mt-4 text-center">
+          <button type="button" (click)="verMas()" class="boton-fila-admin">Ver más ({{ faltan() }})</button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (citaACalificar(); as cita) {
+  <app-calificar-modal
+    [cita]="cita"
+    [enviada]="calificacionEnviada()"
+    [cargando]="enviando()"
+    [errorMensaje]="errorEnvio()"
+    (cerrar)="cerrarCalificar()"
+    (confirmar)="calificar($event)"
+  ></app-calificar-modal>
+}

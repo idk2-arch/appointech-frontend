@@ -1,11 +1,13 @@
 <div class="mx-auto w-full max-w-[560px] px-6 pb-10 pt-10 sm:px-8 sm:pt-16">
   <app-cobertura-pestanas></app-cobertura-pestanas>
+  <div appAparecer="simple">
   <h1 class="titulo-admin">Reglas de franjas</h1>
   <p class="mt-1 fs-cuerpo text-white/50">
     Con qué reglas se calculan los horarios que se ofrecen al cliente: la distancia, el largo de cada bloque y la jornada de trabajo.
   </p>
+  </div>
 
-  <div class="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
+  <div appAparecer="simple" aparecerClave="tarjeta" class="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
     @if (cargando) {
       <div class="flex items-center gap-3 fs-cuerpo text-white/50" role="status">
         <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">

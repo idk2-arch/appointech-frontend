@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AlertasAdmin, AlertasAdminService } from '../../../core/services/alertas-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConteoNotificacionesService } from '../../../core/services/conteo-notificaciones.service';
 import { AvisosAlertasService } from '../../../shared/toast/avisos-alertas.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { AdminShellComponent } from './admin-shell.component';
@@ -17,6 +18,9 @@ describe('AdminShellComponent', () => {
   const anunciar = vi.fn();
   const navigate = vi.fn();
   const cerrarSesion = vi.fn();
+  const noLeidas = signal<number | null>(null);
+  const iniciarConteo = vi.fn();
+  const detenerConteo = vi.fn();
   let toast: ToastService;
 
   function crear(): AdminShellComponent {
@@ -26,12 +30,16 @@ describe('AdminShellComponent', () => {
       { navigate } as unknown as Router,
       { obtener, total } as unknown as AlertasAdminService,
       { anunciar } as unknown as AvisosAlertasService,
-      toast
+      toast,
+      { noLeidas, iniciar: iniciarConteo, detener: detenerConteo } as unknown as ConteoNotificacionesService
     );
   }
 
   beforeEach(() => {
     total.set(null);
+    noLeidas.set(null);
+    iniciarConteo.mockReset();
+    detenerConteo.mockReset();
     for (const mock of [obtener, anunciar, navigate, cerrarSesion]) mock.mockReset();
     navigate.mockResolvedValue(true);
   });
@@ -115,6 +123,23 @@ describe('AdminShellComponent', () => {
       crear().cerrarSesion();
       expect(cerrarSesion).toHaveBeenCalledOnce();
       expect(navigate).toHaveBeenCalledWith(['/login']);
+    });
+  });
+
+  describe('notificaciones', () => {
+    it('el menú trae Notificaciones con el contador de no leídas', () => {
+      noLeidas.set(4);
+      const item = crear().menuItems().find((i) => i.value === 'notificaciones')!;
+      expect(item).toMatchObject({ routerLink: '/admin/notificaciones', icon: 'bell', badge: 4 });
+    });
+
+    it('inicia el conteo al crearse y lo detiene al destruirse', () => {
+      obtener.mockReturnValue(of(alertas(0)));
+      const shell = crear();
+      shell.ngOnInit();
+      expect(iniciarConteo).toHaveBeenCalledTimes(1);
+      shell.ngOnDestroy();
+      expect(detenerConteo).toHaveBeenCalledTimes(1);
     });
   });
 });

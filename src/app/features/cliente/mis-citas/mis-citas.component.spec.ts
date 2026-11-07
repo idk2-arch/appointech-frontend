@@ -240,4 +240,10 @@ describe('MisCitasComponent', () => {
       expect(document.body.querySelector('.tarjeta-expandible__capa [hidden]')).not.toBeNull();
     });
   });
+  it('el encabezado y la lista entran con la animación de aparecer', async () => {
+    await crear(of([cita(1, 'CONFIRMADA')]));
+    expect(raiz().querySelector('[appaparecer="simple"] h1')).not.toBeNull();
+    expect(raiz().querySelector('ul[appaparecer="lista"]')).not.toBeNull();
+  });
+
 });

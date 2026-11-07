@@ -1,0 +1,62 @@
+<div #raiz class="profile-card">
+  <div class="profile-card__body">
+    <div class="profile-card__tile">
+      @if (!conFoto) {
+        <span class="profile-card__placeholder" aria-hidden="true">
+          <span class="profile-card__initials">{{ iniciales }}</span>
+        </span>
+      }
+      <span class="profile-card__sheen"></span>
+      <span class="profile-card__holo">
+        <span class="profile-card__holo-glow"></span>
+        <span class="profile-card__holo-shift"></span>
+      </span>
+      @if (conFoto) {
+        <img class="profile-card__photo" [src]="avatarUrl" [alt]="name" loading="lazy" draggable="false" (error)="alFallarFoto()" />
+      }
+      @if (name || title) {
+        <span class="profile-card__scrim"></span>
+        <div class="profile-card__info">
+          @if (name) {
+            <p class="profile-card__name">{{ name }}</p>
+          }
+          @if (title) {
+            <p class="profile-card__title">{{ title }}</p>
+          }
+        </div>
+      }
+      <span class="profile-card__tile-rim"></span>
+    </div>
+
+    @if (showUserInfo) {
+      <div class="profile-card__footer">
+        @if (miniAvatarUrl) {
+          <span class="profile-card__avatar">
+            <img [src]="miniAvatarUrl" alt="" loading="lazy" draggable="false" />
+          </span>
+        }
+        <div class="profile-card__meta">
+          @if (handle) {
+            <span class="profile-card__handle" [attr.title]="handlePrefix + handle">{{ handlePrefix }}{{ handle }}</span>
+          }
+          @if (status) {
+            <span class="profile-card__status">{{ status }}</span>
+          }
+        </div>
+        @if (contactText) {
+          <button type="button" class="profile-card__contact" [attr.aria-label]="etiquetaContacto" (click)="contactClick.emit()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+              <path d="M3.5 7l8.5 6 8.5-6"></path>
+            </svg>
+            {{ contactText }}
+          </button>
+        }
+      </div>
+    }
+
+    <span class="profile-card__glare"></span>
+    <span class="profile-card__shade"></span>
+    <span class="profile-card__rim"></span>
+  </div>
+</div>

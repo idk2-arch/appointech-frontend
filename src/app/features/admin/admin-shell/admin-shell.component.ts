@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 
 import { AlertasAdminService } from '../../../core/services/alertas-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConteoNotificacionesService } from '../../../core/services/conteo-notificaciones.service';
 import { obtenerMensajeError } from '../../../core/utils/manejo-errores';
 import { SidebarMenuItem } from '../../../shared/sidebar-menu/sidebar-menu.component';
 import { AvisosAlertasService } from '../../../shared/toast/avisos-alertas.service';
@@ -25,7 +26,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     { value: 'citas', label: 'Citas', icon: 'calendar', routerLink: '/admin/citas' },
     { value: 'solicitudes-manuales', label: 'Solicitudes por coordinar', icon: 'alert', routerLink: '/admin/solicitudes-manuales' },
     { value: 'alertas', label: 'Alertas', icon: 'bell', routerLink: '/admin/alertas', badge: this.alertas.total() },
-    { value: 'gestion', label: 'Gestión operativa', icon: 'alert', disabled: true },
+    { value: 'notificaciones', label: 'Notificaciones', icon: 'bell', routerLink: '/admin/notificaciones', badge: this.conteo.noLeidas() },
     { value: 'cobertura', label: 'Cobertura', icon: 'settings', routerLink: '/admin/cobertura' },
     { value: 'historial', label: 'Historial financiero', icon: 'receipt', routerLink: '/admin/pagos' },
     { value: 'logs', label: 'Logs', icon: 'logs', routerLink: '/admin/logs' },
@@ -38,11 +39,13 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     private router: Router,
     private alertas: AlertasAdminService,
     private avisosAlertas: AvisosAlertasService,
-    private toast: ToastService
+    private toast: ToastService,
+    private conteo: ConteoNotificacionesService
   ) {}
 
   /** Carga el total para la insignia del menú y, si hay alertas, avisa una vez por sesión. */
   ngOnInit(): void {
+    this.conteo.iniciar();
     this.consultaAlertas = this.alertas.obtener().subscribe({
       next: ({ total }) => this.avisosAlertas.anunciar(total),
       error: (err) => this.toast.error('No se pudieron cargar las alertas', obtenerMensajeError(err, 'No fue posible cargar las alertas.')),
@@ -50,6 +53,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.conteo.detener();
     this.consultaAlertas?.unsubscribe();
   }
 

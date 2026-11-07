@@ -170,38 +170,45 @@
         <app-magic-bento-card [colSpan]="2">
           <h2 class="fs-secundario font-semibold uppercase tracking-wide text-white/60">Calificaciones</h2>
           <div class="mt-2 grid gap-4 sm:grid-cols-2">
-            <div>
-              <p class="text-4xl font-semibold tabular-nums">{{ promedio(v.calificaciones.promedio) }}</p>
-              <svg viewBox="0 0 120 24" class="mt-1 h-5 w-[6.25rem]" role="img" [attr.aria-label]="v.calificaciones.promedio === null ? 'Sin calificaciones' : 'Promedio de ' + promedio(v.calificaciones.promedio) + ' de 5 estrellas'">
-                <defs>
+            @if (v.calificaciones.promedio === null) {
+              <p class="fs-cuerpo text-white/60">Sin calificaciones en este período</p>
+            } @else {
+              <div>
+                <p class="text-4xl font-semibold tabular-nums">{{ promedio(v.calificaciones.promedio) }}</p>
+                <svg viewBox="0 0 120 24" class="mt-1 h-5 w-[6.25rem]" role="img" [attr.aria-label]="'Promedio de ' + promedio(v.calificaciones.promedio) + ' de 5 estrellas'">
+                  <defs>
+                    @for (relleno of v.calificaciones.estrellas; track $index) {
+                      <linearGradient [attr.id]="'dash-estrella-' + $index">
+                        <stop [attr.offset]="relleno * 100 + '%'" style="stop-color: var(--color-acento)" />
+                        <stop [attr.offset]="relleno * 100 + '%'" style="stop-color: rgb(255 255 255 / 0.2)" />
+                      </linearGradient>
+                    }
+                  </defs>
                   @for (relleno of v.calificaciones.estrellas; track $index) {
-                    <linearGradient [attr.id]="'dash-estrella-' + $index">
-                      <stop [attr.offset]="relleno * 100 + '%'" style="stop-color: var(--color-acento)" />
-                      <stop [attr.offset]="relleno * 100 + '%'" style="stop-color: rgb(255 255 255 / 0.2)" />
-                    </linearGradient>
+                    <path [attr.d]="trazoEstrella" [attr.transform]="'translate(' + $index * 24 + ')'" [attr.fill]="'url(#dash-estrella-' + $index + ')'" />
                   }
-                </defs>
-                @for (relleno of v.calificaciones.estrellas; track $index) {
-                  <path [attr.d]="trazoEstrella" [attr.transform]="'translate(' + $index * 24 + ')'" [attr.fill]="'url(#dash-estrella-' + $index + ')'" />
+                </svg>
+                <p class="mt-1 fs-secundario text-white/60">{{ cantidad(v.calificaciones.total) }} {{ v.calificaciones.total === 1 ? 'calificación' : 'calificaciones' }}</p>
+              </div>
+              <div class="min-w-0">
+                <p class="fs-secundario text-white/60">Por técnico</p>
+                @if (v.calificaciones.ranking.length === 0) {
+                  <p class="mt-1 fs-cuerpo text-white/60">Aún no hay calificaciones por técnico.</p>
+                } @else {
+                  <ol class="mt-1 space-y-1 fs-cuerpo">
+                    @for (tecnico of v.calificaciones.ranking; track $index; let i = $index) {
+                      <li class="flex items-baseline justify-between gap-2">
+                        <span class="min-w-0 truncate text-white/90" [attr.title]="tecnico.nombre">{{ i + 1 }}. {{ tecnico.nombre }}</span>
+                        <span class="shrink-0 tabular-nums text-white">{{ promedio(tecnico.promedio) }} <span class="text-white/50" [attr.title]="tecnico.cantidad < minimoRepresentativo ? 'Pocas calificaciones: el promedio aún no es representativo' : null">({{ cantidad(tecnico.cantidad) }})</span></span>
+                      </li>
+                    }
+                  </ol>
+                  @if (v.calificaciones.masTecnicos > 0) {
+                    <p class="mt-1 fs-secundario text-white/60">+{{ v.calificaciones.masTecnicos }} más</p>
+                  }
                 }
-              </svg>
-              <p class="mt-1 fs-secundario text-white/60">{{ cantidad(v.calificaciones.total) }} {{ v.calificaciones.total === 1 ? 'calificación' : 'calificaciones' }}</p>
-            </div>
-            <div>
-              <p class="fs-secundario text-white/60">Mejores técnicos</p>
-              @if (v.calificaciones.ranking.length === 0) {
-                <p class="mt-1 fs-cuerpo text-white/60">Aún no hay calificaciones por técnico.</p>
-              } @else {
-                <ol class="mt-1 space-y-1 fs-cuerpo">
-                  @for (tecnico of v.calificaciones.ranking; track tecnico.nombre; let i = $index) {
-                    <li class="flex items-baseline justify-between gap-2">
-                      <span class="min-w-0 break-words text-white/90">{{ i + 1 }}. {{ tecnico.nombre }}</span>
-                      <span class="shrink-0 tabular-nums text-white">{{ promedio(tecnico.promedio) }} <span class="text-white/50">({{ cantidad(tecnico.cantidad) }})</span></span>
-                    </li>
-                  }
-                </ol>
-              }
-            </div>
+              </div>
+            }
           </div>
         </app-magic-bento-card>
 

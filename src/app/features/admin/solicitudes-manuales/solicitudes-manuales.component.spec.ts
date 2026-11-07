@@ -357,4 +357,10 @@ describe('SolicitudesManualesComponent', () => {
       expect(listar).toHaveBeenCalledOnce();
     });
   });
+  it('el encabezado y la lista entran con la animación de aparecer', async () => {
+    await crear(pagina([ANA]));
+    expect(raiz().querySelector('[appaparecer="simple"] h1')).not.toBeNull();
+    expect(raiz().querySelector('ul[appaparecer="lista"]')).not.toBeNull();
+  });
+
 });

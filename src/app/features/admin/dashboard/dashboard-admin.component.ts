@@ -4,14 +4,12 @@ import { finalize, Subscription } from 'rxjs';
 
 import type { RangoSolicitado } from '../../../core/models/metricas';
 import { MetricasService } from '../../../core/services/metricas.service';
+import { TRAZO_ESTRELLA } from '../../../core/utils/calificacion';
 import { formatearCantidad, formatearPromedio } from '../../../core/utils/formato-metricas';
 import { obtenerMensajeError } from '../../../core/utils/manejo-errores';
 import { PresetRango, rangoDePreset, validarRango } from '../../../core/utils/rango-metricas';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { construirVista, RADIO_ANILLO, VistaMetricas } from './vista-metricas';
-
-/** Trazado de una estrella de 24 × 24. */
-const TRAZO_ESTRELLA = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.2 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8L12 2.5z';
+import { construirVista, MIN_CALIFICACIONES_REPRESENTATIVAS, RADIO_ANILLO, VistaMetricas } from './vista-metricas';
 
 /** Panel de métricas del administrador: una cuadrícula bento con el estado del negocio en un rango de fechas. */
 @Component({
@@ -41,6 +39,7 @@ export class DashboardAdminComponent implements OnInit, OnDestroy {
 
   readonly cantidad = formatearCantidad;
   readonly promedio = formatearPromedio;
+  readonly minimoRepresentativo = MIN_CALIFICACIONES_REPRESENTATIVAS;
   readonly trazoEstrella = TRAZO_ESTRELLA;
   readonly radioAnillo = RADIO_ANILLO;
 

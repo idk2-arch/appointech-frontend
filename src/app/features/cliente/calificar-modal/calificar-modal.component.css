@@ -1,0 +1,17 @@
+/* La frase entra con un leve ascenso cada vez que cambia la puntuación (sin movimiento si el sistema lo pide). */
+.calificar-frase {
+  animation: calificar-frase-entra 0.35s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes calificar-frase-entra {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calificar-frase {
+    animation: none;
+  }
+}

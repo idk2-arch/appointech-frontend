@@ -9,6 +9,7 @@ import { CoberturaComponent } from './cobertura/cobertura.component';
 import { SolicitudesManualesComponent } from './solicitudes-manuales/solicitudes-manuales.component';
 import { CitasAdminComponent } from './citas/citas-admin.component';
 import { DetalleCitaAdminComponent } from './detalle-cita/detalle-cita-admin.component';
+import { NotificacionesComponent } from '../../shared/notificaciones/notificaciones.component';
 import { MiPerfilComponent } from '../../shared/mi-perfil/mi-perfil.component';
 import { LogsComponent } from './logs/logs.component';
 import { ReglasFranjasComponent } from './reglas-franjas/reglas-franjas.component';
@@ -34,6 +35,7 @@ const routes: Routes = [
       { path: 'alertas', component: AlertasAdminComponent },
       { path: 'pagos', component: HistorialPagosComponent },
       { path: 'logs', component: LogsComponent },
+      { path: 'notificaciones', component: NotificacionesComponent },
       { path: 'perfil', component: MiPerfilComponent },
     ],
   },

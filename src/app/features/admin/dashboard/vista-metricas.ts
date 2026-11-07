@@ -19,7 +19,10 @@ const ROLES: { rol: RolMetrica; etiqueta: string }[] = [
 export const RADIO_ANILLO = 42;
 export const CIRCUNFERENCIA_ANILLO = 2 * Math.PI * RADIO_ANILLO;
 const ESTRELLAS = 5;
-const TECNICOS_EN_RANKING = 3;
+/** Técnicos que caben en la tarjeta de calificaciones; el resto se resume como "+N más". */
+export const TECNICOS_EN_RANKING = 5;
+/** Con menos calificaciones que estas, el promedio de un técnico es poco representativo. */
+export const MIN_CALIFICACIONES_REPRESENTATIVAS = 3;
 
 export interface FilaConteo {
   etiqueta: string;
@@ -63,7 +66,7 @@ export interface VistaMetricas {
   tasa: { texto: string; porcentaje: number; trazo: string };
   ingresos: { total: string; cantidadPagos: number; metodos: FilaMetodo[] };
   porCobrar: { cantidad: number; monto: string };
-  calificaciones: { promedio: number | null; total: number; estrellas: number[]; ranking: FilaTecnico[] };
+  calificaciones: { promedio: number | null; total: number; estrellas: number[]; ranking: FilaTecnico[]; masTecnicos: number };
   especialidades: FilaEspecialidad[];
   solicitudes: { total: number; filas: FilaConteo[] };
   usuarios: { total: number; filas: FilaConteo[] };
@@ -123,6 +126,7 @@ export function construirVista(m: Metricas): VistaMetricas {
         .sort((a, b) => b.promedio - a.promedio || b.cantidad - a.cantidad)
         .slice(0, TECNICOS_EN_RANKING)
         .map(({ nombre, promedio, cantidad }) => ({ nombre, promedio, cantidad })),
+      masTecnicos: Math.max(0, m.calificaciones.porTecnico.length - TECNICOS_EN_RANKING),
     },
     especialidades: m.especialidades.map((e) => ({
       nombre: e.nombre,

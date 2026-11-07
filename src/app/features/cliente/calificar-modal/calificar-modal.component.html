@@ -1,0 +1,99 @@
+<app-modal-formulario
+  titulo="Calificar servicio"
+  textoEnviar="Enviar calificación"
+  textoCargando="Enviando…"
+  [cargando]="cargando"
+  [enviarDeshabilitado]="!puntuacion"
+  [sinAcciones]="enviada"
+  [errorMensaje]="enviada ? null : errorMensaje"
+  (cerrar)="cerrar.emit()"
+  (enviar)="enviar()"
+>
+  @if (cita) {
+    <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+      <app-avatar [fotoUrl]="cita.tecnicoFotoUrl" [nombre]="cita | nombreTecnico" tamano="lg"></app-avatar>
+      <div class="min-w-0 space-y-0.5">
+        <p class="break-words fs-cuerpo font-semibold text-white">{{ (cita | nombreTecnico) || 'Técnico sin asignar' }}</p>
+        <p class="fs-cuerpo text-[#d98e4a]">{{ cita.especialidadNombre || 'Servicio' }}</p>
+        @if (cita.fechaHoraInicio) {
+          <p class="fs-secundario text-white/70">
+            <span class="first-letter:uppercase">{{ cita.fechaHoraInicio | fechaLocal: 'fechaCorta' }}</span>,
+            {{ cita.fechaHoraInicio | fechaLocal: 'hora' }}
+          </p>
+        }
+        @if (cita.direccionServicio) {
+          <p class="break-words fs-secundario text-white/60">{{ cita.direccionServicio }}</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (enviada) {
+    <div class="flex flex-col items-center gap-3 py-4 text-center" role="status">
+      <app-peek-rating [value]="puntuacion" [readOnly]="true" [size]="36" activeColor="#d98e4a" idleColor="rgba(255,255,255,0.18)"></app-peek-rating>
+      <p class="fs-titulo font-semibold text-white">¡Gracias por tu calificación!</p>
+      <p class="fs-cuerpo text-white/70">Tu opinión ayuda a mejorar el servicio.</p>
+      <button type="button" data-cerrar (click)="cerrar.emit()" class="boton-admin boton-admin--cobre mt-2">Cerrar</button>
+    </div>
+  } @else {
+    <div class="flex flex-col items-center text-center">
+      <span class="fs-cuerpo font-medium text-white">Tu puntuación</span>
+      <app-peek-rating
+        [value]="puntuacion"
+        (valueChange)="elegir($event)"
+        [allowClear]="false"
+        [labels]="etiquetas"
+        [size]="40"
+        [lift]="7"
+        activeColor="#d98e4a"
+        idleColor="rgba(255,255,255,0.18)"
+        tipColor="#1c2a4a"
+        ariaLabel="Tu puntuación de 1 a 5"
+      ></app-peek-rating>
+      <div class="min-h-8" aria-live="polite">
+        @if (frase) {
+          @for (f of [frase]; track f) {
+            <p class="calificar-frase fs-titulo font-semibold text-white">{{ f }}</p>
+          }
+        }
+      </div>
+    </div>
+
+    @if (sugerencias.length) {
+      <div>
+        <p id="calificar-sugerencias" class="fs-secundario text-white/60">Toca para agregar al comentario</p>
+        <div class="mt-2 flex flex-wrap gap-2" role="group" aria-labelledby="calificar-sugerencias">
+          @for (s of sugerencias; track s) {
+            <button
+              type="button"
+              [attr.aria-pressed]="activa(s)"
+              (click)="alternar(s)"
+              [class]="activa(s) ? 'border-[#d98e4a] bg-[#d98e4a]/20 text-white' : 'border-white/15 text-white/70 hover:border-white/30 hover:text-white'"
+              class="rounded-full border px-3 py-1.5 fs-secundario font-medium transition"
+            >
+              {{ s }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div>
+      <label for="calificar-comentario" class="block fs-cuerpo font-medium text-white">
+        Comentario <span class="font-normal text-white/60">(opcional)</span>
+      </label>
+      <p id="calificar-ayuda" class="mt-1 fs-secundario text-white/60">{{ ayuda }}</p>
+      <textarea
+        id="calificar-comentario"
+        name="comentario"
+        rows="4"
+        [maxLength]="maximo"
+        [(ngModel)]="comentario"
+        aria-describedby="calificar-ayuda"
+        placeholder="Cuéntanos cómo te fue con el técnico y el servicio"
+        class="campo mt-2"
+      ></textarea>
+      <p class="mt-1 text-right fs-secundario text-white/60">{{ comentario.length }}/{{ maximo }}</p>
+    </div>
+  }
+</app-modal-formulario>

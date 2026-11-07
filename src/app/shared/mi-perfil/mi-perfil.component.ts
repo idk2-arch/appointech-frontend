@@ -7,7 +7,9 @@ import { FotoPerfilService } from '../../core/services/foto-perfil.service';
 import { PerfilService } from '../../core/services/perfil.service';
 import { SesionService } from '../../core/services/sesion.service';
 import { obtenerMensajeError, obtenerMensajeErrorEscritura } from '../../core/utils/manejo-errores';
-import { nombreCompleto } from '../../core/utils/nombre-persona';
+import { etiquetaRol, nombreCompleto } from '../../core/utils/nombre-persona';
+import { resolverUrlFoto } from '../../core/utils/url-foto';
+import { PATRON_ENGRANAJES } from '../profile-card/profile-card.temas';
 
 /** Página "Mi perfil" de cualquier rol: la foto y los datos de la persona, que puede editar. */
 @Component({
@@ -19,6 +21,8 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
   private readonly sesion = inject(SesionService);
 
   readonly fotoUrl$ = this.sesion.fotoUrl$;
+  /** Patrón de engranajes por el que se ve la lámina holográfica de la tarjeta. */
+  readonly patron = PATRON_ENGRANAJES;
 
   perfil: Perfil | null = null;
   cargando = true;
@@ -45,6 +49,19 @@ export class MiPerfilComponent implements OnInit, OnDestroy {
   /** Rol del token; el perfil puede traer el suyo, que manda si existe. */
   get rol(): string | null {
     return this.perfil?.rol ?? this.authService.obtenerRol();
+  }
+
+  get nombreTarjeta(): string {
+    return this.perfil ? nombreCompleto(this.perfil.nombre, this.perfil.apellido) : '';
+  }
+
+  get rolTarjeta(): string {
+    return etiquetaRol(this.rol);
+  }
+
+  /** Foto de la sesión lista para la tarjeta; sin foto, la tarjeta muestra las iniciales. */
+  urlFoto(fotoUrl: string | null): string {
+    return resolverUrlFoto(fotoUrl) ?? '';
   }
 
   ngOnInit(): void {

@@ -1,6 +1,8 @@
 <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+  <div appAparecer="simple">
   <h1 class="fs-titulo font-semibold tracking-tight text-white">Mis citas</h1>
   <p class="mt-1 fs-cuerpo text-white/70">Revisa el estado de tus servicios, cancélalos o cambia su horario.</p>
+  </div>
 
   @if (!cargando && !errorCarga && citas.length > 0) {
     <div class="mt-6 max-w-xs">
@@ -42,7 +44,7 @@
       <p class="mb-3 fs-cuerpo text-white/70" aria-live="polite">
         {{ citasVisibles.length }} {{ citasVisibles.length === 1 ? 'cita' : 'citas' }}
       </p>
-      <ul class="space-y-3">
+      <ul appAparecer="lista" class="space-y-3">
         @for (cita of citasVisibles; track cita.id) {
           <li>
             <app-tarjeta-expandible #tarjeta [etiqueta]="'Detalle de la cita de ' + (cita.especialidadNombre || 'servicio')">

@@ -298,4 +298,10 @@ describe('ReglasFranjasComponent', () => {
       ['Reglas de franjas', '/admin/cobertura/franjas'],
     ]);
   });
+  it('el encabezado y la tarjeta del formulario entran con la animación de aparecer, cada uno con su clave', async () => {
+    await crear();
+    expect(raiz().querySelector('[appaparecer="simple"] h1')).not.toBeNull();
+    expect(raiz().querySelector('[appaparecer="simple"][aparecerclave="tarjeta"] form')).not.toBeNull();
+  });
+
 });

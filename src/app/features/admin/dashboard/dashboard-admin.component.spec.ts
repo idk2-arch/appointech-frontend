@@ -250,6 +250,55 @@ describe('DashboardAdminComponent', () => {
       expect(calificaciones.querySelectorAll('svg path')).toHaveLength(5);
     });
 
+    describe('Calificaciones con distintos números de técnicos', () => {
+      const tecnicos = (n: number) =>
+        Array.from({ length: n }, (_, i) => ({ tecnicoId: i + 1, nombre: `Técnico ${i + 1}`, promedio: 5 - i * 0.1, cantidad: 10 }));
+      const conTecnicos = (porTecnico: ReturnType<typeof tecnicos>) =>
+        crear(of(metricasDe({ calificaciones: { promedio: 4.5, total: 30, porTecnico } })));
+      const filas = (): HTMLElement[] => Array.from(tarjeta('Calificaciones').querySelectorAll('ol li'));
+
+      beforeEach(() => TestBed.resetTestingModule());
+
+      it('con 1 técnico muestra una fila y no dice "más"', async () => {
+        await conTecnicos(tecnicos(1));
+        expect(filas()).toHaveLength(1);
+        expect(texto(tarjeta('Calificaciones'))).not.toContain('más');
+      });
+
+      it('con 5 técnicos los muestra todos y no dice "más"', async () => {
+        await conTecnicos(tecnicos(5));
+        expect(filas()).toHaveLength(5);
+        expect(texto(tarjeta('Calificaciones'))).not.toContain('más');
+      });
+
+      it('con 12 técnicos muestra los 5 primeros en su orden y "+7 más"', async () => {
+        await conTecnicos(tecnicos(12));
+        expect(filas().map((f) => texto(f).split(' ').slice(0, 3).join(' '))).toEqual(['1. Técnico 1', '2. Técnico 2', '3. Técnico 3', '4. Técnico 4', '5. Técnico 5']);
+        expect(texto(tarjeta('Calificaciones'))).toContain('+7 más');
+      });
+
+      it('con 0 técnicos pero calificaciones, explica que no hay por técnico', async () => {
+        await conTecnicos([]);
+        expect(texto(tarjeta('Calificaciones'))).toContain('Aún no hay calificaciones por técnico.');
+      });
+
+      it('los nombres largos se cortan con puntos suspensivos y llevan tooltip', async () => {
+        const largo = 'Maria de los Angeles Fernandez de la Cruz y Montenegro';
+        await conTecnicos([{ tecnicoId: 1, nombre: largo, promedio: 4, cantidad: 10 }]);
+        const nombre = filas()[0].querySelector('span')!;
+        expect(nombre.className).toContain('truncate');
+        expect(nombre.getAttribute('title')).toBe(largo);
+      });
+
+      it('con menos de 3 calificaciones conserva el número entre paréntesis, avisa que son pocas y no marca nada como mejor', async () => {
+        await conTecnicos([{ tecnicoId: 1, nombre: 'Ana', promedio: 5, cantidad: 2 }, { tecnicoId: 2, nombre: 'Luis', promedio: 4, cantidad: 8 }]);
+        expect(texto(filas()[0])).toContain('1. Ana 5,0 (2)');
+        expect(filas()[0].querySelector('[title^="Pocas calificaciones"]')).not.toBeNull();
+        expect(filas()[1].querySelector('[title^="Pocas calificaciones"]')).toBeNull();
+        expect(texto(tarjeta('Calificaciones'))).not.toContain('Mejores');
+      });
+    });
+
     it('Especialidades: una fila por especialidad con su total y finalizadas', () => {
       const t = texto(tarjeta('Especialidades'));
       expect(t).toContain('Aires acondicionados 2 · 0 fin.');
@@ -313,12 +362,12 @@ describe('DashboardAdminComponent', () => {
       expect(texto(tarjeta('Tasa de cancelación'))).toContain('0,0 %');
     });
 
-    it('sin calificaciones dice "Sin calificaciones" y no inventa un ranking', () => {
+    it('sin calificaciones dice "Sin calificaciones en este período", sin 0,0, estrellas ni ranking', () => {
       const t = texto(tarjeta('Calificaciones'));
-      expect(t).toContain('Sin calificaciones');
-      expect(t).toContain('0 calificaciones');
-      expect(t).toContain('Aún no hay calificaciones por técnico.');
-      expect(tarjeta('Calificaciones').querySelector('svg')?.getAttribute('aria-label')).toBe('Sin calificaciones');
+      expect(t).toContain('Sin calificaciones en este período');
+      expect(t).not.toContain('0,0');
+      expect(t).not.toContain('Por técnico');
+      expect(tarjeta('Calificaciones').querySelector('svg')).toBeNull();
     });
 
     it('las especialidades en cero se ven atenuadas, no se ocultan', () => {

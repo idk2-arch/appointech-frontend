@@ -80,6 +80,16 @@ describe('MiPerfilComponent', () => {
       expect(texto()).toContain('Para cambiar estos datos contacta al administrador.');
     });
 
+    it('muestra la tarjeta de perfil con nombre, rol legible, correo completo y estado', () => {
+      const tarjeta = raiz().querySelector('app-profile-card')!;
+      expect(tarjeta.querySelector('.profile-card__name')?.textContent).toBe(`${PERFILES[rol].nombre} ${PERFILES[rol].apellido}`);
+      expect(tarjeta.querySelector('.profile-card__title')?.textContent).toBe({ CLIENTE: 'Cliente', TECNICO: 'Técnico', ADMINISTRADOR: 'Administrador' }[rol]);
+      expect(tarjeta.querySelector('.profile-card__handle')?.textContent).toBe('ana@correo.co');
+      expect(tarjeta.querySelector('.profile-card__status')?.textContent).toBe('Activo');
+      expect(tarjeta.querySelector('button')).toBeNull();
+      expect((tarjeta.querySelector('.profile-card') as HTMLElement).style.getPropertyValue('--pc-pattern')).toContain('data:image/svg+xml');
+    });
+
     it('muestra lo que corresponde a su rol', () => {
       expect(texto().includes('Especialidades')).toBe(rol === 'TECNICO');
       expect(texto().includes('Dirección')).toBe(rol !== 'ADMINISTRADOR');
@@ -164,6 +174,26 @@ describe('MiPerfilComponent', () => {
       sesion.establecerFoto('/api/fotos/guardada');
       componente.cargarPerfil();
       expect(sesion.fotoUrl).toBe('/api/fotos/guardada');
+    });
+
+    it('la tarjeta muestra la foto de la sesión y, sin foto, las iniciales', async () => {
+      await crear('CLIENTE');
+      expect(raiz().querySelector('app-profile-card .profile-card__initials')?.textContent?.trim()).toBe('AP');
+
+      sesion.establecerFoto('/api/fotos/abc');
+      refrescar();
+      expect(raiz().querySelector('app-profile-card .profile-card__photo')?.getAttribute('src')).toContain('/api/fotos/abc');
+      expect(raiz().querySelector('app-profile-card .profile-card__initials')).toBeNull();
+    });
+
+    it('mientras carga no hay tarjeta y el encabezado conserva su animación de aparecer', async () => {
+      await crear('CLIENTE');
+      perfiles.obtener.mockReturnValue(new Subject<Perfil>());
+      componente.cargarPerfil();
+      componente.perfil = null;
+      refrescar();
+      expect(raiz().querySelector('app-profile-card')).toBeNull();
+      expect(raiz().querySelector('[appaparecer="simple"] h1')).not.toBeNull();
     });
 
     it('el rol del perfil manda sobre el del token', async () => {

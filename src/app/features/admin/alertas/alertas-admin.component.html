@@ -1,6 +1,6 @@
 <div class="pagina-admin">
   <div class="flex flex-wrap items-start justify-between gap-3">
-    <div class="min-w-0">
+    <div appAparecer="simple" class="min-w-0">
       <h1 class="titulo-admin">Alertas</h1>
       <p class="mt-1 fs-cuerpo text-white/50">
         Solicitudes que quedaron sin técnico y esperan que un administrador contacte al cliente. Las más antiguas van primero.
@@ -43,7 +43,7 @@
         <a routerLink="/admin/solicitudes-manuales" class="boton-fila-admin mt-2">Ver solicitudes por coordinar</a>
       </div>
     } @else {
-      <ul class="grid gap-4 lg:grid-cols-2">
+      <ul appAparecer="lista" class="grid gap-4 lg:grid-cols-2">
         @for (alerta of alertas; track alerta.solicitudId) {
           <li appSpotlight class="flex min-w-0 flex-col rounded-2xl bg-white/[0.03] p-5">
             <div class="flex items-start justify-between gap-3">

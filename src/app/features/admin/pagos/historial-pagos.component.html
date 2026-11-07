@@ -1,6 +1,8 @@
 <div class="pagina-admin">
+  <div appAparecer="simple">
   <h1 class="titulo-admin">Historial financiero</h1>
   <p class="mt-1 fs-cuerpo text-white/50">Pagos de todas las citas, de los más recientes a los más antiguos.</p>
+  </div>
 
   <form
     [formGroup]="filtros"
@@ -80,7 +82,7 @@
         No hay pagos con estos filtros.
       </div>
     } @else {
-      <ul class="grid gap-4 md:grid-cols-2">
+      <ul appAparecer="lista" class="grid gap-4 md:grid-cols-2">
         @for (fila of pagos; track fila.citaId) {
           <li appSpotlight class="flex min-w-0 flex-col rounded-2xl bg-white/[0.03] p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">

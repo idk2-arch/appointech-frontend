@@ -100,4 +100,10 @@ describe('FinalizadasComponent', () => {
     fixture.destroy();
     expect(respuesta.observed).toBe(false);
   });
+  it('el encabezado y la lista entran con la animación de aparecer', async () => {
+    await crear(of([citaFinalizadaDe()]));
+    expect(raiz().querySelector('[appaparecer="simple"] h1')).not.toBeNull();
+    expect(raiz().querySelector('ul[appaparecer="lista"]')).not.toBeNull();
+  });
+
 });

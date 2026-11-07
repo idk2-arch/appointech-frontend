@@ -81,19 +81,22 @@ describe('construirVista', () => {
       total: 1,
       estrellas: [1, 1, 1, 1, 1],
       ranking: [{ nombre: 'Freddy Monroy', promedio: 5, cantidad: 1 }],
+      masTecnicos: 0,
     });
   });
 
-  it('el ranking muestra solo los tres primeros, por promedio y luego por cantidad', () => {
+  it('el ranking muestra solo los cinco primeros, por promedio y luego por cantidad, y cuenta los demás', () => {
     const tecnico = (id: number, promedio: number, cantidad: number) => ({ tecnicoId: id, nombre: `T${id}`, promedio, cantidad });
     const m = metricasDe({
-      calificaciones: { promedio: 4, total: 10, porTecnico: [tecnico(1, 3, 5), tecnico(2, 5, 1), tecnico(3, 4, 2), tecnico(4, 5, 4), tecnico(5, 4.5, 9)] },
+      calificaciones: { promedio: 4, total: 10, porTecnico: [tecnico(1, 3, 5), tecnico(2, 5, 1), tecnico(3, 4, 2), tecnico(4, 5, 4), tecnico(5, 4.5, 9), tecnico(6, 2, 3), tecnico(7, 1, 1)] },
     });
-    expect(construirVista(m).calificaciones.ranking.map((t) => t.nombre)).toEqual(['T4', 'T2', 'T5']);
+    const { ranking, masTecnicos } = construirVista(m).calificaciones;
+    expect(ranking.map((t) => t.nombre)).toEqual(['T4', 'T2', 'T5', 'T3', 'T1']);
+    expect(masTecnicos).toBe(2);
   });
 
   it('sin calificaciones: sin promedio, estrellas vacías y ranking vacío', () => {
-    expect(construirVista(metricasVacias()).calificaciones).toEqual({ promedio: null, total: 0, estrellas: [0, 0, 0, 0, 0], ranking: [] });
+    expect(construirVista(metricasVacias()).calificaciones).toEqual({ promedio: null, total: 0, estrellas: [0, 0, 0, 0, 0], ranking: [], masTecnicos: 0 });
   });
 
   it('las especialidades en cero se conservan, atenuadas', () => {

@@ -5,6 +5,7 @@ import { tecnicoGuard } from '../../core/guards/tecnico.guard';
 import { TecnicoShellComponent } from './tecnico-shell/tecnico-shell.component';
 import { MiAgendaComponent } from './mi-agenda/mi-agenda.component';
 import { NoDisponibilidadComponent } from './no-disponibilidad/no-disponibilidad.component';
+import { NotificacionesComponent } from '../../shared/notificaciones/notificaciones.component';
 import { MiPerfilComponent } from '../../shared/mi-perfil/mi-perfil.component';
 import { MiRutaComponent } from './mi-ruta/mi-ruta.component';
 import { FinalizadasComponent } from './finalizadas/finalizadas.component';
@@ -22,6 +23,7 @@ const routes: Routes = [
       { path: 'citas/:id/pago', component: PagoCitaTecnicoComponent },
       { path: 'bloques', component: NoDisponibilidadComponent },
       { path: 'ruta', component: MiRutaComponent },
+      { path: 'notificaciones', component: NotificacionesComponent },
       { path: 'perfil', component: MiPerfilComponent },
     ],
   },

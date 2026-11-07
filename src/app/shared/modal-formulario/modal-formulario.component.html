@@ -31,6 +31,7 @@
         </div>
       }
 
+      @if (!sinAcciones) {
       <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="button"
@@ -42,7 +43,7 @@
         </button>
         <button
           type="submit"
-          [disabled]="cargando"
+          [disabled]="cargando || enviarDeshabilitado"
           class="flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 fs-cuerpo font-medium
                  text-slate-900 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -57,6 +58,7 @@
           }
         </button>
       </div>
+      }
     </form>
   </div>
 </div>

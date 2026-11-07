@@ -19,6 +19,8 @@ import { RedactarTecnicoComponent } from './solicitar-servicio/redactar-tecnico/
 import { SugerirPrediagnosticoComponent } from './solicitar-servicio/sugerir-prediagnostico/sugerir-prediagnostico.component';
 import { CotizacionEstimadaComponent } from './solicitar-servicio/cotizacion-estimada/cotizacion-estimada.component';
 import { SolicitudManualCreadaComponent } from './solicitar-servicio/solicitud-manual-creada/solicitud-manual-creada.component';
+import { HistorialClienteComponent } from './historial/historial-cliente.component';
+import { CalificarModalComponent } from './calificar-modal/calificar-modal.component';
 import { ResultadoPagoComponent } from './pago-resultado/resultado-pago.component';
 
 @NgModule({
@@ -39,6 +41,8 @@ import { ResultadoPagoComponent } from './pago-resultado/resultado-pago.componen
     CotizacionEstimadaComponent,
     ResultadoPagoComponent,
     SolicitudManualCreadaComponent,
+    HistorialClienteComponent,
+    CalificarModalComponent,
   ],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, ClienteRoutingModule],
 })

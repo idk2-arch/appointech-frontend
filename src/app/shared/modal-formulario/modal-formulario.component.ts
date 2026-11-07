@@ -26,6 +26,10 @@ export class ModalFormularioComponent implements AfterViewInit, OnDestroy {
   @Input() textoEnviar = 'Guardar cambios';
   @Input() textoCargando = 'Guardando…';
   @Input() cargando = false;
+  /** Opcional: mantiene apagado el botón principal mientras falte algo obligatorio. */
+  @Input() enviarDeshabilitado = false;
+  /** Opcional: oculta Cancelar y el botón principal (p. ej. en una pantalla de agradecimiento con su propio botón). */
+  @Input() sinAcciones = false;
   @Input() errorMensaje: string | null = null;
   @Output() cerrar = new EventEmitter<void>();
   @Output() enviar = new EventEmitter<void>();

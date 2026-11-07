@@ -42,9 +42,13 @@ import { SelectorMetodoPagoComponent } from './selector-metodo-pago/selector-met
 import { ComprobanteComponent } from './comprobante/comprobante.component';
 import { PanelPagoComponent } from './panel-pago/panel-pago.component';
 import { EstadoPagoCitaComponent } from './estado-pago-cita/estado-pago-cita.component';
+import { ProfileCardComponent } from './profile-card/profile-card.component';
+import { NotificacionesComponent } from './notificaciones/notificaciones.component';
+import { PeekRatingComponent } from './peek-rating/peek-rating.component';
 import { ToastModule } from './toast/toast.module';
 import { MagicBentoComponent } from './magic-bento/magic-bento.component';
 import { MagicBentoCardComponent } from './magic-bento/magic-bento-card.component';
+import { AparecerDirective } from './aparecer/aparecer.directive';
 import { PaginacionComponent } from './paginacion/paginacion.component';
 import { InsigniaMotivoComponent } from './insignia-motivo/insignia-motivo.component';
 import { SpotlightDirective } from './spotlight/spotlight.directive';
@@ -94,6 +98,10 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     EstadoPagoCitaComponent,
     InsigniaMotivoComponent,
     PaginacionComponent,
+    PeekRatingComponent,
+    NotificacionesComponent,
+    ProfileCardComponent,
+    AparecerDirective,
     MagicBentoComponent,
     MagicBentoCardComponent,
     SpotlightDirective,
@@ -144,6 +152,10 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     EstadoPagoCitaComponent,
     InsigniaMotivoComponent,
     PaginacionComponent,
+    PeekRatingComponent,
+    NotificacionesComponent,
+    ProfileCardComponent,
+    AparecerDirective,
     MagicBentoComponent,
     MagicBentoCardComponent,
     SpotlightDirective,

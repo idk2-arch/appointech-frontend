@@ -1,0 +1,41 @@
+<div
+  #raiz
+  class="peek-rating"
+  [attr.role]="readOnly ? 'img' : 'radiogroup'"
+  [attr.aria-label]="readOnly ? actual + ' de ' + count + ' estrellas' : ariaLabel"
+  [attr.aria-disabled]="disabled || null"
+>
+  <div #fila class="peek-rating__row">
+    @if (interactivo && showTip) {
+      <span class="peek-rating__tip" aria-hidden="true"></span>
+    }
+    @for (i of indices; track i) {
+      @if (readOnly) {
+        <span class="peek-rating__star" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="glifo"></ng-container>
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="peek-rating__star"
+          role="radio"
+          [attr.aria-checked]="actual === i + 1"
+          [attr.aria-label]="etiquetaDe(i)"
+          [tabindex]="tabindexDe(i)"
+        >
+          <ng-container *ngTemplateOutlet="glifo"></ng-container>
+        </button>
+      }
+    }
+  </div>
+</div>
+
+<ng-template #glifo>
+  <span class="peek-rating__lift">
+    <span class="peek-rating__glyph">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+        <path [attr.d]="trazo"></path>
+      </svg>
+    </span>
+  </span>
+</ng-template>

@@ -88,3 +88,23 @@ describe('frases y sugerencias', () => {
     expect(quitarSugerencia('Puntual', 'Amable')).toBe('Puntual');
   });
 });
+
+describe('Separadores al quitar sugerencias', () => {
+  it.each([
+    ['Texto, \tPuntual;  resto', 'Texto, resto'],
+    ['Texto ; \nPuntual, resto', 'Texto , resto'],
+    ['Texto  Puntual resto', 'Texto, resto'],
+    ['Texto,; Puntual', 'Texto,'],
+    ['Puntual ; resto', '; resto'],
+    ['Sin sugerencia', 'Sin sugerencia'],
+    ['', ''],
+  ])('conserva el significado de los separadores del caso %#', (comentario, esperado) => {
+    expect(quitarSugerencia(comentario, 'Puntual')).toBe(esperado);
+  });
+
+  it('procesa espacios largos seguidos de un caracter que impide el sufijo', () => {
+    const prefijo = ' '.repeat(100_000) + 'x';
+    expect(quitarSugerencia(prefijo + 'Puntual', 'Puntual')).toBe(prefijo);
+    expect(quitarSugerencia('Texto;' + ' '.repeat(100_000) + 'Puntual', 'Puntual')).toBe('Texto');
+  });
+});

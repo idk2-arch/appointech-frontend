@@ -57,11 +57,17 @@ describe('CalificacionService', () => {
     });
 
     it('un error no queda en caché: el siguiente intento vuelve a pedir', () => {
-      servicio.obtener(5).subscribe({ error: () => undefined });
+      let error: { status: number } | undefined;
+      let resultado: unknown;
+      servicio.obtener(5).subscribe({ error: (e) => (error = e) });
       http.expectOne(`${API_BASE_URL}/cliente/citas/5/calificacion`).flush(null, { status: 500, statusText: 'Error' });
 
-      servicio.obtener(5).subscribe();
-      http.expectOne(`${API_BASE_URL}/cliente/citas/5/calificacion`).flush(CALIFICACION);
+      servicio.obtener(5).subscribe((r) => (resultado = r));
+      const reintento = http.expectOne(`${API_BASE_URL}/cliente/citas/5/calificacion`);
+      expect(reintento.request.method).toBe('GET');
+      reintento.flush(CALIFICACION);
+      expect(error?.status).toBe(500);
+      expect(resultado).toEqual(CALIFICACION);
     });
 
     it('lo ya consultado no se vuelve a pedir en la sesión (ni siquiera el "sin calificar")', () => {
@@ -94,8 +100,12 @@ describe('CalificacionService', () => {
       http.expectOne(`${API_BASE_URL}/cliente/citas/19/calificacion`).flush(null, { status: 404, statusText: 'Not Found' });
 
       servicio.olvidar(19);
-      servicio.obtener(19).subscribe();
-      http.expectOne(`${API_BASE_URL}/cliente/citas/19/calificacion`).flush(CALIFICACION);
+      let resultado: unknown;
+      servicio.obtener(19).subscribe((r) => (resultado = r));
+      const req = http.expectOne(`${API_BASE_URL}/cliente/citas/19/calificacion`);
+      expect(req.request.method).toBe('GET');
+      req.flush(CALIFICACION);
+      expect(resultado).toEqual(CALIFICACION);
     });
 
     it('al cerrar sesión se olvida todo lo guardado', () => {
@@ -103,8 +113,12 @@ describe('CalificacionService', () => {
       http.expectOne(`${API_BASE_URL}/cliente/citas/19/calificacion`).flush(CALIFICACION);
 
       sesion.limpiar();
-      servicio.obtener(19).subscribe();
-      http.expectOne(`${API_BASE_URL}/cliente/citas/19/calificacion`).flush(CALIFICACION);
+      let resultado: unknown;
+      servicio.obtener(19).subscribe((r) => (resultado = r));
+      const req = http.expectOne(`${API_BASE_URL}/cliente/citas/19/calificacion`);
+      expect(req.request.method).toBe('GET');
+      req.flush(CALIFICACION);
+      expect(resultado).toEqual(CALIFICACION);
     });
   });
 

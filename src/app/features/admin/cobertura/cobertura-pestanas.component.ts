@@ -55,7 +55,10 @@ export class CoberturaPestanasComponent {
   );
 
   readonly activa = computed<IdPestana>(() => {
-    const ruta = this.url().split(/[?#]/)[0].replace(/\/+$/, '');
+    const sinParametros = this.url().split(/[?#]/)[0];
+    let fin = sinParametros.length;
+    while (fin > 0 && sinParametros[fin - 1] === '/') fin--;
+    const ruta = sinParametros.slice(0, fin);
     return ruta === RUTA_FRANJAS ? 'franjas' : 'cobertura';
   });
 }

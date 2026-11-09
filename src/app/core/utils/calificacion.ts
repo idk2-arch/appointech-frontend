@@ -80,7 +80,9 @@ export function agregarSugerencia(comentario: string, sugerencia: string): strin
 export function quitarSugerencia(comentario: string, sugerencia: string): string {
   const inicio = comentario.indexOf(sugerencia);
   if (inicio < 0) return comentario;
-  const antes = comentario.slice(0, inicio).replace(/[,;]?\s*$/, '');
+  const prefijo = comentario.slice(0, inicio).trimEnd();
+  const ultimo = prefijo.at(-1);
+  const antes = ultimo === ',' || ultimo === ';' ? prefijo.slice(0, -1) : prefijo;
   const despues = comentario.slice(inicio + sugerencia.length).replace(/^[,;]?\s*/, '');
   return [antes, despues].filter(Boolean).join(', ');
 }

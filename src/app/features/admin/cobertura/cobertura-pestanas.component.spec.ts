@@ -9,6 +9,7 @@ import { CoberturaService } from '../../../core/services/cobertura.service';
 import { ReglasFranjasService } from '../../../core/services/reglas-franjas.service';
 import { AdminModule } from '../admin.module';
 import { CoberturaComponent } from './cobertura.component';
+import { CoberturaPestanasComponent } from './cobertura-pestanas.component';
 import { ReglasFranjasComponent } from '../reglas-franjas/reglas-franjas.component';
 
 const REGLAS = { radioMaximoKm: 10, duracionBloqueMinutos: 120, horaInicioJornada: '08:00:00', horaFinJornada: '18:00:00' };
@@ -112,5 +113,26 @@ describe('Pestañas de Cobertura: la activa siempre coincide con la ruta', () =>
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(pestañas(harness.routeNativeElement as HTMLElement)).toEqual({ resaltadas: ['Distancia y contacto'], actual: 'Distancia y contacto' });
+  });
+});
+
+describe('Normalizacion de la ruta de cobertura', () => {
+  it.each([
+    ['/admin/cobertura/franjas', 'franjas'],
+    ['/admin/cobertura/franjas///?x=1#arriba', 'franjas'],
+    ['/admin/cobertura/franjas#arriba?x=1', 'franjas'],
+    ['/admin/cobertura', 'cobertura'],
+    ['/admin/cobertura/franjas/otra', 'cobertura'],
+    ['/admin/cobertura/franjas-extra', 'cobertura'],
+    ['', 'cobertura'],
+    ['////', 'cobertura'],
+    ['/admin/cobertura/franjas' + '/'.repeat(100_000), 'franjas'],
+    ['/admin/cobertura/franjas' + '/'.repeat(100_000) + 'x', 'cobertura'],
+  ])('para la URL del caso %# selecciona %s', (url, esperada) => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: Router, useValue: { url, events: of() } }],
+    });
+    const componente = TestBed.runInInjectionContext(() => new CoberturaPestanasComponent());
+    expect(componente.activa()).toBe(esperada);
   });
 });

@@ -7,7 +7,7 @@ export type EstadoCita =
   | 'CANCELADA';
 
 /** Por qué una solicitud no entra al agendamiento automático y la coordina un administrador. */
-export type MotivoSolicitudEspecial = 'SIN_TECNICOS_ESPECIALIDAD' | 'FUERA_DE_COBERTURA';
+export type MotivoSolicitudEspecial = 'SIN_TECNICOS_ESPECIALIDAD' | 'FUERA_DE_COBERTURA' | 'SIN_HORARIOS';
 
 /** Quién asignó el técnico a mano y cuándo; algún dato puede ser nulo en las citas anteriores a RF15. */
 export interface AsignacionManual {
@@ -35,6 +35,7 @@ export interface SolicitudServicio {
   estado: EstadoCita;
   /** Verdadero si la solicitud no tiene franjas que elegir: un administrador la coordina. Igual en CitaResponse. */
   agendamientoManual?: boolean;
+  fechaDeseada?: string | null;
   motivoSolicitudEspecial?: MotivoSolicitudEspecial | null;
 }
 
@@ -64,6 +65,7 @@ export interface CrearSolicitudRequest {
 
 /** POST /citas/solicitud-manual. El teléfono solo es obligatorio si la cuenta no tiene uno registrado. */
 export interface SolicitudManualRequest {
+  fecha?: string;
   especialidadId: number;
   descripcionProblema: string;
   direccionServicio: string;

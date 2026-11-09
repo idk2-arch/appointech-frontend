@@ -191,7 +191,7 @@ export class SolicitarServicioComponent implements OnDestroy, ConSalidaConfirmab
 
   /** Sin técnicos o fuera de cobertura: la persona dejó su solicitud y un administrador la coordinará. */
   onManualEnviada(evento: { cita: Cita; motivo: MotivoSinFranjas | null }): void {
-    this.motivoManual = evento.cita.motivoSolicitudEspecial ?? (evento.motivo === 'SIN_HORARIOS' ? null : evento.motivo);
+    this.motivoManual = evento.cita.motivoSolicitudEspecial ?? evento.motivo;
     this.subirFotos(evento.cita.id, this.fotosElegidas);
     this.irA('manual');
   }

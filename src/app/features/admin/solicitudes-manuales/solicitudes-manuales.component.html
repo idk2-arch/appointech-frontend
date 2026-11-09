@@ -2,7 +2,7 @@
   <div appAparecer="simple">
   <h1 class="titulo-admin">Solicitudes por coordinar</h1>
   <p class="mt-1 fs-cuerpo text-white/50">
-    Solicitudes que requieren coordinación manual: dirección fuera de cobertura o sin técnicos para la especialidad. Contacta al cliente y asigna un técnico y un horario.
+    Solicitudes que requieren coordinación manual: dirección fuera de cobertura, sin técnicos para la especialidad o sin horarios disponibles. Contacta al cliente y asigna un técnico y un horario.
   </p>
   </div>
 
@@ -157,6 +157,7 @@
               </p>
             }
 
+@if (t.solicitud.fechaDeseada) { <p class="my-3 text-white/80">El cliente quiere la cita para el {{ t.solicitud.fechaDeseada | fechaLocal: 'fechaCorta' }}</p> }
             <!-- Cuerpo -->
             <div class="mt-4 min-w-0 flex-1 space-y-3">
               <div>

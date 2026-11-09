@@ -50,6 +50,7 @@ describe('categoriaNotificacion', () => {
     expect(categoriaNotificacion('costo_final_registrado')).toBe('pago');
     expect(categoriaNotificacion('CALIFICACION_NUEVA')).toBe('calificacion');
     expect(categoriaNotificacion('CITA_CANCELADA')).toBe('cita');
+    expect(categoriaNotificacion('SOLICITUD_SIN_HORARIOS')).toBe('cita');
     expect(categoriaNotificacion('SOLICITUD_SIN_TECNICO')).toBe('cita');
     expect(categoriaNotificacion('CITA_REPROGRAMADA')).toBe('cita');
   });

@@ -62,6 +62,11 @@ describe('AlertasAdminComponent', () => {
     expect(texto()).toContain('2 solicitudes sin técnico');
   });
 
+  it('muestra las alertas por falta de horarios con una etiqueta legible', async () => {
+    await crear(of(lista([alerta({ tipo: 'SOLICITUD_SIN_HORARIOS', mensaje: 'No hay franjas libres ese día.' })])));
+    expect(texto()).toContain('Sin horarios disponibles'); expect(texto()).toContain('No hay franjas libres ese día.');
+  });
+
   it('el teléfono es un enlace para llamar y cada alerta enlaza a las solicitudes por coordinar', async () => {
     await crear(of(lista([alerta()])));
 

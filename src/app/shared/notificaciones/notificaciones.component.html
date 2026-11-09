@@ -79,6 +79,7 @@
                   </span>
                   <span class="shrink-0 fs-secundario text-white/50">{{ tiempo(n.creadaEn) }}</span>
                 </span>
+                @if (n.tipo === 'SOLICITUD_SIN_HORARIOS') { <span class="mt-1 block text-sm text-[#d98e4a]">Sin horarios disponibles</span> }
                 <span class="mt-1 block break-words fs-cuerpo text-white/70">{{ n.mensaje }}</span>
               </span>
               @if (!n.leida) {

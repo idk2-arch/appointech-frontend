@@ -11,7 +11,7 @@ import { API_BASE_URL } from '../../../core/config/api.config';
 import { RegistroLog } from '../../../core/models/registro-log';
 import { Cobertura, CoberturaService } from '../../../core/services/cobertura.service';
 import { LogService } from '../../../core/services/log.service';
-import { CoberturaComponent, RADIO_MAXIMO_KM, RADIO_MINIMO_KM } from '../cobertura/cobertura.component';
+import { CoberturaComponent } from '../cobertura/cobertura.component';
 import { LogsComponent } from './logs.component';
 import '../admin.module';
 
@@ -158,25 +158,8 @@ describe('CoberturaComponent', () => {
   });
 
   describe('validaciones', () => {
-    it('la distancia es obligatoria', () => {
-      componente.radio?.setValue(null);
-      expect(componente.radio?.hasError('required')).toBe(true);
-    });
-
-    it(`la distancia va de ${RADIO_MINIMO_KM} a ${RADIO_MAXIMO_KM} km`, () => {
-      componente.radio?.setValue(0);
-      expect(componente.radio?.hasError('min')).toBe(true);
-      componente.radio?.setValue(RADIO_MAXIMO_KM + 1);
-      expect(componente.radio?.hasError('max')).toBe(true);
-      componente.radio?.setValue(RADIO_MAXIMO_KM);
-      expect(componente.radio?.valid).toBe(true);
-    });
-
-    it('la distancia debe ser un número entero', () => {
-      componente.radio?.setValue('12.5');
-      expect(componente.radio?.hasError('pattern')).toBe(true);
-      componente.radio?.setValue('abc');
-      expect(componente.radio?.hasError('pattern')).toBe(true);
+    it('el radio global permanece deshabilitado', () => {
+      expect(componente.radio?.disabled).toBe(true);
     });
 
     it('el WhatsApp es opcional, pero si se escribe debe ser válido', () => {
@@ -193,19 +176,19 @@ describe('CoberturaComponent', () => {
 
   describe('guardar', () => {
     it('inválido: marca los campos y no llama al backend', () => {
-      componente.radio?.setValue(0);
+      componente.whatsapp?.setValue('123');
       componente.guardar();
       expect(servicio.actualizar).not.toHaveBeenCalled();
-      expect(componente.radio?.touched).toBe(true);
+      expect(componente.whatsapp?.touched).toBe(true);
     });
 
-    it('envía el radio como número y el teléfono normalizado con el prefijo del país', () => {
+    it('conserva el radio global y normaliza el teléfono con prefijo del país', () => {
       componente.radio?.setValue('35');
       componente.whatsapp?.setValue('300 123 4567');
 
       componente.guardar();
 
-      expect(servicio.actualizar).toHaveBeenCalledWith({ radioMaximoKm: 35, telefonoWhatsappAdmin: '573001234567' });
+      expect(servicio.actualizar).toHaveBeenCalledWith({ radioMaximoKm: 20, telefonoWhatsappAdmin: '573001234567' });
     });
 
     it('un teléfono vacío se envía vacío, para borrar el guardado', () => {
@@ -214,28 +197,28 @@ describe('CoberturaComponent', () => {
       expect(servicio.actualizar).toHaveBeenCalledWith({ radioMaximoKm: 20, telefonoWhatsappAdmin: '' });
     });
 
-    it('si sale bien: muestra lo guardado y avisa cuántos km se atienden', () => {
+    it('si sale bien: muestra lo guardado y confirma el contacto', () => {
       servicio.actualizar.mockReturnValue(of({ radioMaximoKm: 45, telefonoWhatsappAdmin: null }));
       componente.guardar();
 
       expect(componente.radio?.value).toBe(45);
-      expect(componente.mensajeExito).toBe('Listo. Ahora atendemos automáticamente hasta 45 km.');
+      expect(componente.mensajeExito).toBe('Contacto guardado correctamente.');
       expect(componente.guardando).toBe(false);
     });
 
     it('un nuevo guardado limpia los avisos anteriores', () => {
       componente.mensajeExito = 'viejo';
       componente.errorGuardado = 'viejo';
-      componente.radio?.setValue(0);
+      componente.whatsapp?.setValue('123');
       componente.guardar();
       expect(componente.mensajeExito).toBeNull();
       expect(componente.errorGuardado).toBeNull();
     });
 
-    it('400: explica el rango válido', () => {
+    it('400: pide revisar el contacto', () => {
       servicio.actualizar.mockReturnValue(throwError(() => falloHttp(400)));
       componente.guardar();
-      expect(componente.errorGuardado).toBe('La distancia debe ser un número entero entre 1 y 100 km.');
+      expect(componente.errorGuardado).toBe('Revisa el número de WhatsApp.');
       expect(componente.guardando).toBe(false);
     });
 

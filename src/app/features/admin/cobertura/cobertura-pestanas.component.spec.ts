@@ -55,8 +55,9 @@ describe('Pestañas de Cobertura: la activa siempre coincide con la ruta', () =>
     const antes = pestañas(harness.routeNativeElement as HTMLElement);
     expect(antes).toEqual({ resaltadas: ['Reglas de franjas'], actual: 'Reglas de franjas' });
 
-    pantalla.form.patchValue({ radioMaximoKm: 25 });
+    pantalla.form.patchValue({ duracionBloqueMinutos: 90 });
     pantalla.guardar();
+    pantalla.confirmarGuardado();
     refrescar(harness);
     await harness.fixture.whenStable();
     refrescar(harness);
@@ -96,6 +97,9 @@ describe('Pestañas de Cobertura: la activa siempre coincide con la ruta', () =>
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(pestañas(harness.routeNativeElement as HTMLElement)).toEqual({ resaltadas: ['Distancia y contacto'], actual: 'Distancia y contacto' });
+    expect(harness.routeNativeElement?.querySelector('#cobertura-radio')).toBeNull();
+    expect(harness.routeNativeElement?.textContent).toContain('Ya no se usa');
+    expect(harness.routeNativeElement?.querySelector('a[href="/admin/franjas-tecnicos"]')).not.toBeNull();
 
     await harness.navigateByUrl('/admin/cobertura/franjas', ReglasFranjasComponent);
     harness.detectChanges();

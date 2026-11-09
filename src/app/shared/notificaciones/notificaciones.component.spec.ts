@@ -61,6 +61,12 @@ describe('NotificacionesComponent', () => {
     await tick();
   }
 
+  it('etiqueta la solicitud sin horarios con el icono de calendario', async () => {
+    await crear(pagina([notificacion(1, { tipo: 'SOLICITUD_SIN_HORARIOS' })]));
+    expect(fixture.nativeElement.textContent).toContain('Sin horarios disponibles');
+    expect(componente.categoria('SOLICITUD_SIN_HORARIOS')).toBe('cita');
+  });
+
   const tick = async (): Promise<void> => {
     fixture.detectChanges();
     await fixture.whenStable();

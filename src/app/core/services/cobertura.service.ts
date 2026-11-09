@@ -10,7 +10,7 @@ export interface Cobertura {
   telefonoWhatsappAdmin?: string | null;
 }
 
-/** Distancia máxima de atención automática (1 a 100 km). Solo administradores. */
+/** Contacto de coordinación manual y radio global en desuso. Solo administradores. */
 @Injectable({ providedIn: 'root' })
 export class CoberturaService {
   constructor(private http: HttpClient) {}

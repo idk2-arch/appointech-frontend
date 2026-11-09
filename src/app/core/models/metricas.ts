@@ -21,7 +21,7 @@ export interface MetricasCitas {
 /** Estado actual: no depende del rango de fechas. */
 export interface MetricasSolicitudesEspeciales {
   total: number;
-  porMotivo: Record<MotivoSolicitudEspecial, number>;
+  porMotivo: Partial<Record<MotivoSolicitudEspecial, number>>;
 }
 
 export interface MontoCantidad {

@@ -1,3 +1,4 @@
+import { FranjasTecnicosComponent } from './franjas-tecnicos/franjas-tecnicos.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -32,6 +33,7 @@ import { DashboardAdminComponent } from './dashboard/dashboard-admin.component';
 @NgModule({
   declarations: [
     AdminShellComponent,
+    FranjasTecnicosComponent,
     UsuariosComponent,
     CrearAdministradorModalComponent,
     TecnicoModalComponent,

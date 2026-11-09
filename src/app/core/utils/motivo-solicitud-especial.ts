@@ -4,10 +4,12 @@ import type { MotivoSolicitudEspecial } from '../models/cita';
 const ETIQUETAS_ADMIN: Record<MotivoSolicitudEspecial, string> = {
   SIN_TECNICOS_ESPECIALIDAD: 'Sin técnicos para la especialidad',
   FUERA_DE_COBERTURA: 'Fuera de cobertura',
+  SIN_HORARIOS: 'Sin horarios disponibles',
 };
 
 /** Texto para el cliente cuando su solicitud la coordina un administrador. */
 const MENSAJES_CLIENTE: Record<MotivoSolicitudEspecial, string> = {
+  SIN_HORARIOS: 'No hay horarios disponibles ese día.',
   SIN_TECNICOS_ESPECIALIDAD: 'Por ahora no hay técnicos disponibles para esta especialidad.',
   FUERA_DE_COBERTURA: 'Tu dirección está fuera de nuestra zona de cobertura automática.',
 };

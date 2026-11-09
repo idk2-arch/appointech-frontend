@@ -118,6 +118,7 @@ describe('construirVista', () => {
       filas: [
         { etiqueta: 'Fuera de cobertura', cantidad: 0 },
         { etiqueta: 'Sin técnicos para la especialidad', cantidad: 0 },
+        { etiqueta: 'Sin horarios disponibles', cantidad: 0 },
       ],
     });
     expect(vista.usuarios).toEqual({
@@ -141,8 +142,13 @@ describe('construirVista', () => {
     expect(v.citas.barras.map((b) => b.cantidad)).toEqual([3, 0, 0, 0, 0, 0]);
     expect(v.tasa.porcentaje).toBe(0);
     expect(v.ingresos.metodos.map((m) => m.cantidad)).toEqual([0, 0]);
-    expect(v.solicitudes.filas.map((f) => f.cantidad)).toEqual([0, 0]);
+    expect(v.solicitudes.filas.map((f) => f.cantidad)).toEqual([0, 0, 0]);
     expect(v.usuarios.filas.map((f) => f.cantidad)).toEqual([0, 0, 0]);
+  });
+
+  it('incluye la clave nueva SIN_HORARIOS con etiqueta legible', () => {
+    const metricas = metricasVacias(); metricas.solicitudesEspeciales.porMotivo.SIN_HORARIOS = 4;
+    expect(construirVista(metricas).solicitudes.filas).toContainEqual({ etiqueta: 'Sin horarios disponibles', cantidad: 4 });
   });
 
   it('sin actividad en el rango lo marca (los ceros no son un error)', () => {

@@ -40,6 +40,14 @@ describe('DetalleCitaAdminComponent: asignación manual', () => {
 
   beforeEach(() => TestBed.resetTestingModule());
 
+  it('muestra fecha deseada y la omite cuando es null', async () => {
+    await mostrar({ fechaDeseada: '2026-11-09' });
+    expect(document.body.textContent).toContain('El cliente quiere la cita para el');
+    expect(document.body.textContent).toContain('9 de nov');
+    TestBed.resetTestingModule(); await mostrar({ fechaDeseada: null });
+    expect(document.body.textContent).not.toContain('El cliente quiere la cita para el');
+  });
+
   it('muestra quién la asignó y cuándo', async () => {
     const nota = await mostrar({
       asignadaManualmente: true,

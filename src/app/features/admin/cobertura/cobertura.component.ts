@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
 import { Cobertura, CoberturaService } from '../../../core/services/cobertura.service';
 import { obtenerMensajeErrorEscritura } from '../../../core/utils/manejo-errores';
@@ -18,8 +18,9 @@ function whatsappValidator(control: AbstractControl): ValidationErrors | null {
   standalone: false,
   templateUrl: './cobertura.component.html',
 })
-export class CoberturaComponent implements OnInit {
-  readonly maximo = RADIO_MAXIMO_KM;
+export class CoberturaComponent implements OnInit, OnDestroy {
+  private tareas = new Subscription();
+  private radioActual = 0;
 
   form: FormGroup;
   cargando = true;
@@ -54,11 +55,13 @@ export class CoberturaComponent implements OnInit {
     this.cargar();
   }
 
+  ngOnDestroy(): void { this.tareas.unsubscribe(); }
+
   cargar(): void {
     this.cargando = true;
     this.errorCarga = null;
 
-    this.coberturaService
+    this.tareas.add(this.coberturaService
       .obtener()
       .pipe(
         finalize(() => {
@@ -70,10 +73,11 @@ export class CoberturaComponent implements OnInit {
         next: (cobertura) => this.mostrar(cobertura),
         error: (err) =>
           (this.errorCarga = obtenerMensajeErrorEscritura(err, 'cargar la distancia de atención', 'No se pudo leer la distancia.')),
-      });
+      }));
   }
 
   guardar(): void {
+    if (this.guardando || this.cargando || this.errorCarga) return;
     this.mensajeExito = null;
     this.errorGuardado = null;
     if (this.form.invalid) {
@@ -82,9 +86,9 @@ export class CoberturaComponent implements OnInit {
     }
 
     this.guardando = true;
-    this.coberturaService
+    this.tareas.add(this.coberturaService
       .actualizar({
-        radioMaximoKm: Number(this.radio?.value),
+        radioMaximoKm: this.radioActual,
         // Vacío borra el número guardado; null lo dejaría igual.
         telefonoWhatsappAdmin: normalizarTelefonoWhatsapp(this.whatsapp?.value) ?? '',
       })
@@ -97,18 +101,20 @@ export class CoberturaComponent implements OnInit {
       .subscribe({
         next: (cobertura) => {
           this.mostrar(cobertura);
-          this.mensajeExito = `Listo. Ahora atendemos automáticamente hasta ${cobertura.radioMaximoKm} km.`;
+          this.mensajeExito = 'Contacto guardado correctamente.';
         },
         error: (err) =>
           (this.errorGuardado = obtenerMensajeErrorEscritura(
             err,
-            'guardar la distancia',
-            `La distancia debe ser un número entero entre ${RADIO_MINIMO_KM} y ${RADIO_MAXIMO_KM} km.`
+            'guardar el contacto',
+            'Revisa el número de WhatsApp.'
           )),
-      });
+      }));
   }
 
   private mostrar(cobertura: Cobertura): void {
+    this.radioActual = cobertura.radioMaximoKm;
+    this.radio?.disable();
     this.form.reset({
       radioMaximoKm: cobertura.radioMaximoKm,
       telefonoWhatsappAdmin: cobertura.telefonoWhatsappAdmin ?? '',

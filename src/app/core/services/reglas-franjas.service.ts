@@ -18,7 +18,7 @@ export interface ReglasFranjas extends ReglasFranjasRequest {
   advertencia?: string | null;
 }
 
-/** Reglas con las que se calculan las franjas de agendamiento (radio, duración del bloque y jornada). Solo administradores. */
+/** Configuración global de duración. Radio y jornada se conservan solo por compatibilidad del PUT. Solo administradores. */
 @Injectable({ providedIn: 'root' })
 export class ReglasFranjasService {
   constructor(private http: HttpClient) {}

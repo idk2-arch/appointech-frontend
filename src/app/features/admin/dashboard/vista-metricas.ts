@@ -9,7 +9,7 @@ import { etiquetaMotivoSolicitud } from '../../../core/utils/motivo-solicitud-es
 
 const ESTADOS: EstadoCita[] = ['PENDIENTE', 'CONFIRMADA', 'EN_CAMINO', 'EN_PROCESO', 'FINALIZADA', 'CANCELADA'];
 const METODOS: MetodoPago[] = ['EFECTIVO', 'EN_LINEA'];
-const MOTIVOS: MotivoSolicitudEspecial[] = ['FUERA_DE_COBERTURA', 'SIN_TECNICOS_ESPECIALIDAD'];
+const MOTIVOS: MotivoSolicitudEspecial[] = ['FUERA_DE_COBERTURA', 'SIN_TECNICOS_ESPECIALIDAD', 'SIN_HORARIOS'];
 const ROLES: { rol: RolMetrica; etiqueta: string }[] = [
   { rol: 'CLIENTE', etiqueta: 'Clientes' },
   { rol: 'TECNICO', etiqueta: 'Técnicos' },

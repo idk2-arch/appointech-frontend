@@ -43,12 +43,29 @@ export class ModalFormularioComponent implements AfterViewInit, OnDestroy {
     if (!this.cargando) this.cerrar.emit();
   }
 
-  /** Al abrir, el foco pasa al primer campo (o al diálogo) y al cerrar vuelve a donde estaba. */
+  @HostListener('document:keydown', ['$event'])
+  mantenerFoco(evento: Event): void {
+    if (!(evento instanceof KeyboardEvent) || evento.key !== 'Tab') return;
+    const campos = Array.from(this.panel.nativeElement.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href]'))
+      .filter(campo => !campo.matches(':disabled') && !campo.closest('[hidden]'));
+    const primero = campos[0];
+    const ultimo = campos.at(-1);
+    if (!primero) { evento.preventDefault(); return; }
+    if (evento.shiftKey && document.activeElement === primero) {
+      evento.preventDefault(); ultimo?.focus();
+    } else if (!evento.shiftKey && document.activeElement === ultimo) {
+      evento.preventDefault(); primero.focus();
+    } else if (!this.panel.nativeElement.contains(document.activeElement)) {
+      evento.preventDefault(); primero.focus();
+    }
+  }
+
+  /** Al abrir enfoca el primer campo o botón; al cerrar devuelve el foco al control anterior. */
   ngAfterViewInit(): void {
     this.elementoPrevio = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const raiz = this.panel.nativeElement;
     const campo = raiz.querySelector<HTMLElement>('input:not([disabled]), textarea:not([disabled]), select:not([disabled])');
-    (campo ?? raiz).focus();
+    (campo ?? raiz.querySelector<HTMLElement>('button:not([disabled]), a[href]'))?.focus();
   }
 
   ngOnDestroy(): void {

@@ -55,6 +55,7 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
   tecnicos: TecnicoDisponible[] | null = null;
 
   private consultaFranjas?: Subscription;
+  private tareas = new Subscription();
 
   constructor(
     private disponibilidadService: DisponibilidadService,
@@ -74,15 +75,16 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.consultaFranjas?.unsubscribe();
+    this.tareas.unsubscribe();
   }
 
   get mensajeSinFranjas(): string {
     return MENSAJES_SIN_FRANJAS[this.motivoSinFranjas ?? 'SIN_HORARIOS'];
   }
 
-  /** Sin técnicos para la especialidad o fuera de cobertura no hay franjas que elegir: se ofrece la coordinación manual. */
+  /** Fuera de cobertura o sin horarios se ofrece la coordinación manual. */
   get esManual(): boolean {
-    return this.motivoSinFranjas === 'FUERA_DE_COBERTURA' || this.motivoSinFranjas === 'SIN_TECNICOS_ESPECIALIDAD';
+    return this.motivoSinFranjas === 'FUERA_DE_COBERTURA' || this.motivoSinFranjas === 'SIN_HORARIOS';
   }
 
   get fechaFueraDeRapidos(): boolean {
@@ -144,13 +146,14 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
 
   /** Envía la solicitud con los datos que el cliente ya llenó; un administrador coordinará la visita. */
   solicitarAgendamientoManual(): void {
-    if (this.enviandoManual) return;
+    if (this.enviandoManual || !this.esManual || this.franjas.length || this.cargando) return;
     this.enviandoManual = true;
     this.errorManual = null;
 
     const telefono = this.telefonoContacto.trim();
-    this.citaService
+    this.tareas.add(this.citaService
       .solicitarAgendamientoManual({
+        fecha: this.fecha,
         especialidadId: this.especialidad.id,
         descripcionProblema: this.datos.descripcionProblema,
         direccionServicio: this.datos.direccionServicio,
@@ -166,10 +169,11 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.enviandoManual = false;
+          if (err.status === 400 || err.status === 409) this.cargarFranjas();
           this.errorManual = obtenerMensajeError(err, 'No pudimos enviar tu solicitud. Intenta de nuevo en un momento.');
           this.cdr.markForCheck();
         },
-      });
+      }));
   }
 
   private armarEnlaceWhatsapp(telefonoAdmin: string | null | undefined): string | null {
@@ -184,7 +188,7 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
   }
 
   private cargarTecnicos(): void {
-    this.disponibilidadService.obtenerTecnicos(this.especialidad.id).subscribe({
+    this.tareas.add(this.disponibilidadService.obtenerTecnicos(this.especialidad.id).subscribe({
       next: (tecnicos) => {
         this.tecnicos = tecnicos;
         this.cdr.markForCheck();
@@ -193,7 +197,7 @@ export class ElegirFranjaComponent implements OnInit, OnDestroy {
       error: () => {
         this.tecnicos = null;
       },
-    });
+    }));
   }
 
   private generarDiasRapidos(): string[] {

@@ -75,7 +75,7 @@ describe('SolicitarServicioComponent: asistente por pasos', () => {
   beforeEach(async () => {
     confirmarCita.mockReset().mockReturnValue(of(CITA));
     crearSolicitud.mockReset().mockReturnValue(of(SOLICITUD));
-    solicitarAgendamientoManual.mockReset().mockReturnValue(of({ ...CITA, estado: 'PENDIENTE', motivoSolicitudEspecial: 'SIN_TECNICOS_ESPECIALIDAD' }));
+    solicitarAgendamientoManual.mockReset().mockReturnValue(of({ ...CITA, estado: 'PENDIENTE', motivoSolicitudEspecial: 'SIN_HORARIOS' }));
     cancelar.mockReset().mockReturnValue(of({}));
     obtenerFranjas.mockReset().mockReturnValue(of({ franjas: [FRANJA], motivoSinFranjas: null }));
     anunciarCitaConfirmada.mockReset();
@@ -327,18 +327,18 @@ describe('SolicitarServicioComponent: asistente por pasos', () => {
   });
 
   describe('agendamiento manual / solicitud especial', () => {
-    it('sin técnicos para la especialidad el horario ofrece dejar la solicitud (sin haber guardado nada antes)', async () => {
+    it('sin técnicos para la especialidad no permite coordinación manual', async () => {
       obtenerFranjas.mockReturnValue(of({ franjas: [], motivoSinFranjas: 'SIN_TECNICOS_ESPECIALIDAD' }));
       await irAHorarios();
 
       expect(texto()).toContain('Por ahora no tenemos técnicos para este servicio.');
-      expect(texto()).toContain('Dejar solicitud');
+      expect(texto()).not.toContain('Dejar solicitud');
       expect(crearSolicitud).not.toHaveBeenCalled();
       expect(solicitarAgendamientoManual).not.toHaveBeenCalled();
     });
 
     it('al pulsar "Solicitar agendamiento manual" se envía y se muestra "Recibimos tu solicitud", fuera del asistente', async () => {
-      obtenerFranjas.mockReturnValue(of({ franjas: [], motivoSinFranjas: 'SIN_TECNICOS_ESPECIALIDAD' }));
+      obtenerFranjas.mockReturnValue(of({ franjas: [], motivoSinFranjas: 'SIN_HORARIOS' }));
       await irAHorarios();
 
       boton('Solicitar agendamiento manual').click();
@@ -346,6 +346,7 @@ describe('SolicitarServicioComponent: asistente por pasos', () => {
 
       expect(solicitarAgendamientoManual).toHaveBeenCalledTimes(1);
       expect(solicitarAgendamientoManual).toHaveBeenCalledWith({
+        fecha: flujo.fecha,
         especialidadId: 1,
         descripcionProblema: 'No centrifuga',
         direccionServicio: 'Calle 6 # 12-34',
@@ -353,7 +354,7 @@ describe('SolicitarServicioComponent: asistente por pasos', () => {
         longitud: -74.3637,
       });
       expect(flujo.paso).toBe('manual');
-      expect(flujo.motivoManual).toBe('SIN_TECNICOS_ESPECIALIDAD');
+      expect(flujo.motivoManual).toBe('SIN_HORARIOS');
       expect(raiz().querySelector('app-solicitud-manual-creada')).not.toBeNull();
       expect(texto()).toContain('Recibimos tu solicitud');
       expect(raiz().querySelector('app-stepper')).toBeNull();
@@ -382,10 +383,29 @@ describe('SolicitarServicioComponent: asistente por pasos', () => {
       expect(flujo.paso).toBe('franja');
     });
 
-    it('sin horarios en el día (con técnicos) no ofrece la solicitud manual', async () => {
+    it('sin horarios en el día ofrece la solicitud manual', async () => {
       obtenerFranjas.mockReturnValue(of({ franjas: [], motivoSinFranjas: 'SIN_HORARIOS' }));
       await irAHorarios();
-      expect(texto()).not.toContain('Dejar solicitud');
+      expect(texto()).toContain('Dejar solicitud');
+    });
+
+    it.each([400, 409])('un %i manual refresca horarios y conserva datos y teléfono', async status => {
+      obtenerFranjas.mockReturnValue(of({ franjas: [], motivoSinFranjas: 'SIN_HORARIOS' }));
+      await irAHorarios();
+      const fecha = raiz().querySelector<HTMLInputElement>('input[type="date"]')!;
+      fecha.value = '2099-11-12'; fecha.dispatchEvent(new Event('change')); await detectar();
+      const telefono = raiz().querySelector<HTMLInputElement>('#telefono-contacto')!;
+      telefono.value = '3001234567'; telefono.dispatchEvent(new Event('input')); await detectar();
+      solicitarAgendamientoManual.mockReturnValue(throwError(() => new HttpErrorResponse({ status, error: { detail: 'Consulta los horarios actualizados' } })));
+      obtenerFranjas.mockReturnValue(of({ franjas: [FRANJA], motivoSinFranjas: null }));
+      boton('Solicitar agendamiento manual').click(); await detectar();
+      expect(solicitarAgendamientoManual).toHaveBeenCalledWith({ ...DATOS, fecha: '2099-11-12', telefonoContacto: '3001234567' });
+      expect(obtenerFranjas).toHaveBeenLastCalledWith({ especialidadId: 1, fecha: '2099-11-12', latitud: DATOS.latitud, longitud: DATOS.longitud });
+      expect(texto()).toContain('Consulta los horarios actualizados'); expect(flujo.paso).toBe('franja'); expect(texto()).toContain(DATOS.descripcionProblema);
+      obtenerFranjas.mockReturnValue(of({ franjas: [], motivoSinFranjas: 'SIN_HORARIOS' }));
+      const otraFecha = raiz().querySelector<HTMLInputElement>('input[type="date"]')!;
+      otraFecha.value = '2099-11-13'; otraFecha.dispatchEvent(new Event('change')); await detectar();
+      expect(raiz().querySelector<HTMLInputElement>('#telefono-contacto')?.value).toBe('3001234567');
     });
 
     it('si el backend marca la solicitud como manual al confirmar, se muestra la pantalla manual sin confirmar cita', async () => {

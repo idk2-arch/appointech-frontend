@@ -9,6 +9,7 @@ import { aPaginaServidor, construirParametros } from '../utils/total-count';
 
 /** Fechas en LocalDateTime sin zona (hora local de Colombia). */
 export interface SolicitudManualAdmin {
+  fechaDeseada?: string | null;
   id: number;
   clienteId: number;
   clienteNombre: string;

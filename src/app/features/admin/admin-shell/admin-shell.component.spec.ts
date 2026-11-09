@@ -49,7 +49,7 @@ describe('AdminShellComponent', () => {
 
   it('el menú tiene "Alertas" junto a las solicitudes por coordinar, con el total como insignia', () => {
     const shell = crear();
-    expect(shell.menuItems().map((i) => i.value).slice(3, 6)).toEqual(['citas', 'solicitudes-manuales', 'alertas']);
+    expect(shell.menuItems().map((i) => i.value).slice(4, 7)).toEqual(['citas', 'solicitudes-manuales', 'alertas']);
     expect(itemAlertas(shell)).toMatchObject({ label: 'Alertas', routerLink: '/admin/alertas', icon: 'bell', badge: null });
 
     total.set(4);

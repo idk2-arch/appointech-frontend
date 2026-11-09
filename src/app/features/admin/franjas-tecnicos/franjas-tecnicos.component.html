@@ -1,0 +1,525 @@
+﻿<div class="pagina-admin min-w-0 max-w-5xl">
+  <header appAparecer="simple">
+    <p class="text-sm font-medium text-[#d98e4a]">Organiza la atención</p>
+    <h1 class="titulo-admin mt-1">Franjas de técnicos</h1>
+    <p class="mt-2 text-white/60">Elige un técnico, una fecha y el horario de trabajo.</p>
+  </header>
+
+  @if (tecnico; as t) {
+    <section appAparecer="simple" class="resumen mt-6" aria-label="Técnico elegido">
+      <div class="flex min-w-0 items-center gap-3">
+        <ng-container *ngTemplateOutlet="foto; context: { $implicit: t }"></ng-container>
+        <div class="min-w-0 flex-1">
+          <h2 class="break-words font-semibold text-white">{{ t.nombre }} {{ t.apellido }}</h2>
+          <p class="mt-1 text-sm text-white/60">Radio de atención: {{ t.radioCoberturaKm }} km</p>
+        </div>
+        <button type="button" class="accion" [disabled]="guardando" (click)="irPaso(1)">
+          Cambiar
+        </button>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="accion"
+          [attr.aria-expanded]="editarRadio"
+          (click)="editarRadio = !editarRadio"
+        >
+          Editar radio
+        </button>
+        <button
+          type="button"
+          class="accion"
+          [disabled]="guardando"
+          [attr.aria-pressed]="verAgenda"
+          (click)="verAgenda ? cerrarAgenda() : abrirAgenda()"
+        >
+          {{ verAgenda ? 'Volver al asistente' : 'Ver agenda completa' }}
+        </button>
+      </div>
+      @if (editarRadio) {
+        <form class="mt-4 border-t border-white/10 pt-4" (ngSubmit)="guardarRadio()">
+          <label for="radio-tecnico" class="text-sm text-white">Radio de atención (km)</label>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <input
+              id="radio-tecnico"
+              name="radio"
+              type="number"
+              min="1"
+              max="100"
+              [(ngModel)]="radio"
+              class="campo !w-24"
+              aria-describedby="radio-ayuda"
+            /><button type="submit" class="accion primaria" [disabled]="guardandoRadio">
+              {{ guardandoRadio ? 'Guardando…' : 'Guardar radio' }}
+            </button>
+          </div>
+          <p id="radio-ayuda" class="mt-2 text-sm text-white/50">
+            Distancia máxima a la que este técnico atiende desde su ubicación
+          </p>
+          @if (errorRadio) {
+            <p role="alert" class="error mt-3">{{ errorRadio }}</p>
+          }
+        </form>
+      }
+    </section>
+  }
+
+  @if (error) {
+    <div role="alert" class="error mt-4">
+      {{ error }}
+      <button type="button" class="accion mt-2" (click)="reintentar()">Reintentar</button>
+    </div>
+  }
+
+  @if (verAgenda && tecnico) {
+    <section appAparecer="simple" class="panel mt-6" aria-labelledby="agenda-titulo">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 id="agenda-titulo" class="text-xl font-semibold text-white">Agenda completa</h2>
+          <p class="mt-1 text-sm text-white/50">Consulta y gestiona las franjas de este técnico.</p>
+        </div>
+        <label class="text-sm text-white" for="vista-agenda"
+          >Vista
+          <select
+            id="vista-agenda"
+            class="campo mt-1"
+            [ngModel]="vistaAgenda"
+            (ngModelChange)="cambiarVistaAgenda($event)"
+          >
+            <option value="semana">Semana</option>
+            <option value="mes">Mes</option>
+          </select></label
+        >
+      </div>
+      <nav
+        class="my-5 flex flex-wrap items-center justify-between gap-2"
+        aria-label="Navegación de agenda"
+      >
+        <button
+          type="button"
+          class="accion"
+          (click)="navegarAgenda(-1)"
+          [attr.aria-label]="vistaAgenda === 'mes' ? 'Mes anterior de agenda' : 'Semana anterior'"
+        >
+          Anterior
+        </button>
+        <h3 class="text-center font-semibold capitalize text-white">{{ tituloAgenda }}</h3>
+        <button
+          type="button"
+          class="accion"
+          (click)="navegarAgenda(1)"
+          [attr.aria-label]="vistaAgenda === 'mes' ? 'Mes siguiente de agenda' : 'Semana siguiente'"
+        >
+          Siguiente
+        </button>
+      </nav>
+      @if (cargandoAgenda) {
+        <p role="status" class="py-8 text-center text-white/60">Cargando agenda…</p>
+      } @else if (errorAgenda) {
+        <div role="alert" class="error">
+          {{ errorAgenda }}
+          <button type="button" class="accion mt-2" (click)="cargarAgenda()">Reintentar</button>
+        </div>
+      } @else {
+        @if (!franjasAgenda.length) {
+          <p role="status" class="mb-4 text-white/60">No hay franjas en este período.</p>
+        }
+        <div
+          appAparecer="lista"
+          class="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3"
+          [attr.aria-label]="'Agenda por ' + vistaAgenda"
+        >
+          @for (dia of diasAgenda; track dia) {
+            <section class="dia-agenda" [attr.aria-label]="dia">
+              <h4 class="mb-3 text-sm font-semibold capitalize text-white">
+                {{ dia | fechaLocal: 'fecha' }}
+              </h4>
+              <ng-container
+                *ngTemplateOutlet="listaFranjas; context: { $implicit: franjasDia(dia, true) }"
+              ></ng-container>
+            </section>
+          }
+        </div>
+      }
+    </section>
+  } @else {
+    <div class="mt-6 min-w-0">
+      <app-stepper
+        [step]="paso"
+        [linear]="false"
+        [showFooter]="false"
+        [disableStepIndicators]="guardando"
+        indicator="numbers"
+        accentColor="#d98e4a"
+        width="100%"
+        contentMinHeight="20rem"
+        (stepChange)="irPaso($event)"
+      >
+        <app-step title="Técnico">
+          <section appAparecer="simple" aria-labelledby="tecnico-titulo">
+            <h2 id="tecnico-titulo" class="text-xl font-semibold text-white">¿Quién atenderá?</h2>
+            <p class="mt-2 text-white/60">Elige un técnico para ver o crear sus franjas</p>
+            <label for="buscar-tecnico" class="sr-only">Buscar técnico o especialidad</label>
+            <div class="buscador mt-5">
+              <svg
+                viewBox="0 0 24 24"
+                class="h-5 w-5 shrink-0 text-white/50"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 4.5 4.5" /></svg
+              ><input
+                id="buscar-tecnico"
+                type="search"
+                [(ngModel)]="busqueda"
+                placeholder="Buscar técnico o especialidad"
+                class="min-w-0 flex-1 bg-transparent py-3 text-white outline-none"
+              />
+            </div>
+            @if (cargandoTecnicos) {
+              <p role="status" class="my-6 text-white/60">Cargando técnicos…</p>
+            } @else {
+              <div
+                appAparecer="lista"
+                class="mt-4 grid max-h-96 gap-3 overflow-y-auto sm:grid-cols-2"
+              >
+                @for (t of filtrados; track t.id) {
+                  <button
+                    type="button"
+                    class="tarjeta-tecnico"
+                    [class.elegido]="tecnico?.id === t.id"
+                    [attr.aria-pressed]="tecnico?.id === t.id"
+                    (click)="seleccionar(t)"
+                  >
+                    <ng-container
+                      *ngTemplateOutlet="foto; context: { $implicit: t }"
+                    ></ng-container>
+                    <span class="min-w-0 flex-1"
+                      ><strong class="block break-words text-white"
+                        >{{ t.nombre }} {{ t.apellido }}</strong
+                      ><span class="mt-1 block text-sm text-white/55">
+                        @for (e of t.especialidades; track e.id; let ultimo = $last) {
+                          {{ e.nombre }}{{ ultimo ? '' : ' · ' }}
+                        }</span
+                      ><span class="mt-2 block text-sm text-[#d98e4a]"
+                        >{{ t.radioCoberturaKm }} km de atención</span
+                      ></span
+                    >
+                  </button>
+                } @empty {
+                  <p class="py-6 text-white/60">No se encontraron técnicos.</p>
+                }
+              </div>
+            }
+            <div class="pie-paso justify-end">
+              <button
+                type="button"
+                class="accion primaria"
+                [disabled]="!tecnico"
+                (click)="irPaso(2)"
+              >
+                Siguiente
+              </button>
+            </div>
+          </section>
+        </app-step>
+
+        <app-step title="Fecha" [locked]="!tecnico">
+          <section appAparecer="simple" aria-labelledby="fecha-titulo">
+            <h2 id="fecha-titulo" class="text-xl font-semibold text-white">¿Qué día trabajará?</h2>
+            <p class="mt-2 text-white/60">Los días con un punto tienen franjas registradas.</p>
+            <div class="calendario mt-5" role="group" aria-label="Calendario de trabajo">
+              <nav
+                class="mb-4 flex items-center justify-between gap-2"
+                aria-label="Mes del calendario"
+              >
+                <button
+                  type="button"
+                  class="accion"
+                  aria-label="Mes anterior"
+                  (click)="navegar(-1)"
+                >
+                  ‹
+                </button>
+                <h3 class="text-center font-semibold capitalize text-white" aria-live="polite">
+                  {{ tituloMes }}
+                </h3>
+                <button
+                  type="button"
+                  class="accion"
+                  aria-label="Mes siguiente"
+                  (click)="navegar(1)"
+                >
+                  ›
+                </button>
+              </nav>
+              <div class="cuadricula-mes">
+                @for (diaSemana of diasSemana; track diaSemana) {
+                  <span class="pb-2 text-center text-xs text-white/45" aria-hidden="true">{{
+                    diaSemana
+                  }}</span>
+                }
+                @for (dia of celdasMes; track $index) {
+                  @if (dia) {
+                    <button
+                      type="button"
+                      class="calendario-dia"
+                      [class.hoy]="dia === hoy"
+                      [class.elegido]="dia === fecha"
+                      [disabled]="dia < hoy"
+                      [attr.aria-current]="dia === hoy ? 'date' : null"
+                      [attr.aria-pressed]="dia === fecha"
+                      [attr.aria-label]="
+                        (dia | fechaLocal: 'fecha') + ', ' + franjasDia(dia).length + ' franjas'
+                      "
+                      [attr.data-fecha]="dia"
+                      [attr.tabindex]="dia === diaEnFoco ? 0 : -1"
+                      (keydown)="moverDia($event, dia)"
+                      (keydown.enter)="$event.preventDefault(); elegirDia(dia)"
+                      (click)="elegirDia(dia)"
+                    >
+                      <span>{{ numeroDia(dia) }}</span>
+                      @if (franjasDia(dia).length) {
+                        <span class="punto" aria-hidden="true"></span>
+                      }
+                    </button>
+                  } @else {
+                    <span aria-hidden="true"></span>
+                  }
+                }
+              </div>
+            </div>
+            @if (cargando) {
+              <p role="status" class="mt-4 text-white/60">Cargando franjas del mes…</p>
+            } @else if (!error) {
+              @if (!franjas.length) {
+                <div class="vacio mt-5">
+                  <p class="font-medium text-white">
+                    Este técnico aún no tiene franjas en este mes.
+                  </p>
+                  <p class="mt-1 text-sm text-white/55">
+                    Empieza eligiendo un día y crea su primer horario.
+                  </p>
+                </div>
+              }
+              @if (fechaValida) {
+                <section class="panel mt-5" aria-labelledby="dia-elegido">
+                  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <h3 id="dia-elegido" class="font-semibold text-white">
+                      {{ tituloDia }}
+                    </h3>
+                  </div>
+                  <ng-container
+                    *ngTemplateOutlet="listaFranjas; context: { $implicit: franjasDia(fecha) }"
+                  ></ng-container>
+                </section>
+              }
+            }
+            <div class="pie-paso">
+              <button type="button" class="accion" (click)="irPaso(1)">Atrás</button
+              ><button
+                type="button"
+                class="accion primaria"
+                [disabled]="!fechaValida || !duracion"
+                (click)="nuevaFranja()"
+              >
+                Nueva franja
+              </button>
+            </div>
+          </section>
+        </app-step>
+
+        <app-step title="Franja" [locked]="!tecnico || !fechaValida">
+          <section appAparecer="simple" aria-labelledby="franja-titulo">
+            @if (guardado) {
+              <div class="vacio">
+                <span class="text-3xl text-[#d98e4a]" aria-hidden="true">✓</span>
+                <h2 id="franja-titulo" class="mt-3 text-xl font-semibold text-white">
+                  {{ editando ? 'Franja actualizada' : 'Franjas creadas' }}
+                </h2>
+                <p class="mt-2 text-white/60">
+                  El horario de {{ tecnico?.nombre }} quedó guardado.
+                </p>
+                <div class="mt-6 flex flex-wrap justify-center gap-3">
+                  <button type="button" class="accion primaria" (click)="agregarOtra()">
+                    Agregar otra franja</button
+                  ><button type="button" class="accion" (click)="terminar()">Terminar</button>
+                </div>
+              </div>
+            } @else {
+              <h2 id="franja-titulo" class="text-xl font-semibold text-white">
+                {{ editando ? 'Editar franja' : 'Define el horario' }}
+              </h2>
+              <p class="mt-2 text-white/60">
+                Cada ventana se divide en citas de {{ duracion }} minutos.
+              </p>
+              <form class="mt-5" (ngSubmit)="guardar()" novalidate>
+                <fieldset [disabled]="guardando">
+                  <label for="franja-fecha" class="etiqueta">Fecha</label
+                  ><input
+                    id="franja-fecha"
+                    type="date"
+                    name="fecha"
+                    [min]="hoy"
+                    [(ngModel)]="fecha"
+                    class="campo mt-2"
+                  />
+                  <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label for="franja-inicio" class="etiqueta">Hora de inicio</label
+                      ><input
+                        id="franja-inicio"
+                        type="time"
+                        name="inicio"
+                        [(ngModel)]="horaInicio"
+                        class="campo mt-2"
+                      />
+                    </div>
+                    <div>
+                      <label for="franja-fin" class="etiqueta">Hora de fin</label
+                      ><input
+                        id="franja-fin"
+                        type="time"
+                        name="fin"
+                        [(ngModel)]="horaFin"
+                        class="campo mt-2"
+                      />
+                    </div>
+                  </div>
+                  <p aria-live="polite" class="mt-4 rounded-xl bg-[#d98e4a]/10 p-3 text-[#d98e4a]">
+                    Caben {{ citas }} citas de {{ duracion }} min
+                  </p>
+                  @if (!editando) {
+                    <details class="mt-5 rounded-xl border border-white/10 p-4">
+                      <summary class="cursor-pointer font-medium text-white">
+                        Copiar a otros días
+                        <span class="text-sm font-normal text-white/45">(opcional)</span>
+                      </summary>
+                      <label for="franja-copia" class="etiqueta mt-4">Agregar fecha</label>
+                      <div class="mt-2 flex flex-wrap gap-2">
+                        <input
+                          id="franja-copia"
+                          type="date"
+                          name="copia"
+                          [min]="hoy"
+                          [(ngModel)]="fechaCopia"
+                          class="campo sm:!w-auto"
+                        /><button
+                          type="button"
+                          class="accion"
+                          [disabled]="!fechaCopia"
+                          (click)="agregarCopia()"
+                        >
+                          Agregar fecha
+                        </button>
+                      </div>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        @for (dia of copias; track dia) {
+                          <button
+                            type="button"
+                            class="accion"
+                            [attr.aria-label]="'Quitar copia del ' + dia"
+                            (click)="quitarCopia(dia)"
+                          >
+                            {{ dia | fechaLocal: 'fechaCorta' }} ×
+                          </button>
+                        }
+                      </div>
+                    </details>
+                  }
+                </fieldset>
+                @if (errorFormulario) {
+                  <div role="alert" class="error mt-5 whitespace-pre-line">
+                    {{ errorFormulario }}
+                  </div>
+                }
+                <ng-container *ngTemplateOutlet="resultadosCopia"></ng-container>
+                <div class="pie-paso">
+                  <button type="button" class="accion" [disabled]="guardando" (click)="irPaso(2)">
+                    Atrás</button
+                  ><button
+                    type="submit"
+                    class="accion primaria"
+                    [disabled]="guardando || !duracion"
+                  >
+                    {{ guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear franja' }}
+                  </button>
+                </div>
+              </form>
+            }
+          </section>
+        </app-step>
+      </app-stepper>
+    </div>
+  }
+</div>
+
+<ng-template #foto let-t>
+  <span class="avatar">
+    @if (fotoDe(t); as url) {
+      <img [src]="url" alt="" (error)="alFallarFoto(url)" />
+    } @else {
+      <span aria-hidden="true">{{ iniciales(t) }}</span>
+    }
+  </span>
+</ng-template>
+<ng-template #listaFranjas let-lista>
+  <div class="space-y-3">
+    @for (f of lista; track f.id) {
+      <article class="bloque-franja">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="font-semibold text-white">
+            {{ f.horaInicio.slice(0, 5) }}–{{ f.horaFin.slice(0, 5) }}
+          </p>
+          <p class="text-sm text-white/60" [class.text-amber-200]="f.bloquesOcupados > 0">
+            {{ f.bloquesOcupados }}/{{ f.bloques }} citas ocupadas
+          </p>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button type="button" class="accion" (click)="abrir(f.fecha, f)">Editar</button
+          ><button
+            type="button"
+            class="accion"
+            [disabled]="f.bloquesOcupados > 0"
+            [title]="
+              f.bloquesOcupados > 0 ? 'No se puede borrar: tiene citas reservadas' : 'Borrar franja'
+            "
+            (click)="pedirBorrado(f)"
+          >
+            Borrar
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <p class="text-sm text-white/40">Este día aún no tiene franjas</p>
+    }
+  </div>
+</ng-template>
+<ng-template #resultadosCopia>
+  @if (resultados.length) {
+    <ul class="mt-4 space-y-2" aria-label="Resultados por fecha">
+      @for (r of resultados; track r.fecha) {
+        <li class="rounded-lg border border-white/10 p-3 text-sm text-white/80" role="status">
+          {{ r.fecha }}: {{ r.error || 'Creada correctamente' }}
+        </li>
+      }
+    </ul>
+  }
+</ng-template>
+@if (eliminando) {
+  <app-modal-formulario
+    titulo="Borrar franja"
+    textoEnviar="Borrar"
+    [cargando]="guardando"
+    [errorMensaje]="errorBorrado"
+    (cerrar)="eliminando = null"
+    (enviar)="borrar()"
+    ><p class="text-white">
+      ¿Borrar la franja del {{ eliminando.fecha | fechaLocal: 'fechaCorta' }} de
+      {{ eliminando.horaInicio.slice(0, 5) }} a {{ eliminando.horaFin.slice(0, 5) }}?
+    </p></app-modal-formulario
+  >
+}

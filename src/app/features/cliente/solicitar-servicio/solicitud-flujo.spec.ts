@@ -172,7 +172,7 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
 
   beforeEach(() => {
     Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
-    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined).mockClear();
     vi.useFakeTimers({ now: new Date(2026, 9, 27, 12, 0, 0), toFake: ['Date'] });
     flujo = new SolicitarServicioComponent({ subirVarias: vi.fn().mockReturnValue(of({})) } as unknown as FotoElectrodomesticoService, cdr, avisos as unknown as AvisosPagoService, cancelarCliente as unknown as CitaClienteService);
   });
@@ -227,12 +227,12 @@ describe('SolicitarServicioComponent: navegación entre pasos', () => {
     expect(flujo.motivoManual).toBe('FUERA_DE_COBERTURA');
   });
 
-  it('el motivo del backend manda sobre el que se vio al consultar horarios, y "sin horarios" no es un motivo especial', () => {
+  it('el motivo del backend manda sobre el que se vio al consultar horarios, y conserva el motivo sin horarios', () => {
     flujo.onManualEnviada({ cita: { ...CITA, motivoSolicitudEspecial: 'SIN_TECNICOS_ESPECIALIDAD' } as Cita, motivo: 'FUERA_DE_COBERTURA' });
     expect(flujo.motivoManual).toBe('SIN_TECNICOS_ESPECIALIDAD');
 
     flujo.onManualEnviada({ cita: { ...CITA, motivoSolicitudEspecial: null } as Cita, motivo: 'SIN_HORARIOS' });
-    expect(flujo.motivoManual).toBeNull();
+    expect(flujo.motivoManual).toBe('SIN_HORARIOS');
   });
 
   it('la solicitud creada al confirmar se recuerda para reutilizarla si hay que elegir otro horario', () => {

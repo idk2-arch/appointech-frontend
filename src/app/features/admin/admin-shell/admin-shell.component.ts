@@ -23,6 +23,7 @@ export class AdminShellComponent implements OnInit, OnDestroy {
     { value: 'dashboard', label: 'Dashboard', icon: 'chart', routerLink: '/admin/dashboard' },
     { value: 'usuarios', label: 'Usuarios', icon: 'users', routerLink: '/admin/usuarios' },
     { value: 'especialidades', label: 'Especialidades de técnicos', icon: 'tool', routerLink: '/admin/especialidades' },
+    { value: 'franjas-tecnicos', label: 'Franjas de técnicos', icon: 'calendar', routerLink: '/admin/franjas-tecnicos' },
     { value: 'citas', label: 'Citas', icon: 'calendar', routerLink: '/admin/citas' },
     { value: 'solicitudes-manuales', label: 'Solicitudes por coordinar', icon: 'alert', routerLink: '/admin/solicitudes-manuales' },
     { value: 'alertas', label: 'Alertas', icon: 'bell', routerLink: '/admin/alertas', badge: this.alertas.total() },

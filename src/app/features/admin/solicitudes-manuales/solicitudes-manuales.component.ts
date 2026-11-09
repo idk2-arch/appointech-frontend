@@ -23,7 +23,7 @@ const LARGO_DESCRIPCION_LARGA = 140;
 const MS_SALIDA_TARJETA = 300;
 const MS_REFRESCO_TIEMPOS = 60_000;
 const ESTADOS: EstadoCita[] = ['PENDIENTE', 'CONFIRMADA', 'EN_CAMINO', 'EN_PROCESO', 'FINALIZADA', 'CANCELADA'];
-const MOTIVOS: MotivoSolicitudEspecial[] = ['FUERA_DE_COBERTURA', 'SIN_TECNICOS_ESPECIALIDAD'];
+const MOTIVOS: MotivoSolicitudEspecial[] = ['FUERA_DE_COBERTURA', 'SIN_TECNICOS_ESPECIALIDAD', 'SIN_HORARIOS'];
 
 /** Lo que dibuja cada tarjeta, ya calculado. */
 export interface TarjetaSolicitud {

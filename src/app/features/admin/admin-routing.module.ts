@@ -1,3 +1,4 @@
+import { FranjasTecnicosComponent } from './franjas-tecnicos/franjas-tecnicos.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
@@ -24,6 +25,7 @@ const routes: Routes = [
     canActivate: [adminGuard],
     children: [
       { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
+      { path: 'franjas-tecnicos', component: FranjasTecnicosComponent },
       { path: 'dashboard', component: DashboardAdminComponent },
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'especialidades', component: EspecialidadesComponent },

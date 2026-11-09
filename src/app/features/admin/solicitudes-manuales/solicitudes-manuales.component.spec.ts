@@ -104,7 +104,7 @@ describe('SolicitudesManualesComponent', () => {
 
   it('el subtítulo explica los dos motivos de coordinación manual', async () => {
     await crear(pagina([ANA]));
-    expect(texto()).toContain('Solicitudes que requieren coordinación manual: dirección fuera de cobertura o sin técnicos para la especialidad.');
+    expect(texto()).toContain('Solicitudes que requieren coordinación manual: dirección fuera de cobertura, sin técnicos para la especialidad o sin horarios disponibles.');
     expect(texto()).not.toContain('Clientes cuya dirección quedó fuera');
   });
 
@@ -114,6 +114,15 @@ describe('SolicitudesManualesComponent', () => {
     for (const etiqueta of ['Motivo', 'Especialidad', 'Estado']) expect(texto()).toContain(etiqueta);
     expect(listar).toHaveBeenCalledWith({ motivo: '', especialidadId: null, estado: 'PENDIENTE', page: 0, size: 10 });
     expect(fixture.componentInstance.opcionesEspecialidad.map((o) => o.label)).toEqual(['Todas', 'Lavadoras', 'Aires acondicionados']);
+  });
+
+  it('muestra fecha deseada solo si existe, etiqueta y filtro de sin horarios', async () => {
+    await crear(pagina([solicitud({ fechaDeseada: '2026-11-09', motivo: 'SIN_HORARIOS' }), solicitud({ id: 3, fechaDeseada: null })]));
+    expect(texto()).toContain('El cliente quiere la cita para el');
+    expect(texto().match(/El cliente quiere la cita para el/g)).toHaveLength(1);
+    expect(texto()).toContain('9 de nov'); expect(texto()).toContain('Sin horarios disponibles');
+    fixture.componentInstance.cambiarMotivo('SIN_HORARIOS');
+    expect(listar).toHaveBeenLastCalledWith(expect.objectContaining({ motivo: 'SIN_HORARIOS', page: 0 }));
   });
 
   it('cada filtro viaja al servidor y vuelve a la primera página', async () => {

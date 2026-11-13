@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../config/api.config';
 import { FotoCitaService } from './foto-cita.service';
 
 const RUTA = '/api/citas/4/fotos/9';
-const DIRECCION = `${new URL(API_BASE_URL).origin}${RUTA}`;
+const DIRECCION = `${new URL(API_BASE_URL, document.baseURI).origin}${RUTA}`;
 
 describe('FotoCitaService', () => {
   let servicio: FotoCitaService;
@@ -81,7 +81,7 @@ describe('FotoCitaService', () => {
     pedir('/api/citas/4/fotos/10');
 
     http.expectOne(DIRECCION).flush(new Blob(['x']));
-    http.expectOne(`${new URL(API_BASE_URL).origin}/api/citas/4/fotos/10`).flush(new Blob(['y']));
+    http.expectOne(`${new URL(API_BASE_URL, document.baseURI).origin}/api/citas/4/fotos/10`).flush(new Blob(['y']));
 
     expect(crearUrl).toHaveBeenCalledTimes(2);
   });
@@ -118,7 +118,7 @@ describe('FotoCitaService', () => {
     pedir(RUTA);
     pedir('/api/citas/4/fotos/10');
     http.expectOne(DIRECCION).flush(new Blob(['x']));
-    http.expectOne(`${new URL(API_BASE_URL).origin}/api/citas/4/fotos/10`).flush(new Blob(['y']));
+    http.expectOne(`${new URL(API_BASE_URL, document.baseURI).origin}/api/citas/4/fotos/10`).flush(new Blob(['y']));
 
     servicio.ngOnDestroy();
 

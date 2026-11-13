@@ -24,7 +24,7 @@ describe('AvatarComponent', () => {
   it('con foto muestra la imagen con la URL completa del servidor y un alt con el nombre', () => {
     entradas({ fotoUrl: '/api/fotos/abc', nombre: 'Ana Pérez' });
 
-    expect(imagen()?.getAttribute('src')).toBe('http://localhost:8080/api/fotos/abc');
+    expect(imagen()?.getAttribute('src')).toBe(new URL('/api/fotos/abc', document.baseURI).href);
     expect(imagen()?.alt).toBe('Foto de Ana Pérez');
     expect(iniciales()).toBeNull();
   });
@@ -61,7 +61,7 @@ describe('AvatarComponent', () => {
 
     entradas({ fotoUrl: '/api/fotos/nueva' });
 
-    expect(imagen()?.getAttribute('src')).toBe('http://localhost:8080/api/fotos/nueva');
+    expect(imagen()?.getAttribute('src')).toBe(new URL('/api/fotos/nueva', document.baseURI).href);
   });
 
   describe('no se deforma dentro de un flex', () => {

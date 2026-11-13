@@ -91,7 +91,7 @@ describe('FranjasTecnicosComponent', () => {
     expect(c.filtrados).toHaveLength(1);
     c.busqueda = 'freddy';
     expect(c.filtrados).toHaveLength(1);
-    expect(raiz().querySelector('img')?.getAttribute('src')).toBe('http://localhost:8080/api/fotos/abc');
+    expect(raiz().querySelector('img')?.getAttribute('src')).toBe(new URL('/api/fotos/abc', document.baseURI).href);
     elegir();
     expect(c.radio).toBe(10);
     expect(servicio.listar).toHaveBeenCalledWith(1, '2026-11-01', '2026-11-30');
@@ -107,7 +107,7 @@ describe('FranjasTecnicosComponent', () => {
     const fotos = raiz().querySelectorAll<HTMLImageElement>('.avatar img');
     expect(fotos.length).toBeGreaterThan(0);
     fotos.forEach((foto) => {
-      expect(foto.getAttribute('src')).toBe('http://localhost:8080/api/fotos/abc');
+      expect(foto.getAttribute('src')).toBe(new URL('/api/fotos/abc', document.baseURI).href);
       foto.dispatchEvent(new Event('load'));
     });
     await detectar();

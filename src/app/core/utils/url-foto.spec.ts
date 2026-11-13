@@ -4,11 +4,11 @@ import { resolverUrlFoto } from './url-foto';
 
 describe('resolverUrlFoto', () => {
   it('completa la ruta relativa con el origen de la API sin repetir /api', () => {
-    expect(resolverUrlFoto('/api/fotos/abc')).toBe('http://localhost:8080/api/fotos/abc');
+    expect(resolverUrlFoto('/api/fotos/abc')).toBe(new URL('/api/fotos/abc', document.baseURI).href);
   });
 
   it('acepta rutas sin barra inicial', () => {
-    expect(resolverUrlFoto('api/fotos/abc')).toBe('http://localhost:8080/api/fotos/abc');
+    expect(resolverUrlFoto('api/fotos/abc')).toBe(new URL('/api/fotos/abc', document.baseURI).href);
   });
 
   it('deja intactas las URLs absolutas y las data URL', () => {

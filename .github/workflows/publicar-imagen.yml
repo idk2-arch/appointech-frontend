@@ -1,0 +1,69 @@
+name: Publicar imagen
+
+# Mismo patrón que el backend: solo se publica desde main y desarrollo (más ejecución manual).
+on:
+  push:
+    branches: [main, desarrollo]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+# Dos publicaciones de la misma rama no deben pisarse: la nueva espera a que termine la anterior.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGEN: ghcr.io/idk2-arch/appointech-frontend
+
+jobs:
+  publicar:
+    name: Construir y publicar en GHCR
+    runs-on: ubuntu-latest
+    steps:
+      # Acciones fijadas por SHA de commit (la etiqueta exacta va en el comentario).
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Generar la configuración de Geoapify
+        # El archivo real está en .gitignore; se crea desde el secreto antes del build. GitHub oculta el
+        # secreto en los logs y aquí nunca se imprime. Sin él la imagen saldría con una llave inválida.
+        env:
+          GEOAPIFY_API_KEY: ${{ secrets.GEOAPIFY_API_KEY }}
+        run: |
+          if [ -z "$GEOAPIFY_API_KEY" ]; then
+            echo "::error::Falta el secreto GEOAPIFY_API_KEY: no se publica una imagen con la llave de relleno."
+            exit 1
+          fi
+          printf "export const GEOAPIFY_API_KEY = '%s';\n" "$GEOAPIFY_API_KEY" > src/app/core/config/geoapify.config.ts
+
+      - name: Calcular la etiqueta con el SHA corto
+        id: version
+        run: echo "sha_corto=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir y publicar la imagen
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          # Sin manifiestos de procedencia extra: GHCR muestra una sola entrada por etiqueta.
+          provenance: false
+          tags: |
+            ${{ env.IMAGEN }}:latest
+            ${{ env.IMAGEN }}:${{ steps.version.outputs.sha_corto }}
+          # Vincula el paquete con este repositorio (hereda permisos y se ve en su pestaña Packages).
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

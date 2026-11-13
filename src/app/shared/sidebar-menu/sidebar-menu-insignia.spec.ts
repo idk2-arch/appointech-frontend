@@ -39,7 +39,7 @@ describe('SidebarMenuComponent: insignia numérica', () => {
   });
 
   it('con 0 o sin número no dibuja nada', () => {
-    fixture.componentRef.setInput('items', [{ ...ITEMS[1], badge: 0 }, { ...ITEMS[0], badge: null }, ITEMS[0]]);
+    fixture.componentRef.setInput('items', [{ ...ITEMS[1], badge: 0 }, { ...ITEMS[0], value: 'citas-sin-insignia', badge: null }, ITEMS[0]]);
     fixture.detectChanges();
     expect(insignias()).toEqual([]);
   });

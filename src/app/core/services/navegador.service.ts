@@ -18,6 +18,10 @@ export class NavegadorService {
     }
   }
 
+  recargar(): void {
+    this.documento.location.reload();
+  }
+
   imprimir(): void {
     this.documento.defaultView?.print();
   }

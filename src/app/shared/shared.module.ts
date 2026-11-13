@@ -10,6 +10,7 @@ import { RubberSegmentComponent } from './rubber-segment/rubber-segment.componen
 import { DriftWallComponent } from './drift-wall/drift-wall.component';
 import { KilometrosPipe, MinutosViajePipe } from './formato-viaje/formato-viaje.pipes';
 import { IconoWhatsappComponent } from './icono-whatsapp/icono-whatsapp.component';
+import { LogoComponent } from './logo/logo.component';
 import { PanelLateralComponent } from './panel-lateral/panel-lateral.component';
 import { NombreTecnicoPipe } from './nombre-tecnico/nombre-tecnico.pipe';
 import { FechaLocalPipe } from './fecha-local/fecha-local.pipe';
@@ -70,6 +71,7 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     MinutosViajePipe,
     PanelLateralComponent,
     IconoWhatsappComponent,
+    LogoComponent,
     MapaUbicacionComponent,
     SelectorDireccionComponent,
     CamposPersonaComponent,
@@ -127,6 +129,7 @@ import { TarjetaExpandibleComponent } from './tarjeta-expandible/tarjeta-expandi
     MinutosViajePipe,
     PanelLateralComponent,
     IconoWhatsappComponent,
+    LogoComponent,
     MapaUbicacionComponent,
     SelectorDireccionComponent,
     CamposPersonaComponent,

@@ -1,0 +1,17 @@
+{
+  "name": "appointech-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pruebas E2E de AppoinTech con Playwright (contra http://localhost:4200)",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "reporte": "playwright show-report reporte-html",
+    "instalar-navegador": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "^22.10.0",
+    "typescript": "~5.9.2"
+  }
+}

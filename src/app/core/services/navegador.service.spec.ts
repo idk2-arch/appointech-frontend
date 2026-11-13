@@ -7,13 +7,15 @@ import { NavegadorService } from './navegador.service';
 describe('NavegadorService', () => {
   const assign = vi.fn();
   const print = vi.fn();
+  const reload = vi.fn();
   let servicio: NavegadorService;
 
   beforeEach(() => {
     assign.mockClear();
     print.mockClear();
+    reload.mockClear();
     TestBed.configureTestingModule({
-      providers: [{ provide: DOCUMENT, useValue: { location: { assign }, defaultView: { print } } }],
+      providers: [{ provide: DOCUMENT, useValue: { location: { assign, reload }, defaultView: { print } } }],
     });
     servicio = TestBed.inject(NavegadorService);
   });
@@ -41,6 +43,11 @@ describe('NavegadorService', () => {
   it('imprime la página', () => {
     servicio.imprimir();
     expect(print).toHaveBeenCalledOnce();
+  });
+
+  it('recarga la página', () => {
+    servicio.recargar();
+    expect(reload).toHaveBeenCalledOnce();
   });
 });
 

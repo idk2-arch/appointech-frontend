@@ -75,7 +75,7 @@
             </span>
           </td>
           <td>
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 (click)="cambiarFoto.emit(fila)"
@@ -97,6 +97,7 @@
               </button>
               @if (fila.activo) {
                 <app-fuse-button
+                  class="min-w-max"
                   label="Desactivar"
                   undoLabel="Deshacer"
                   doneLabel="Desactivado"
